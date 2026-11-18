@@ -21,10 +21,6 @@ jobs:
         run: gradle assembleDebug --no-daemon
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk Matma.apk
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Matma-apk
-          path: Matma.apk
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
