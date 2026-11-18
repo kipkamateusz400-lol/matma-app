@@ -431,12 +431,12 @@ function gExpIneq(){const B=pick([2,3]),inv=rnd()<.5,a=riNZ(-3,3),b=ri(-4,4),c=r
   const t=F(c-b,a),T=fH(t),ans=r[0]==='>'?`(${T}${r==='>='?'⟩':')'}`:'';
   const sol=r[0]==='>'?`${r==='>='?'⟨':'('}${T}, +∞)`:`(${M}∞, ${T}${r==='<='?'⟩':')'}`;
   return{q:`Rozwiąż nierówność ${base}<sup>${poly([a,b])}</sup> ${REL[rel]} ${fH(val)}`,a:`x ∈ ${sol}<br>${hint(`zapisz prawą stronę jako ${base}<sup>${N(c)}</sup>${inv?'; podstawa mniejsza od 1 odwraca znak nierówności':''}`)}`}}
-function setStr(pred,pts){const ps=[...new Set(pts)].sort((a,b)=>a-b),n=ps.length,el=[];
+function setStr(pred,pts,lab=N){const ps=[...new Set(pts)].sort((a,b)=>a-b),n=ps.length,el=[];
   for(let i=0;i<=n;i++){const lo=i?ps[i-1]:ps[0]-10,hi=i<n?ps[i]:ps[n-1]+10;el.push({g:1,i,in:pred((lo+hi)/2)});if(i<n)el.push({g:0,i,in:pred(ps[i])})}
   const out=[];let k=0;while(k<el.length){if(!el[k].in){k++;continue}let j=k;while(j+1<el.length&&el[j+1].in)j++;
     const s=el[k],e=el[j];
-    if(s===e&&!s.g)out.push(`{${N(ps[s.i])}}`);
-    else out.push((s.g?(s.i?`(${N(ps[s.i-1])}`:`(${M}∞`):`⟨${N(ps[s.i])}`)+', '+(e.g?(e.i<n?`${N(ps[e.i])})`:'+∞)'):`${N(ps[e.i])}⟩`));k=j+1}
+    if(s===e&&!s.g)out.push(`{${lab(ps[s.i])}}`);
+    else out.push((s.g?(s.i?`(${lab(ps[s.i-1])}`:`(${M}∞`):`⟨${lab(ps[s.i])}`)+', '+(e.g?(e.i<n?`${lab(ps[e.i])})`:'+∞)'):`${lab(ps[e.i])}⟩`));k=j+1}
   return out.length?(out.length===1&&out[0]===`(${M}∞, +∞)`?'ℝ':out.join(' ∪ ')):'∅'}
 function rIv(){const[a,b]=distinct(2,-6,6).sort((x,y)=>x-y),t=ri(0,3);
   if(t===0)return{l:-Infinity,r:b,lc:0,rc:rnd()<.5};if(t===1)return{l:a,r:Infinity,lc:rnd()<.5,rc:0};return{l:a,r:b,lc:rnd()<.5,rc:rnd()<.5}}
@@ -725,6 +725,91 @@ function gMultiPoly(){const rs=distinct(3,-4,4),cs=expand(rs),r=rs[0],k=riNZ(-3,
   return{q:`Dany jest wielomian W(x) = ${poly(cs)}.<br>a) Sprawdź, że liczba ${N(r)} jest pierwiastkiem wielomianu W.<br>b) Rozłóż wielomian W na czynniki liniowe.<br>c) Rozwiąż nierówność W(x) ≤ 0.<br>d) Wyznacz resztę z dzielenia W przez dwumian (${sh(k)}).`,
   a:`a) W(${N(r)}) = 0<br>b) W(x) = ${rs.slice().sort((a,b)=>a-b).map(v=>`(${sh(v)})`).join('')}<br>c) ${signSolve(rs.map(v=>({v})),1,'<=')}<br>d) R = W(${N(k)}) = ${N(ev(cs,k))}`}}
 
+/* ---------- trygonometria: generator równań i nierówności ---------- */
+const piF=f=>{f=toF(f);if(f.n===0)return'0';const a=Math.abs(f.n),t=(a===1?'':a)+'π';return(f.n<0?M:'')+(f.d===1?t:fr(t,f.d))};
+const TV={sin:Math.sin,cos:Math.cos,tg:x=>Math.abs(Math.cos(x))<1e-9?NaN:Math.tan(x)};
+const SC_V=[[0,'0'],[.5,fr(1,2)],[Math.SQRT2/2,fr('√2',2)],[Math.sqrt(3)/2,fr('√3',2)],[1,'1']];
+const TG_V=[[0,'0'],[Math.sqrt(3)/3,fr('√3',3)],[1,'1'],[Math.sqrt(3),'√3']];
+const INTS=[[0,2,1,1],[0,1,1,1],[-1,1,1,1],[0,2,0,0],[0,2,1,0]];
+const ivPi=([L,R,lc,rc])=>`${lc?'⟨':'('}${piF(F(L))}, ${piF(F(R))}${rc?'⟩':')'}`;
+function trigSolve(G,a,[L,R,lc,rc]){const out=[],k=12*a;for(let j=Math.ceil(L*k);j<=Math.floor(R*k);j++){const x=j*Math.PI/k;if((j===L*k&&!lc)||(j===R*k&&!rc))continue;const v=G(x);if(isFinite(v)&&Math.abs(v)<1e-9)out.push(F(j,k))}return out}
+const tpoly=(c2,c1,c0,f)=>{let s='';[[c2,`${f}²x`],[c1,`${f} x`],[c0,'']].forEach(([c,v])=>{c=toF(c);if(!c.n)return;const neg=c.n<0,ab=F(Math.abs(c.n),c.d),body=(v&&ab.n===1&&ab.d===1?'':fH(ab))+v;s+=s===''?(neg?M:'')+body:(neg?' − ':' + ')+body});return s||'0'};
+function gTrigEqGen(){const I=pick(INTS),m=ri(0,3);let disp,G,a=1,h='';
+  if(m===0){const fn=pick(['sin','cos','tg']);a=pick([1,1,2,3]);const[v,vs]=pick(fn==='tg'?TG_V:SC_V),sgn=v===0?1:sg();disp=`${fn} ${a>1?a:''}x = ${sgn<0?M:''}${vs}`;G=x=>TV[fn](a*x)-sgn*v;h=a>1?`podstaw t = ${a}x i pamiętaj o przedziale dla t`:'skorzystaj z wykresu lub okręgu jednostkowego'}
+  else if(m===1){const fn=pick(['sin','cos']),R0=[F(-1),F(-1,2),F(0),F(1,2),F(1)],R1=[...R0,F(2),F(-2),F(3,2)];let r1,r2;do{r1=pick(R0);r2=pick(R1)}while(r1.n*r2.d===r2.n*r1.d);
+    let A=1;for(const t of[1,2,4]){const c1=fmul(F(-t),fadd(r1,r2)),c0=fmul(F(t),fmul(r1,r2));if(c1.d===1&&c0.d===1){A=t;break}}const c1=fmul(F(-A),fadd(r1,r2)).n,c0=fmul(F(A),fmul(r1,r2)).n;
+    const v2=rnd(),oth=fn==='sin'?'cos':'sin';G=x=>{const s=TV[fn](x);return A*(s-r1.n/r1.d)*(s-r2.n/r2.d)};
+    if(A===2&&v2<.35&&fn==='sin'){disp=`cos 2x${term(-c1,'sin x')}${term(-(c0+1),'')} = 0`;h='cos 2x = 1 − 2sin²x, potem podstaw t = sin x'}
+    else if(v2<.65){disp=`${tpoly(-A,c1,A+c0,oth)} = 0`;h=`${oth}²x = 1 − ${fn}²x, potem podstaw t = ${fn} x`}
+    else{disp=`${tpoly(A,c1,c0,fn)} = 0`;h=`podstaw t = ${fn} x, t ∈ ⟨−1, 1⟩`}}
+  else{const[v,vs]=pick(SC_V.slice(1,4)),sgn=sg(),c=2*v*sgn,cs=(sgn<0?M:'')+(v===.5?'':v>.8?'√3':'√2'),w=rnd()<.5;
+    disp=w?`sin 2x = ${cs} sin x`:`sin 2x = ${cs} cos x`;G=w?x=>Math.sin(2*x)-c*Math.sin(x):x=>Math.sin(2*x)-c*Math.cos(x);h=w?'sin 2x = 2sin x cos x; wyłącz sin x przed nawias':'sin 2x = 2sin x cos x; wyłącz cos x przed nawias'}
+  const sol=trigSolve(G,a,I);
+  return{q:`Rozwiąż równanie ${disp} w przedziale ${ivPi(I)}.`,a:(sol.length?`x ∈ {${sol.map(piF).join(', ')}}`:'brak rozwiązań w tym przedziale')+`<br>${hint(h)}`}}
+function gTrigIneq(){const fn=pick(['sin','cos']),[v,vs]=pick(SC_V.slice(0,4)),sgn=v===0?1:sg(),val=sgn*v,rel=pick(RELS),cmp={'<':(a,b)=>a<b-1e-9,'<=':(a,b)=>a<=b+1e-9,'>':(a,b)=>a>b+1e-9,'>=':(a,b)=>a>=b-1e-9}[rel];
+  const pts=[0,2];for(let j=0;j<=24;j++)if(Math.abs(TV[fn](j*Math.PI/12)-val)<1e-9)pts.push(j/12);
+  const res=setStr(x=>x>=0&&x<=2&&cmp(TV[fn](x*Math.PI),val),pts,x=>piF(F(Math.round(x*12),12)));
+  return{q:`Rozwiąż nierówność ${fn} x ${REL[rel]} ${sgn<0?M:''}${vs} w przedziale ⟨0, 2π⟩.`,a:`x ∈ ${res}<br>${hint(`narysuj wykres y = ${fn} x i prostą y = ${sgn<0?M:''}${vs}`)}`}}
+function cRedukcja(){const ang=pick([120,135,150,210,225,240,300,315,330]),fn=pick(['sin','cos','tg']),v=TV[fn](ang*Math.PI/180),opts=[[0,'0'],[.5,fr(1,2)],[Math.SQRT2/2,fr('√2',2)],[Math.sqrt(3)/2,fr('√3',2)],[1,'1'],[Math.sqrt(3)/3,fr('√3',3)],[Math.sqrt(3),'√3']];
+  const lab=x=>{const o=opts.find(p=>Math.abs(p[0]-Math.abs(x))<1e-9);return(x<-1e-9?M:'')+o[1]},ok=lab(v),alt=opts.filter(p=>Math.abs(p[0]-Math.abs(v))>1e-9&&p[0]>0).map(p=>p[1]);
+  return mc(`Wartość wyrażenia ${fn} ${ang}° jest równa`,ok,[lab(-v),(v<0?'':M)+pick(alt),(v<0?M:'')+pick(alt)],hint('wzory redukcyjne: sprowadź kąt do ostrego i ustal znak w ćwiartce'))}
+/* ---------- dowody: generatory ---------- */
+function gProofGen(){const t=ri(0,8),a=riNZ(-6,6),b=riNZ(-6,6),k=ri(1,9);
+  const P=[()=>[`Wykaż, że dla każdej liczby rzeczywistej x prawdziwa jest nierówność ${poly([1,-2*a,a*a+k])} > 0.`,`${poly([1,-2*a,a*a+k])} = (${sh(a)})² + ${k} ≥ ${k} > 0.`],
+   ()=>{const c=Math.abs(a);return[`Wykaż, że dla każdej liczby całkowitej n liczba (n + ${c})² − (n − ${c})² jest podzielna przez ${4*c}.`,`(n + ${c})² − (n − ${c})² = ${4*c}n.`]},
+   ()=>{const m=pick([3,5,7]);return[`Wykaż, że suma ${m} kolejnych liczb całkowitych jest podzielna przez ${m}.`,`oznacz środkową liczbę przez n: suma = (n − ${(m-1)/2}) + … + n + … + (n + ${(m-1)/2}) = ${m}n.`]},
+   ()=>[`Wykaż, że dla dowolnych liczb rzeczywistych x, y prawdziwa jest nierówność x² + y² + ${a*a+b*b} ≥ ${2*a}x + ${2*b}y.`.replace(/\+ -/g,'− ').replace(/≥ -/,'≥ −'),`przenieś wszystko na lewą stronę: (${sh(a)})² + (${sh(b,'y')})² ≥ 0.`],
+   ()=>{const kk=ri(1,4);return[`Wykaż, że dla każdej liczby całkowitej n liczba n³ + ${6*kk-1}n jest podzielna przez 6.`,`n³ + ${6*kk-1}n = (n³ − n) + ${6*kk}n = (n − 1)n(n + 1) + ${6*kk}n; iloczyn trzech kolejnych liczb całkowitych dzieli się przez 6.`]},
+   ()=>{const s=riNZ(-8,8);return[`Wykaż, że jeśli a + b = ${N(s)}, to ab ≤ ${fH(F(s*s,4))}.`,`podstaw b = ${N(s)} − a: ab = ${s}a − a² = ${fH(F(s*s,4))} − (a ${s<0?'+':'−'} ${fH(F(Math.abs(s),2))})² ≤ ${fH(F(s*s,4))}.`]},
+   ()=>[`Wykaż, że dla każdej liczby dodatniej x prawdziwa jest nierówność x + ${fr(k*k,'x')} ≥ ${2*k}.`,`pomnóż przez x > 0: x² − ${2*k}x + ${k*k} = (x − ${k})² ≥ 0.`],
+   ()=>{const c=pick([8,17,26,35]);return[`Wykaż, że dla każdej liczby naturalnej n ≥ 1 liczba 10ⁿ + ${c} jest podzielna przez 9.`,`10ⁿ daje resztę 1 z dzielenia przez 9, a ${c} daje resztę 8; suma reszt 9.`]},
+   ()=>[`Wykaż, że dla dowolnych liczb dodatnich a, b prawdziwa jest nierówność a³ + b³ ≥ a²b + ab².`,'a³ + b³ − a²b − ab² = a²(a − b) − b²(a − b) = (a − b)²(a + b) ≥ 0.']];
+  const[q,h]=P[t]();return{q,a:hint(h)}}
+function figChords(){const O=Pt(145,95),r=75,[A,B,C,D]=[200,20,115,300].map(t=>polar(O,r,t)),P=inter(A,B,C,D);
+  return FIG(SC(O,r)+SL(A,B)+SL(C,D)+SL(A,C,'x')+SL(B,D,'x')+LB(A,'A',O)+LB(B,'B',O)+LB(C,'C',O)+LB(D,'D',O)+LB(P,'P',Pt(P.x+20,P.y+30)),'Trójkąty APC i DPB są podobne (kąty wpisane oparte na tych samych łukach). '+AUX)}
+function figTangents(){const O=Pt(90,95),r=55,P=Pt(255,95),th=Math.acos(r/dist(O,P))*180/Math.PI,T1=polar(O,r,-th),T2=polar(O,r,th);
+  return FIG(SC(O,r)+SL(P,T1)+SL(P,T2)+SL(O,T1,'x')+SL(O,T2,'x')+SL(O,P,'x')+SD(O)+LB(O,'O',Pt(60,95))+LB(P,'P',Pt(200,95))+LB(T1,'A',O)+LB(T2,'B',O),'Promienie OA i OB są prostopadłe do stycznych. '+AUX)}
+function figIso(){const A=Pt(40,165),B=Pt(240,165),C=Pt(140,25),D=Pt(140,165),c=Pt(140,110);
+  return FIG(SP([A,B,C])+SL(C,D,'x')+LB(A,'A',c)+LB(B,'B',c)+LB(C,'C',c)+LB(D,'D',Pt(140,120)),'Wysokość CD dzieli trójkąt na dwa przystające trójkąty. '+AUX)}
+function figVarignon(){const A=Pt(30,160),B=Pt(220,178),C=Pt(262,62),D=Pt(92,28),K=mid(A,B),L=mid(B,C),Mm=mid(C,D),Nn=mid(D,A),c=Pt(150,105);
+  return FIG(SP([A,B,C,D])+SP([K,L,Mm,Nn])+SL(A,C,'x')+LB(A,'A',c)+LB(B,'B',c)+LB(C,'C',c)+LB(D,'D',c)+LB(K,'K',c)+LB(L,'L',c)+LB(Mm,'M',c)+LB(Nn,'N',c),'KL ∥ AC ∥ NM (odcinki łączące środki boków w trójkątach ABC i ACD). '+AUX)}
+const PROOF_G2=[
+ ['W równoległoboku ABCD przekątne przecinają się w punkcie S. Wykaż, że S jest środkiem obu przekątnych.','trójkąty ABS i CDS są przystające (cecha kbk: |AB| = |CD|, kąty naprzemianległe przy AB i CD są równe).',figPara],
+ ['Wykaż, że środkowa trójkąta dzieli go na dwa trójkąty o równych polach.','oba trójkąty mają tę samą wysokość opuszczoną z wierzchołka A i równe podstawy |BM| = |MC|.',figMedian],
+ ['W trójkącie prostokątnym ABC (kąt prosty przy C) poprowadzono wysokość CD. Wykaż, że |AC|² = |AD| · |AB|.','trójkąty ADC i ACB są podobne (wspólny kąt A i kąt prosty), więc |AD| : |AC| = |AC| : |AB|.',figAlt],
+ ['Wykaż, że kąt wpisany oparty na półokręgu jest kątem prostym.','połącz C ze środkiem M średnicy AB: trójkąty AMC i BMC są równoramienne, więc 2α + 2β = 180°, czyli α + β = 90°.',figHyp],
+ ['Cięciwy AB i CD okręgu przecinają się w punkcie P. Wykaż, że |AP| · |PB| = |CP| · |PD|.','dorysuj cięciwy AC i BD. Trójkąty APC i DPB są podobne (kąty wpisane ∢CAB = ∢CDB oraz kąty wierzchołkowe przy P).',figChords],
+ ['Z punktu P leżącego poza okręgiem o środku O poprowadzono dwie styczne do okręgu w punktach A i B. Wykaż, że |PA| = |PB|.','dorysuj promienie OA, OB i odcinek OP. Trójkąty OAP i OBP są prostokątne, mają wspólną przeciwprostokątną OP i równe przyprostokątne OA = OB, więc są przystające.',figTangents],
+ ['W trójkącie równoramiennym ABC (|AC| = |BC|) poprowadzono wysokość CD. Wykaż, że D jest środkiem AB i że CD jest dwusieczną kąta ACB.','trójkąty ADC i BDC są prostokątne, mają wspólną przyprostokątną CD i równe przeciwprostokątne, więc są przystające.',figIso],
+ ['Wykaż, że środki boków dowolnego czworokąta wypukłego są wierzchołkami równoległoboku.','dorysuj przekątną AC. W trójkącie ABC: KL ∥ AC i |KL| = ½|AC|; w trójkącie ACD: NM ∥ AC i |NM| = ½|AC|. Zatem KL i NM są równoległe i równe.',figVarignon],
+ ['Wykaż, że suma miar kątów wewnętrznych n-kąta wypukłego jest równa (n − 2) · 180°.','z jednego wierzchołka poprowadź wszystkie przekątne: dzielą one wielokąt na n − 2 trójkątów, a w każdym suma kątów to 180°.']];
+/* ---------- nowe typy ---------- */
+function gSymPoint(){let x,y;do{x=riNZ(-7,7);y=riNZ(-7,7)}while(x===y);const t=ri(0,4);const[n,p]=[['osi Ox',[x,-y]],['osi Oy',[-x,y]],['początku układu współrzędnych',[-x,-y]],['prostej y = x',[y,x]]][Math.min(t,3)];
+  if(t===4){const s=[ri(-4,4),ri(-4,4)];return{q:`Punkt B jest obrazem punktu A = (${N(x)}, ${N(y)}) w symetrii względem punktu S = (${N(s[0])}, ${N(s[1])}). Wyznacz współrzędne punktu B.`,a:`B = (${N(2*s[0]-x)}, ${N(2*s[1]-y)})<br>${hint('S jest środkiem odcinka AB')}`}}
+  return{q:`Wyznacz współrzędne punktu symetrycznego do punktu A = (${N(x)}, ${N(y)}) względem ${n}.`,a:`(${N(p[0])}, ${N(p[1])})`}}
+function gPolygon(){const n=ri(5,12),m=ri(0,2);if(m===0)return{q:`Oblicz miarę kąta wewnętrznego ${n}-kąta foremnego oraz liczbę jego przekątnych.`,a:`kąt = ${fH(F((n-2)*180,n))}°${(n-2)*180%n?' ≈ '+dec((n-2)*180/n)+'°':''}, przekątnych: ${n*(n-3)/2}<br>${hint('kąt = (n − 2) · 180° / n, przekątnych n(n − 3)/2')}`};
+  if(m===1)return{q:`Wielokąt wypukły ma ${n*(n-3)/2} przekątnych. Ile ma boków?`,a:`${n}<br>${hint(`n(n − 3)/2 = ${n*(n-3)/2}, równanie kwadratowe`)}`};
+  const k=pick([3,4,5,6,8,9,10,12]);return{q:`Kąt wewnętrzny wielokąta foremnego ma miarę ${(k-2)*180/k}°. Ile boków ma ten wielokąt?`,a:`${k}<br>${hint('kąt zewnętrzny = 180° − kąt wewnętrzny = 360°/n')}`}}
+function gSimilarArea(){const a=ri(2,6),b=ri(2,9),P=ri(3,20);return rnd()<.5?{q:`Trójkąty ABC i A′B′C′ są podobne w skali ${fH(F(b,a))}. Pole trójkąta ABC jest równe ${P}. Oblicz pole trójkąta A′B′C′.`,a:`${fH(F(P*b*b,a*a))}<br>${hint('stosunek pól to kwadrat skali')}`}
+  :{q:`Pola dwóch wielokątów podobnych są równe ${a*a*P} i ${b*b*P}. Oblicz skalę podobieństwa (drugi do pierwszego) i stosunek ich obwodów.`,a:`k = ${fH(F(b,a))}, stosunek obwodów = ${fH(F(b,a))}`}}
+function gSeqMono(){const p=riNZ(-5,5),r=ri(0,5);let q;do q=ri(-9,9);while(p*r-q===0);const D=p*r-q;
+  return{q:`Zbadaj monotoniczność ciągu określonego wzorem a<sub>n</sub> = ${fr(poly([p,q],'n'),poly([1,r],'n'))} dla n ≥ 1.`,a:`ciąg jest ${D>0?'rosnący':'malejący'}<br>${hint(`a<sub>n+1</sub> − a<sub>n</sub> = ${fr(N(D),`(${poly([1,r],'n')})(${poly([1,r+1],'n')})`)} ${D>0?'> 0':'< 0'}`)}`}}
+function gExpFn(){const b=pick([2,3,F(1,2),F(1,3)]),p=ri(-3,3),q=ri(-4,4),B=toF(b),bs=B.d===1?''+B.n:`(${fH(B)})`,v0=fadd(F(B.d===1?B.n**0:1),F(0));
+  const f0=fadd(B.d===1?(p<=0?F(B.n**(-p)):F(1,B.n**p)):(p<=0?F(1,B.d**(-p)):F(B.d**p)),F(q));
+  return{q:`Funkcja f jest określona wzorem f(x) = ${bs}<sup>${sh(p)}</sup>${term(q,'')}. Podaj zbiór wartości funkcji, równanie asymptoty poziomej jej wykresu, oblicz f(0) i określ monotoniczność.`,
+  a:`ZW = (${N(q)}, +∞), asymptota y = ${N(q)}, f(0) = ${fH(f0)}, funkcja jest ${B.d===1?'rosnąca':'malejąca'}<br>${hint(`wykres y = ${bs}<sup>x</sup> przesunięty o ${N(p)} w poziomie i ${N(q)} w pionie`)}`}}
+function gAbsParam(){const k=ri(1,4),t=ri(0,2),Q=['dokładnie cztery rozwiązania','dokładnie trzy rozwiązania','dokładnie dwa rozwiązania'][t],A=[`m ∈ (0, ${k*k})`,`m = ${k*k}`,`m ∈ {0} ∪ (${k*k}, +∞)`][t];
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie |x² − ${k*k}| = m ma ${Q}.`,a:`${A}<br>${hint(`narysuj wykres y = |x² − ${k*k}| (parabola odbita w górę między ${M}${k} a ${k}, lokalne maksimum ${k*k} w x = 0) i przecinaj go prostymi y = m`)}`}}
+function gWordPerm(){const w=pick(['MATURA','KAJAK','ANANAS','PAPUGA','BANAN','LALKA','KAKAO','TATAR','POTOP','KALINA']),perm=new Set(),go=(s,r)=>{if(!r.length){perm.add(s);return}for(let i=0;i<r.length;i++)go(s+r[i],r.slice(0,i)+r.slice(i+1))};go('',w);
+  const all=[...perm],cnt={};[...w].forEach(c=>cnt[c]=(cnt[c]||0)+1),rep=Object.entries(cnt).filter(e=>e[1]>1),L=rep[0][0];
+  const m=ri(0,2);let q,k;if(m===0){q=`Ile różnych „słów” (niekoniecznie mających sens) można ułożyć, przestawiając wszystkie litery wyrazu ${w}?`;k=all.length}
+  else if(m===1){q=`Ile różnych „słów” można ułożyć z liter wyrazu ${w} (używając wszystkich liter), w których litery ${L} stoją obok siebie?`;k=all.filter(s=>new RegExp(L+'{'+cnt[L]+'}').test(s)).length}
+  else{q=`Ile różnych „słów” można ułożyć z liter wyrazu ${w} (używając wszystkich liter), które zaczynają się od litery ${w[0]}?`;k=all.filter(s=>s[0]===w[0]).length}
+  return{q,a:`${k}<br>${hint(`permutacje z powtórzeniami: ${w.length}! / (${rep.map(e=>e[1]+'!').join(' · ')})`+(m===1?`; sklej litery ${L} w jeden blok`:''))}`}}
+function gVector(){const u=[ri(-5,5),ri(-5,5)],v=[ri(-5,5),ri(-5,5)],a=riNZ(-3,3),b=riNZ(-3,3),w=[a*u[0]+b*v[0],a*u[1]+b*v[1]],dot=u[0]*v[0]+u[1]*v[1];
+  return{q:`Dane są wektory u = [${N(u[0])}, ${N(u[1])}] i v = [${N(v[0])}, ${N(v[1])}]. Wyznacz współrzędne wektora ${lead(a,'u')} ${b<0?'−':'+'} ${Math.abs(b)===1?'':Math.abs(b)}v, oblicz jego długość i sprawdź, czy wektory u i v są prostopadłe.`,
+  a:`[${N(w[0])}, ${N(w[1])}], długość = ${sq(w[0]**2+w[1]**2)}; u · v = ${N(dot)}, więc wektory ${dot===0?'są':'nie są'} prostopadłe`}}
+
 /* ---------- działy ---------- */
 const BASIC=[
  {name:'Potęgi, pierwiastki, procenty',g:[gPow,gProc,gLokata,gPensja,gCbrt,gAbsRoot]},
@@ -733,40 +818,40 @@ const BASIC=[
  {name:'Równania i nierówności',g:[gQuadIneq,gSystem,gRatEq,gLinIneqFrac,gQuadIneq2]},
  {name:'Funkcja liniowa',g:[gLine2,gPerp]},
  {name:'Funkcja kwadratowa',g:[gVertex,gQuadInt,gQuadFromAxis,gFence]},
- {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof]},
- {name:'Trygonometria',g:[gTrigB,gTrigObt]},
- {name:'Planimetria',g:[gTales,gEquil,gInscribed,gMedian,gSinSmall,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist]},
- {name:'Geometria analityczna',g:[gSeg,gIsoOx,gDiagInter]},
+ {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof,gSeqMono]},
+ {name:'Trygonometria',g:[gTrigB,gTrigObt,cRedukcja]},
+ {name:'Planimetria',g:[gTales,gEquil,gInscribed,gMedian,gSinSmall,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist,gPolygon,gSimilarArea]},
+ {name:'Geometria analityczna',g:[gSeg,gIsoOx,gDiagInter,gSymPoint,gVector]},
  {name:'Stereometria',g:[gCube,gPrism,gSimilarSolids,gPyrAngle,gCylinder,gCuboidSec]},
  {name:'Kombinatoryka i prawdopodobieństwo',g:[gDiceB,()=>gDigits(3),gChoose,gProbDigits,gBraille,gReplace]},
  {name:'Statystyka',g:[gStats,gStatTable,gStatBars]},
- {name:'Dowody',g:[staticGen(PROOF_B),gModProof,gPowProof]},
- {name:'Funkcje: wykresy i przekształcenia',g:[gGraphRead,gTransform,gQuadGraph,gPiecewise]},
+ {name:'Dowody',g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen,gProofGen]},
+ {name:'Funkcje: wykresy i przekształcenia',g:[gGraphRead,gTransform,gQuadGraph,gPiecewise,gExpFn]},
  {name:'Zadania zamknięte (ABCD, P/F)',g:[cLog,cPow,cProc,cArith,cTrig,cVertex,cParallel,cCircle,cDice,cCubeMC,cStat,cPFLinear,cPFQuad,cDelta]},
  {name:'Zadania z treścią',g:[gField,gAmphi,gBacteria,gTravel,gLokata,gFence]},
  {name:'Zadania wieloczęściowe',g:[gMultiQuad,gMultiTri]}];
 const EXT=[
  {id:'zbiory',name:'Liczby rzeczywiste i zbiory',g:[gSets]},
  {id:'log',name:'Logarytmy',g:[gLogExpr,gLogDiff,gLogEq,gLogExpr2]},
- {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq]},
+ {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq,gAbsParam]},
  {id:'lin',name:'Funkcja liniowa',g:[gLinParam,gParamLines]},
  {id:'kw',name:'Funkcja kwadratowa',g:[gViete,gParamDelta,gRootsDiff,gSumSqParam]},
  {id:'wiel',name:'Wielomiany',g:[gPolyIneq,gBezout,gRemainder,gPolyOneRoot,gDarboux]},
- {id:'dow',name:'Dowody algebraiczne',g:[staticGen(PROOF_A)]},
+ {id:'dow',name:'Dowody algebraiczne',g:[staticGen(PROOF_A),gProofGen,gModProof,gPowProof]},
  {id:'wym',name:'Funkcje wymierne',g:[gRatIneq,gLattice,gMonoProof]},
- {id:'wyk',name:'Funkcja wykładnicza',g:[gExpEq,gExpIneq]},
- {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom]},
+ {id:'wyk',name:'Funkcja wykładnicza',g:[gExpEq,gExpIneq,gExpFn]},
+ {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom,gSeqMono]},
  {id:'gran',name:'Granice',g:[gLimSeq,gLimFn,gLimSqrt,gLimRoot,gLimParam]},
  {id:'poch',name:'Pochodne i optymalizacja',g:[gDeriv,gTangent,gOptBox,gOptProd,gProfit,gMotion,gQuarticMin]},
- {id:'tryg',name:'Trygonometria',g:[gTrigEq,gTrigId,gTrigTg]},
- {id:'plan',name:'Planimetria i dowody geometryczne',g:[gCosLaw,gSinLaw,staticGen(PROOF_G),gMedian,gSinSmall]},
- {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gTangentLines,gTriArea,gParaVec]},
- {id:'dorys',name:'Geometria z dorysowaniem (tricky)',g:[staticGen(PROOF_T),gTrapPerp,gCommonTangent,gTrapRight,gEquiDist,gMedianPara]},
+ {id:'tryg',name:'Trygonometria',g:[gTrigEqGen,gTrigEqGen,gTrigEq,gTrigIneq,gTrigId,gTrigTg]},
+ {id:'plan',name:'Planimetria i dowody geometryczne',g:[gCosLaw,gSinLaw,staticGen(PROOF_G),staticGen(PROOF_G2),gMedian,gSinSmall,gPolygon,gSimilarArea]},
+ {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gTangentLines,gTriArea,gParaVec,gVector,gSymPoint]},
+ {id:'dorys',name:'Geometria z dorysowaniem (tricky)',g:[staticGen(PROOF_T),staticGen(PROOF_G2),gTrapPerp,gCommonTangent,gTrapRight,gEquiDist,gMedianPara]},
  {id:'graf',name:'Wykresy funkcji i przekształcenia',g:[gTransformR,gGraphRead,gQuadGraph,gPiecewise]},
  {id:'model',name:'Modelowanie i optymalizacja z treścią',g:[gTravel,gBoxMin,gCanMin,gBounce,gProfit,gMotion,gOptBox]},
  {id:'multi',name:'Zadania wieloetapowe',g:[gMultiPoly,gMultiTri,gMultiQuad]},
  {id:'stereo',name:'Stereometria',g:[gPyramid,gCone,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral]},
- {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths]}];
+ {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths,gWordPerm]}];
 const DEF=['zbiory','abs','lin','kw','wiel','dow'];
 globalThis.__T={BASIC,EXT,seed:f=>{rnd=f}};
 
@@ -795,11 +880,11 @@ function cMeanW(){const c=[ri(1,5),ri(1,5),ri(1,5),ri(1,5)],n=c.reduce((a,b)=>a+
   return mc(`Uczniowie otrzymali oceny: 2 – ${c[0]} osób, 3 – ${c[1]} osób, 4 – ${c[2]} osób, 5 – ${c[3]} osób. Średnia ocen jest równa`,fH(F(s,n)),[fH(F(14,4)),fH(F(s,4)),fH(F(s+n,n))])}
 /* ---------- arkusze ---------- */
 const CLOSED=[[cLog,1],[cPow,1],[cProc,1],[cRootMC,1],[cLokataMC,1],[cAbs,2],[cQuadSet,2],[cSystemMC,2],[cDomain,3],[cSlope,3],[cParallel,3],[cPerpMC,3],[cVertex,3],[cDelta,3],[cPFLinear,3],[cPFQuad,3],
- [cArith,4],[cGeomMC,4],[cSumArith,4],[cTrig,5],[cInscribedMC,6],[cTalesMC,6],[cCircle,7],[cMidMC,7],[cCubeMC,8],[cCylMC,8],[cDice,9],[cChooseMC,9],[cStat,9],[cMeanW,9]];
-const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
+ [cArith,4],[cGeomMC,4],[cSumArith,4],[cTrig,5],[cRedukcja,5],[cInscribedMC,6],[cTalesMC,6],[cCircle,7],[cMidMC,7],[cCubeMC,8],[cCylMC,8],[cDice,9],[cChooseMC,9],[cStat,9],[cMeanW,9]];
+const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
  {p:4,r:3.5,g:[gFence,gField,gTravel]},{p:2,r:4,g:[gArith,gGeom,gRecur]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight]},{p:3,r:7,g:[gIsoOx,gDiagInter]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
-const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogDiff]},{p:2,g:[gAbsR,gAbsEq]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot]},{p:3,g:[staticGen(PROOF_A)]},{p:3,g:[gTrigEq,gTrigId]},
- {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T)]},
+const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogDiff]},{p:2,g:[gAbsR,gAbsEq]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot]},{p:3,g:[staticGen(PROOF_A),gProofGen]},{p:3,g:[gTrigEqGen,gTrigEq,gTrigIneq]},
+ {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2)]},
  {p:4,g:[gTangentLines,gTriArea,gMultiTri]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
 function gen(gs){for(let k=0;k<8;k++){try{const r=pick(gs)();if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
