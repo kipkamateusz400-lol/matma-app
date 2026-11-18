@@ -12,8 +12,9 @@
    PICTURE: lista zadań na dziś na kratce, odpowiedzi chowane jak na odwrocie
    COLOUR and TYPE: biel papieru, niebieska kratka i atrament, czerwony margines jako akcent; Kalam + Source Sans 3
    LAYOUT: tytuł z postępem, sterowanie, działy, potem karty zadań w jednej kolumnie */
-:root{color-scheme:light dark;--bg:light-dark(#fbfcff,#111721);--grid:light-dark(#e1e9f5,#1a2330);--ink:light-dark(#16213a,#e5ebf5);--mut:light-dark(#596783,#97a5ba);--blue:light-dark(#1f4fd6,#86a9ff);--red:light-dark(#d42c44,#ff7184);--card:light-dark(#ffffff,#171f2b);--line:light-dark(#cdd9ea,#2a3546);--soft:light-dark(#eef3fc,#1d2736);--ok:light-dark(#1b8048,#5ed492)}
-:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+:root{color-scheme:light;--bg:#fbfcff;--grid:#e1e9f5;--ink:#16213a;--mut:#596783;--blue:#1f4fd6;--red:#d42c44;--card:#ffffff;--line:#cdd9ea;--soft:#eef3fc;--ok:#1b8048}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#111721;--grid:#1a2330;--ink:#e5ebf5;--mut:#97a5ba;--blue:#86a9ff;--red:#ff7184;--card:#171f2b;--line:#2a3546;--soft:#1d2736;--ok:#5ed492}}
+:root[data-theme=dark]{color-scheme:dark;--bg:#111721;--grid:#1a2330;--ink:#e5ebf5;--mut:#97a5ba;--blue:#86a9ff;--red:#ff7184;--card:#171f2b;--line:#2a3546;--soft:#1d2736;--ok:#5ed492}
 *{box-sizing:border-box;min-width:0}
 body{margin:0;color:var(--ink);font:17px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
 .wrap{max-width:820px;margin:0 auto;padding:clamp(20px,4vw,48px) max(4vw,14px) 64px;border-left:2px solid color-mix(in srgb,var(--red) 55%,transparent)}
@@ -33,7 +34,7 @@ h1{font:700 clamp(34px,6vw,48px)/1.05 Kalam,cursive;margin:0;color:var(--blue);t
 button{font:inherit;cursor:pointer;border-radius:10px;min-height:44px;padding:0 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
 .sq{width:44px;padding:0;font-size:20px;font-weight:700}
-.main{background:var(--blue);color:#fff;border-color:transparent;font-weight:700;margin-left:auto}
+.main{background:var(--blue);color:var(--card);border-color:transparent;font-weight:700;margin-left:auto}
 details summary{cursor:pointer;font-weight:700;min-height:32px;display:flex;align-items:center;gap:8px;list-style:none}
 details summary::before{content:"▸";color:var(--red);transition:transform .2s}
 details[open] summary::before{transform:rotate(90deg)}
@@ -54,7 +55,7 @@ details[open] summary::before{transform:rotate(90deg)}
 .task h3{font:700 22px/1.2 Kalam,cursive;margin:8px 0 2px}
 .q{line-height:2.05}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.chk[aria-pressed=true]{background:var(--ok);color:#fff;border-color:transparent}
+.chk[aria-pressed=true]{background:var(--ok);color:var(--card);border-color:transparent}
 .ans{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--soft);line-height:2.05}
 .ans b{color:var(--blue)}
 .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.86em;line-height:1.2;margin:0 .12em}
@@ -66,6 +67,11 @@ sub,sup{font-size:.72em}
 .mc{display:grid;gap:6px;margin:8px 0}.opt{text-align:left;min-height:44px;line-height:1.5;padding:6px 12px}.opt.good{background:color-mix(in srgb,var(--ok) 22%,var(--card));border-color:var(--ok)}.opt.bad{background:color-mix(in srgb,var(--red) 18%,var(--card));border-color:var(--red)}
 .pf{display:grid;grid-template-columns:1fr 48px 48px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.pf .opt{text-align:center;padding:0}.note2{font-size:14px;color:var(--mut);margin-top:6px}
 .tb{border-collapse:collapse;margin:8px 0;font-size:15px}.tb td,.tb th{border:1px solid var(--line);padding:4px 9px;text-align:center}.tb th{text-align:left;font-weight:600}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}.tabs button{min-height:40px;font-weight:600}.tabs button[aria-current=true]{background:var(--ink);color:var(--bg);border-color:transparent}.tabs .th{margin-left:auto;font-weight:400;color:var(--mut)}
+.einfo{margin:0 0 10px;color:var(--mut);font-size:15px}.einfo b{color:var(--ink)}.escore{margin:10px 0 0}.escore:empty{display:none}#examUI .main{margin-left:0}
+.opt.sel{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 15%,var(--card));font-weight:600}.pts{font:400 16px 'Source Sans 3',sans-serif;color:var(--mut)}
+.score{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:600}select{font:inherit;min-height:40px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:0 8px}button:disabled{opacity:.45;cursor:default}
+@media(max-width:600px){.tabs .th{margin-left:0}}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:16px 18px;color:var(--mut)}
 footer{margin-top:22px;color:var(--mut);font-size:14px}
 @media(max-width:600px){.wrap{border-left:0}.main{margin-left:0;width:100%}.task{padding:14px}}
@@ -79,8 +85,15 @@ footer{margin-top:22px;color:var(--mut);font-size:14px}
       <h1>Dzienna dawka matmy</h1>
       <div class="date" id="date"></div>
     </div>
-    <div class="prog" aria-live="polite"><b id="pn">0 / 0</b> <span>zrobione</span><div class="bar"><i id="pb"></i></div></div>
+    <div class="prog" aria-live="polite"><b id="pn">0 / 0</b> <span id="pl">zrobione</span><div class="bar"><i id="pb"></i></div></div>
   </header>
+  <nav class="tabs" aria-label="Tryb"><button data-mode="d">Dzienna dawka</button><button data-mode="p">Arkusz: podstawa</button><button data-mode="r">Arkusz: rozszerzenie</button><button id="theme" class="th">Motyw: automatyczny</button></nav>
+  <div id="examUI" class="panel" hidden>
+    <p id="einfo" class="einfo"></p>
+    <div class="ctrl"><button class="main" id="estart">Start (180 min)</button><button id="efinish">Zakończ i sprawdź</button><button id="enew">Nowy arkusz</button></div>
+    <p id="escore" class="escore"></p>
+  </div>
+  <div id="dailyUI">
 
   <div class="panel ctrl">
     <div class="step"><label for="nb">Podstawa</label><button class="sq" data-s="b" data-d="-1" aria-label="Mniej zadań z podstawy">−</button><output id="nb">5</output><button class="sq" data-s="b" data-d="1" aria-label="Więcej zadań z podstawy">+</button></div>
@@ -94,6 +107,7 @@ footer{margin-top:22px;color:var(--mut);font-size:14px}
     <div class="quick"><button id="all">Zaznacz wszystkie</button><button id="none">Odznacz wszystkie</button></div>
     <p class="note">Zadania z rozszerzenia są losowane tylko z zaznaczonych działów. Zadania z podstawy są losowane ze wszystkich działów.</p>
   </details>
+  </div>
 
   <div id="list"></div>
   <footer>Zestaw zmienia się codziennie o północy. Zadania i odpowiedzi są generowane automatycznie, a w dowodach zamiast odpowiedzi jest wskazówka. Zaznaczone działy i postęp zapisują się w tej przeglądarce.</footer>
@@ -758,16 +772,58 @@ globalThis.__T={BASIC,EXT,seed:f=>{rnd=f}};
 
 function make(t,lvl){for(let k=0;k<8;k++){try{const r=pick(t.g)();if(r&&r.q)return{...r,lvl,topic:t.name}}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania — wylosuj inny zestaw.',a:'',lvl,topic:t.name}}
 
+/* ---------- więcej zadań zamkniętych (do arkuszy) ---------- */
+function cAbs(){const a=riNZ(-5,5),b=ri(1,6);return mc(`Zbiorem wszystkich rozwiązań nierówności |${sh(a)}| ≤ ${b} jest przedział`,`⟨${N(a-b)}, ${N(a+b)}⟩`,[`⟨${N(-a-b)}, ${N(-a+b)}⟩`,`(${M}∞, ${N(a-b)}⟩ ∪ ⟨${N(a+b)}, +∞)`,`⟨${N(b-a)}, ${N(a+b)}⟩`,`⟨${N(a)}, ${N(a+b)}⟩`])}
+function cQuadSet(){const[r1,r2]=distinct(2,-6,6).sort((x,y)=>x-y);return mc(`Zbiorem wszystkich rozwiązań nierówności (${sh(r1)})(${sh(r2)}) < 0 jest`,`(${N(r1)}, ${N(r2)})`,[`(${N(-r2)}, ${N(-r1)})`,`(${M}∞, ${N(r1)}) ∪ (${N(r2)}, +∞)`,`⟨${N(r1)}, ${N(r2)}⟩`])}
+function cSystemMC(){const x=riNZ(-5,5),y=riNZ(-5,5);let a,b;do{a=riNZ(-3,3);b=riNZ(-3,3)}while(a===b);
+  return mc(`Rozwiązaniem układu równań x + y = ${N(x+y)} oraz ${lead(a,'x')}${term(b,'y')} = ${N(a*x+b*y)} jest para`,`x = ${N(x)}, y = ${N(y)}`,[`x = ${N(y)}, y = ${N(x)}`,`x = ${N(-x)}, y = ${N(y)}`,`x = ${N(x)}, y = ${N(-y)}`,`x = ${N(x+1)}, y = ${N(y-1)}`])}
+function cDomain(){const k=ri(1,6);return rnd()<.5?mc(`Dziedziną funkcji f(x) = ${fr(1,`x² − ${k*k}`)} jest zbiór`,`ℝ \\ {${M}${k}, ${k}}`,[`ℝ \\ {${k}}`,`ℝ \\ {${k*k}}`,`(${M}${k}, ${k})`])
+  :mc(`Dziedziną funkcji f(x) = √<span class="ov">x − ${k}</span> jest zbiór`,`⟨${k}, +∞)`,[`(${k}, +∞)`,`⟨${M}${k}, +∞)`,`(${M}∞, ${k}⟩`])}
+function cRootMC(){const m=pick([2,3,5]),a=ri(1,3),b=ri(2,4);return mc(`Liczba ∛${a**3*m} + ∛${b**3*m} jest równa`,`${a+b}∛${m}`,[`∛${(a**3+b**3)*m}`,`${a*b}∛${m}`,`${a+b}∛${2*m}`])}
+function cLokataMC(){const K=pick([1000,2000,5000]),p=pick([2,3,4,5]),n=ri(2,4),f=v=>Math.round(v).toLocaleString('pl-PL')+' zł';
+  return mc(`Kwotę ${K} zł wpłacono na lokatę oprocentowaną ${p}% w skali roku z roczną kapitalizacją odsetek. Po ${n} latach na lokacie będzie (w zaokrągleniu do 1 zł)`,f(K*(1+p/100)**n),[f(K*(1+n*p/100)),f(K*(1+p/100)**(n+1)),f(K*(1+p/100)**(n-1))])}
+function cSlope(){const a=riNZ(-4,4),b=ri(-5,5),[x1,x2]=distinct(2,-4,4);return mc(`Współczynnik kierunkowy prostej przechodzącej przez punkty (${N(x1)}, ${N(a*x1+b)}) i (${N(x2)}, ${N(a*x2+b)}) jest równy`,N(a),[N(-a),fH(F(1,a)),N(b),fH(F(-1,a))])}
+function cPerpMC(){const a=pick([2,3,4,-2,-3,-4]),b=ri(-5,5);return mc(`Prosta prostopadła do prostej y = ${poly([a,b])} ma współczynnik kierunkowy równy`,fH(F(-1,a)),[fH(F(1,a)),N(-a),N(a)])}
+function cGeomMC(){const a1=riNZ(-4,4),q=pick([2,-2,3]),n=ri(4,6);return mc(`W ciągu geometrycznym a<sub>1</sub> = ${N(a1)} i q = ${N(q)}. Wyraz a<sub>${n}</sub> jest równy`,N(a1*q**(n-1)),[N(a1*q**n),N(a1*q**(n-2)),N(a1*q*(n-1))])}
+function cSumArith(){const a1=ri(-5,8),r=riNZ(-3,4),n=ri(6,12),an=a1+(n-1)*r;return mc(`Suma ${n} początkowych wyrazów ciągu arytmetycznego, w którym a<sub>1</sub> = ${N(a1)} i r = ${N(r)}, jest równa`,N(n*(a1+an)/2),[N(n*(a1+an)),N((n-1)*(2*a1+(n-2)*r)/2),N(an)])}
+function cInscribedMC(){const al=ri(20,80);return mc(`Kąt środkowy w okręgu ma miarę ${2*al}°. Kąt wpisany oparty na tym samym łuku (o wierzchołku na dłuższym łuku) ma miarę`,`${al}°`,[`${2*al}°`,`${180-al}°`,`${90-al}°`])}
+function cTalesMC(){const a=ri(2,5),s=ri(2,4),c=ri(2,8);return mc(`Ramiona kąta o wierzchołku O przecięto prostymi równoległymi AC i BD (A, B na jednym ramieniu, C, D na drugim). |OA| = ${a}, |AB| = ${a*s}, |OC| = ${c}. Długość odcinka CD jest równa`,''+s*c,[''+c*(s+1),fH(F(c,s)),''+(c+s)])}
+function cMidMC(){const x1=ri(-6,6),y1=ri(-6,6),x2=x1+2*riNZ(-4,4),y2=y1+2*riNZ(-4,4);return mc(`Środkiem odcinka o końcach (${N(x1)}, ${N(y1)}) i (${N(x2)}, ${N(y2)}) jest punkt`,`(${N((x1+x2)/2)}, ${N((y1+y2)/2)})`,[`(${N((x2-x1)/2)}, ${N((y2-y1)/2)})`,`(${N(x1+x2)}, ${N(y1+y2)})`,`(${N((x1+x2)/2)}, ${N((y2-y1)/2)})`])}
+function cCylMC(){const r=ri(2,6),h=ri(2,9);return mc(`Objętość walca o promieniu podstawy ${r} i wysokości ${h} jest równa`,`${r*r*h}π`,[`${2*r*h}π`,`${r*h*h}π`,`${2*r*r*h}π`])}
+function cChooseMC(){const n=ri(5,12);return mc(`Z ${n} osób wybieramy dwuosobową delegację. Liczba możliwych wyborów jest równa`,''+C(n,2),[''+n*(n-1),''+n*n,''+2*n])}
+function cMeanW(){const c=[ri(1,5),ri(1,5),ri(1,5),ri(1,5)],n=c.reduce((a,b)=>a+b,0),s=c.reduce((a,v,i)=>a+v*(i+2),0);
+  return mc(`Uczniowie otrzymali oceny: 2 – ${c[0]} osób, 3 – ${c[1]} osób, 4 – ${c[2]} osób, 5 – ${c[3]} osób. Średnia ocen jest równa`,fH(F(s,n)),[fH(F(14,4)),fH(F(s,4)),fH(F(s+n,n))])}
+/* ---------- arkusze ---------- */
+const CLOSED=[[cLog,1],[cPow,1],[cProc,1],[cRootMC,1],[cLokataMC,1],[cAbs,2],[cQuadSet,2],[cSystemMC,2],[cDomain,3],[cSlope,3],[cParallel,3],[cPerpMC,3],[cVertex,3],[cDelta,3],[cPFLinear,3],[cPFQuad,3],
+ [cArith,4],[cGeomMC,4],[cSumArith,4],[cTrig,5],[cInscribedMC,6],[cTalesMC,6],[cCircle,7],[cMidMC,7],[cCubeMC,8],[cCylMC,8],[cDice,9],[cChooseMC,9],[cStat,9],[cMeanW,9]];
+const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
+ {p:4,r:3.5,g:[gFence,gField,gTravel]},{p:2,r:4,g:[gArith,gGeom,gRecur]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight]},{p:3,r:7,g:[gIsoOx,gDiagInter]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
+const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogDiff]},{p:2,g:[gAbsR,gAbsEq]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot]},{p:3,g:[staticGen(PROOF_A)]},{p:3,g:[gTrigEq,gTrigId]},
+ {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T)]},
+ {p:4,g:[gTangentLines,gTriArea,gMultiTri]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths]}];
+const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
+function gen(gs){for(let k=0;k<8;k++){try{const r=pick(gs)();if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
+function buildExam(type,seed){rnd=mulberry(seed);const out=[];
+  if(type==='p'){shuffle(CLOSED).slice(0,25).forEach(([g,r])=>out.push({...gen([g]),pts:1,closed:true,r}));OPEN_P.forEach(o=>out.push({...gen(o.g),pts:o.p,r:o.r}));out.sort((a,b)=>a.r-b.r)}
+  else OPEN_R.forEach(o=>out.push({...gen(o.g),pts:o.p}));
+  return out}
+globalThis.__T.CLOSED=CLOSED;globalThis.__T.buildExam=buildExam;
+
 /* ---------- aplikacja ---------- */
 if(typeof document!=='undefined'){
 const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const now=new Date(),day=`${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
-let done=new Set(store.get('mm_ext',DEF)),cnt=store.get('mm_cnt',{b:5,r:3}),st=store.get('mm_day',{});
+let done=new Set(store.get('mm_ext',DEF)),cnt=store.get('mm_cnt',{b:5,r:3}),st=store.get('mm_day',{}),mode=store.get('mm_mode','d');
+const EX={p:store.get('mm_exam_p',{}),r:store.get('mm_exam_r',{})};
 if(st.day!==day)st={day,roll:0,done:[]};
 let tasks=[];
-const save=()=>{store.set('mm_ext',[...done]);store.set('mm_cnt',cnt);store.set('mm_day',st)};
+const save=()=>{store.set('mm_ext',[...done]);store.set('mm_cnt',cnt);store.set('mm_day',st);store.set('mm_mode',mode);store.set('mm_exam_p',EX.p);store.set('mm_exam_r',EX.r)};
 $('#date').textContent=now.toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+/* motyw */
+const TH={auto:'automatyczny',light:'jasny',dark:'ciemny'};let theme=store.get('mm_theme','auto');
+const applyTheme=()=>{if(theme==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=theme;$('#theme').textContent='Motyw: '+TH[theme]};
+if(theme!=='auto')applyTheme();else $('#theme').textContent='Motyw: '+TH[theme];
 
 function build(){
   rnd=mulberry(hashStr([day,st.roll,cnt.b,cnt.r,[...done].sort().join('.')].join('|')));
@@ -775,8 +831,8 @@ function build(){
   for(let i=0;i<cnt.b;i++)out.push(make(bt[i%bt.length],'Podstawa'));
   if(et.length)for(let i=0;i<cnt.r;i++)out.push(make(et[i%et.length],'Rozszerzenie'));
   return out}
-function progress(){const n=tasks.length,d=st.done.filter(i=>i<n).length;$('#pn').textContent=`${d} / ${n}`;$('#pb').style.width=n?d/n*100+'%':'0'}
-function render(){
+function progress(){if(mode!=='d')return;const n=tasks.length,d=st.done.filter(i=>i<n).length;$('#pn').textContent=`${d} / ${n}`;$('#pl').textContent='zrobione';$('#pb').style.width=n?d/n*100+'%':'0'}
+function renderDaily(){
   tasks=build();$('#nb').textContent=cnt.b;$('#nr').textContent=cnt.r;
   $('#topics').innerHTML=EXT.map(t=>`<label><input type="checkbox" value="${t.id}" ${done.has(t.id)?'checked':''}>${t.name}</label>`).join('');
   $('#tc').textContent=`(${done.size} z ${EXT.length})`;
@@ -788,9 +844,41 @@ function render(){
   if(cnt.r>0&&!done.size)html+='<div class="empty">Zaznacz przerobione działy z rozszerzenia, a pojawią się tu zadania z rozszerzenia.</div>';
   if(!tasks.length&&done.size)html='<div class="empty">Ustaw liczbę zadań przyciskiem +.</div>';
   $('#list').innerHTML=html;progress()}
+/* arkusz */
+const TOTAL=180*60*1000;
+const elapsed=e=>(e.acc||0)+(e.running?Date.now()-e.t0:0);
+const fmt=ms=>{const s=Math.max(0,Math.round(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return`${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`};
+function tick(){if(mode==='d')return;const e=EX[mode],left=TOTAL-elapsed(e);$('#pn').textContent=e.done?'koniec':fmt(left);$('#pl').textContent=e.done?'':left<=0?'czas minął':e.running?'do końca':'pauza';$('#pb').style.width=Math.min(100,elapsed(e)/TOTAL*100)+'%';
+  $('#estart').textContent=e.running?'Pauza':elapsed(e)>0?'Wznów':'Start (180 min)';$('#estart').disabled=!!e.done}
+function score(){const e=EX[mode];let s=0,g=0,max=0;tasks.forEach((t,i)=>{max+=t.pts;if(e.pts[i]!==undefined&&e.pts[i]!==''){s+=+e.pts[i];g++}});
+  $('#escore').innerHTML=e.done?`<b>Wynik: ${s} / ${max} pkt (${Math.round(s/max*100)}%)</b>${g<tasks.length?` · oceń jeszcze ${tasks.length-g} ${tasks.length-g===1?'zadanie':'zadań'} otwartych, porównując rozwiązanie z odpowiedzią`:''}`:''}
+function renderExam(){const e=EX[mode];if(!e.seed){Object.assign(e,{seed:Math.floor(Math.random()*1e9),acc:0,running:false,done:false,pts:{},sel:{}});save()}
+  tasks=buildExam(mode,e.seed);const max=tasks.reduce((a,t)=>a+t.pts,0),nc=tasks.filter(t=>t.closed).length;
+  $('#einfo').innerHTML=`<b>${EXAMS[mode].name}</b> · 180 minut · ${max} punktów · ${tasks.length} zadań${nc?` (${nc} zamkniętych za 1 pkt, ${tasks.length-nc} otwartych)`:', wszystkie otwarte'}. Rozwiązuj na kartce; odpowiedzi zobaczysz po kliknięciu „Zakończ i sprawdź”.`;
+  $('#list').innerHTML=tasks.map((t,i)=>`<article class="task" data-i="${i}"><div class="meta"><span class="lvl ${mode==='p'?'b':'r'}">${t.closed?'Zamknięte':'Otwarte'}</span></div>
+    <h3>Zadanie ${i+1}. <span class="pts">(0–${t.pts})</span></h3><div class="q">${t.q}</div>
+    ${e.done?`<div class="ans">${t.a}</div><label class="score">Punkty: <select data-pts="${i}"><option value="">–</option>${Array.from({length:t.pts+1},(_,k)=>`<option ${String(e.pts[i])===String(k)?'selected':''}>${k}</option>`).join('')}</select> / ${t.pts}</label>`:''}</article>`).join('');
+  document.querySelectorAll('#list .task').forEach(a=>{const i=+a.dataset.i;a.querySelectorAll('.mc,.pf').forEach((g,gi)=>{const k=e.sel[`${i}-${gi}`];if(e.done){g.dataset.done=1;const c=g.querySelector(`[data-k="${g.dataset.ok}"]`);c.classList.add('good');if(k&&k!==g.dataset.ok)g.querySelector(`[data-k="${k}"]`).classList.add('bad')}else if(k)g.querySelector(`[data-k="${k}"]`).classList.add('sel')})});
+  $('#efinish').disabled=!!e.done;score();tick()}
+function finish(){const e=EX[mode];if(e.running){e.acc=elapsed(e);e.running=false}
+  document.querySelectorAll('#list .task').forEach(a=>{const i=+a.dataset.i;if(!tasks[i].closed)return;const gs=[...a.querySelectorAll('.mc,.pf')];e.pts[i]=gs.every((g,gi)=>e.sel[`${i}-${gi}`]===g.dataset.ok)?1:0});
+  e.done=true;save();renderExam();window.scrollTo({top:0,behavior:'smooth'})}
+function render(){document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.mode===mode));
+  $('#dailyUI').hidden=mode!=='d';$('#examUI').hidden=mode==='d';$('h1').textContent=mode==='d'?'Dzienna dawka matmy':EXAMS[mode].name.replace('Arkusz: ','Matura – ');
+  $('footer').textContent=mode==='d'?'Zestaw zmienia się codziennie o północy. Zadania i odpowiedzi są generowane automatycznie, a w dowodach zamiast odpowiedzi jest wskazówka. Zaznaczone działy i postęp zapisują się w tej przeglądarce.':'Arkusz jest generowany losowo według układu matury (formuła 2023): czas 180 minut, 50 punktów. Zadania otwarte oceniasz sam, porównując swoje rozwiązanie z odpowiedzią; za częściowo poprawne rozwiązanie przyznaj część punktów.';
+  mode==='d'?renderDaily():renderExam()}
 const reset=()=>{st.done=[];save();render()};
+let confirmNew=0;
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  if(b.classList.contains('opt')){const g=b.closest('.mc,.pf');if(!g||g.dataset.done)return;g.dataset.done=1;const ok=b.dataset.k===g.dataset.ok;b.classList.add(ok?'good':'bad');if(!ok)g.querySelector(`[data-k="${g.dataset.ok}"]`).classList.add('good');return}
+  if(b.classList.contains('opt')){const g=b.closest('.mc,.pf');if(!g||g.dataset.done)return;
+    if(mode!=='d'){const a=b.closest('.task'),i=+a.dataset.i,gi=[...a.querySelectorAll('.mc,.pf')].indexOf(g);g.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));b.classList.add('sel');EX[mode].sel[`${i}-${gi}`]=b.dataset.k;save();return}
+    g.dataset.done=1;const ok=b.dataset.k===g.dataset.ok;b.classList.add(ok?'good':'bad');if(!ok)g.querySelector(`[data-k="${g.dataset.ok}"]`).classList.add('good');return}
+  if(b.dataset.mode){mode=b.dataset.mode;save();render();return}
+  if(b.id==='theme'){theme={auto:'dark',dark:'light',light:'auto'}[theme];store.set('mm_theme',theme);applyTheme();return}
+  if(b.id==='estart'){const x=EX[mode];if(x.running){x.acc=elapsed(x);x.running=false}else{x.t0=Date.now();x.running=true}save();tick();return}
+  if(b.id==='efinish'){finish();return}
+  if(b.id==='enew'){if(!confirmNew&&EX[mode].seed&&!EX[mode].done){confirmNew=1;b.textContent='Na pewno? Kliknij jeszcze raz';setTimeout(()=>{confirmNew=0;b.textContent='Nowy arkusz'},3500);return}
+    confirmNew=0;b.textContent='Nowy arkusz';EX[mode]={};save();render();window.scrollTo({top:0});return}
   if(b.dataset.s){const k=b.dataset.s;cnt[k]=Math.max(0,Math.min(15,cnt[k]+ +b.dataset.d));reset()}
   else if(b.id==='roll'){st.roll++;reset()}
   else if(b.id==='all'){EXT.forEach(t=>done.add(t.id));reset()}
@@ -798,9 +886,12 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
   else if(b.dataset.act==='ans'){const a=b.closest('.task').querySelector('.ans'),o=a.hidden;a.hidden=!o;b.textContent=o?'Ukryj odpowiedź':'Pokaż odpowiedź';b.setAttribute('aria-expanded',o)}
   else if(b.dataset.act==='done'){const art=b.closest('.task'),i=+art.dataset.i,on=!st.done.includes(i);
     st.done=on?[...st.done,i]:st.done.filter(x=>x!==i);art.classList.toggle('is-done',on);b.setAttribute('aria-pressed',on);b.textContent=on?'✓ Zrobione':'Oznacz jako zrobione';save();progress()}});
-document.addEventListener('change',e=>{if(e.target.matches('#topics input')){e.target.checked?done.add(e.target.value):done.delete(e.target.value);reset();$('#det').open=true}});
+document.addEventListener('change',e=>{if(e.target.matches('#topics input')){e.target.checked?done.add(e.target.value):done.delete(e.target.value);reset();$('#det').open=true}
+  if(e.target.matches('select[data-pts]')){EX[mode].pts[e.target.dataset.pts]=e.target.value;save();score()}});
+setInterval(tick,1000);
 render()}
 }
+
 </script>
 </body>
 </html>
