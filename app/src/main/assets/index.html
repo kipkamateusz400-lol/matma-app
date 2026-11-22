@@ -1046,6 +1046,25 @@ const PROOF_G3=[
  ['Wykaż, że pole trójkąta o bokach a, b, c wpisanego w okrąg o promieniu R jest równe abc/(4R).','P = ½ab · sin γ oraz twierdzenie sinusów.',['P = ½ · a · b · sin γ, gdzie γ to kąt między bokami a i b (naprzeciw boku c).','Z twierdzenia sinusów: c / sin γ = 2R, więc sin γ = c/(2R).','P = ½ · a · b · c/(2R) = abc/(4R). ∎']],
  ['Wykaż, że pole trójkąta jest równe r · p, gdzie r to promień okręgu wpisanego, a p to połowa obwodu.','połącz środek okręgu wpisanego z wierzchołkami.',['Niech I będzie środkiem okręgu wpisanego. Odcinki IA, IB, IC dzielą trójkąt na trójkąty ABI, BCI, CAI.','Każdy z nich ma wysokość r (promień jest prostopadły do boku w punkcie styczności).','P = ½ar + ½br + ½cr = r · (a + b + c)/2 = r · p. ∎']]];
 
+/* ---------- moduł w module: ||x − a| − b| ---------- */
+function gAbsNested(){const m=ri(0,4);
+  if(m===4){const a=ri(1,6),t=ri(0,2),Q=['dokładnie cztery rozwiązania','dokładnie trzy rozwiązania','dokładnie dwa rozwiązania'][t],A=[`m ∈ (0, ${a})`,`m = ${a}`,`m ∈ {0} ∪ (${a}, +∞)`][t];
+    return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie ||x| − ${a}| = m ma ${Q}.`,a:`${A}${plot([{pts:[[-2*a,a],[-a,0],[0,a],[a,0],[2*a,a]]}],`Wykres y = ||x| − ${a}| („litera W”); rozwiązania to punkty przecięcia z prostą y = m.`)}`,
+    s:[`Rysujemy wykres krok po kroku: y = |x| (litera V), potem y = |x| − ${a} (przesunięcie o ${a} w dół), na końcu y = ||x| − ${a}| (część pod osią Ox odbijamy do góry).`,`Powstaje „litera W”: minima w x = ±${a} (wartość 0) i lokalne maksimum w x = 0 (wartość ${a}).`,`Liczba rozwiązań to liczba punktów wspólnych wykresu z prostą poziomą y = m: dla m < 0 brak, dla m = 0 dwa, dla 0 < m < ${a} cztery, dla m = ${a} trzy, dla m > ${a} dwa.`,`Odpowiedź: ${A}.`]}}
+  const a=ri(-5,5),b=ri(2,7),c=ri(1,b+2),rel=m<2?'=':pick(RELS),ex=`||${sh(a)}| − ${b}|`,X=`|${sh(a)}|`;
+  if(rel==='='){const ds=[b+c];if(b-c>=0)ds.push(b-c);const sol=[...new Set(ds.flatMap(d=>[a-d,a+d]))].sort((x,y)=>x-y);
+    return{q:`Rozwiąż równanie ${ex} = ${c}.`,a:`x ∈ {${sol.map(N).join(', ')}}`,
+    s:[`Zewnętrzny moduł: |u| = ${c} ⇔ u = ${c} lub u = −${c}, gdzie u = ${X} − ${b}.`,`${X} − ${b} = ${c} ⇒ ${X} = ${b+c} ⇒ x = ${a?N(a)+' ± ':'±'}${b+c}, czyli x = ${N(a-b-c)} lub x = ${N(a+b+c)}.`,
+      b-c>0?`${X} − ${b} = −${c} ⇒ ${X} = ${b-c} ⇒ x = ${N(a-b+c)} lub x = ${N(a+b-c)}.`:b-c===0?`${X} − ${b} = −${c} ⇒ ${X} = 0 ⇒ x = ${N(a)}.`:`${X} − ${b} = −${c} ⇒ ${X} = ${N(b-c)} < 0 — sprzeczność, moduł nie może być ujemny.`,`Odpowiedź: x ∈ {${sol.map(N).join(', ')}}.`]}}
+  const cmp={'<':v=>v<c-1e-9,'<=':v=>v<=c+1e-9,'>':v=>v>c+1e-9,'>=':v=>v>=c-1e-9}[rel],pts=[a-b-c,a+b+c,a];if(b-c>=0)pts.push(a-b+c,a+b-c);
+  const res=setStr(x=>cmp(Math.abs(Math.abs(x-a)-b)),pts),lt=rel[0]==='<',op={'<':'>','<=':'>=','>':'<','>=':'<='}[rel];
+  return{q:`Rozwiąż nierówność ${ex} ${REL[rel]} ${c}.`,a:`x ∈ ${res}`,
+  s:[lt?`|u| ${REL[rel]} ${c} ⇔ −${c} ${REL[rel]} u ${REL[rel]} ${c}, gdzie u = ${X} − ${b}. Dodajemy ${b}: ${N(b-c)} ${REL[rel]} ${X} ${REL[rel]} ${b+c}.`:`|u| ${REL[rel]} ${c} ⇔ u ${REL[rel]} ${c} lub u ${REL[op]} −${c}, gdzie u = ${X} − ${b}. Dodajemy ${b}: ${X} ${REL[rel]} ${b+c} lub ${X} ${REL[op]} ${N(b-c)}.`,
+    `${X} ${lt?REL[rel]:REL[rel]} ${b+c} ⇔ ${lt?`${N(a-b-c)} ${REL[rel]} x ${REL[rel]} ${N(a+b+c)}`:`x ${REL[op]} ${N(a-b-c)} lub x ${REL[rel]} ${N(a+b+c)}`}.`,
+    b-c<0||(b-c===0&&(rel==='<='||rel==='>'))?(lt?`${N(b-c)} ${REL[rel]} ${X} jest prawdziwe dla każdego x${b-c===0?' (moduł jest nieujemny)':' (moduł jest nieujemny, a liczba po lewej ujemna)'}.`:`${X} ${REL[op]} ${N(b-c)} nie ma rozwiązań${b-c===0?' (moduł nie jest ujemny)':' (moduł nie może być ujemny)'}.`)
+      :lt?`${N(b-c)} ${REL[rel]} ${X} ⇔ x ${REL[op]} ${N(a-b+c)} lub x ${REL[rel]} ${N(a+b-c)}.`:`${X} ${REL[op]} ${N(b-c)} ⇔ ${N(a-b+c)} ${REL[op]} x ${REL[op]} ${N(a+b-c)}.`,
+    `${lt?'Bierzemy część wspólną':'Bierzemy sumę'} rozwiązań (najlepiej na osi liczbowej): x ∈ ${res}.`]}}
+
 /* ---------- działy ---------- */
 const BASIC=[
  {name:'Potęgi, pierwiastki, procenty',g:[gPow,gProc,gLokata,gPensja,gCbrt,gAbsRoot,gSciNot]},
@@ -1071,7 +1090,7 @@ const BASIC=[
 const EXT=[
  {id:'zbiory',name:'Liczby rzeczywiste i zbiory',g:[gSets,gSetsR,gSetsR]},
  {id:'log',name:'Logarytmy',g:[gLogExpr,gLogExpr,gLogEq,gLogEq,gLogExpr2]},
- {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq,gAbsParam,gAbsQuad,gAbsQuad]},
+ {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq,gAbsParam,gAbsQuad,gAbsQuad,gAbsNested,gAbsNested,gAbsNested]},
  {id:'lin',name:'Funkcja liniowa',g:[gLinParam2,gLinParam2,gParamLines,gLinParam]},
  {id:'kw',name:'Funkcja kwadratowa',g:[gViete,gParamDelta,gParamDelta,gRootsDiff,gSumSqParam]},
  {id:'wiel',name:'Wielomiany',g:[gPolyIneq,gBezout,gRemainder2,gPolyOneRoot,gDarboux]},
@@ -1128,7 +1147,7 @@ const CLOSED=[[cLog,1],[cPow,1],[cProc,1],[cRootMC,1],[cLokataMC,1],[cAbs,2],[cQ
  [cArith,4],[cGeomMC,4],[cSumArith,4],[cTrig,5],[cRedukcja,5],[cInscribedMC,6],[cTalesMC,6],[cCircle,7],[cMidMC,7],[cCubeMC,8],[cCylMC,8],[cDice,9],[cChooseMC,9],[cStat,9],[cMeanW,9]];
 const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
  {p:4,r:3.5,g:[gFence,gField,gTravel]},{p:2,r:4,g:[gArith,gGeom,gRecur]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight]},{p:3,r:7,g:[gIsoOx,gDiagInter]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
-const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogDiff]},{p:2,g:[gAbsR,gAbsEq]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot]},{p:3,g:[staticGen(PROOF_A),gProofGen]},{p:3,g:[gTrigEqGen,gTrigEq,gTrigIneq]},
+const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogDiff]},{p:2,g:[gAbsR,gAbsEq,gAbsNested,gAbsQuad]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot]},{p:3,g:[staticGen(PROOF_A),gProofGen]},{p:3,g:[gTrigEqGen,gTrigEq,gTrigIneq]},
  {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2)]},
  {p:4,g:[gTangentLines,gTriArea,gMultiTri]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
