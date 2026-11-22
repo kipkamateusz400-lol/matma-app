@@ -16,7 +16,7 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#111721;--grid:#1a2330;--ink:#e5ebf5;--mut:#97a5ba;--blue:#86a9ff;--red:#ff7184;--card:#171f2b;--line:#2a3546;--soft:#1d2736;--ok:#5ed492}}
 :root[data-theme=dark]{color-scheme:dark;--bg:#111721;--grid:#1a2330;--ink:#e5ebf5;--mut:#97a5ba;--blue:#86a9ff;--red:#ff7184;--card:#171f2b;--line:#2a3546;--soft:#1d2736;--ok:#5ed492}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;color:var(--ink);font:17px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+body{margin:0;color:var(--ink);font:17px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip;background-color:var(--bg)}
 .wrap{max-width:820px;margin:0 auto;padding:clamp(20px,4vw,48px) max(4vw,14px) 64px;border-left:2px solid color-mix(in srgb,var(--red) 55%,transparent)}
 header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
 h1{font:700 clamp(34px,6vw,48px)/1.05 Kalam,cursive;margin:0;color:var(--blue);text-wrap:balance}
@@ -166,6 +166,9 @@ const distinct=(k,a,b)=>{let r;do{r=Array.from({length:k},()=>ri(a,b))}while(new
 const hint=t=>'<b>Wskazówka:</b> '+t;
 /* ---------- rozwiązania krok po kroku (bez wywołań rnd, żeby nie zmieniać losowania) ---------- */
 const pN=n=>n<0?`(${N(n)})`:N(n);
+/* trójki pitagorejskie pierwotne (wzór Euklidesa), żeby zadania z trójkątami miały więcej wariantów */
+const TRIPLES=(()=>{const o=[];for(let m=2;m<10;m++)for(let n=1;n<m;n++)if((m-n)%2&&gcd(m,n)===1){const a=m*m-n*n,b=2*m*n,c=m*m+n*n;if(c<=85)o.push([Math.min(a,b),Math.max(a,b),c])}return o.sort((x,y)=>x[2]-y[2])})();
+const pickTriple=(maxC=85)=>pick(TRIPLES.filter(t=>t[2]<=maxC)).slice();
 const pF=f=>{f=toF(f);return f.n<0?`(${fH(f)})`:fH(f)};
 function deltaSteps(a,b,c){const D=b*b-4*a*c,out=[`Δ = b² − 4ac = ${pN(b)}² − 4 · ${pN(a)} · ${pN(c)} = ${N(D)}`];
   if(D<0)out.push('Δ < 0, więc trójmian nie ma miejsc zerowych.');
@@ -219,15 +222,22 @@ function gArith(){const a1=ri(-10,10),r=riNZ(-5,5),i=ri(2,4),j=ri(i+2,9),ai=a1+(
 function gGeom(){const a1=riNZ(-5,5),k=pick([2,-2,3,-3]);
   return{q:`Ciąg geometryczny (a<sub>n</sub>) spełnia warunki: a<sub>2</sub> = ${N(a1*k)} oraz a<sub>5</sub> = ${N(a1*k**4)}. Wyznacz iloraz, pierwszy wyraz oraz sumę pięciu początkowych wyrazów.`,a:`q = ${N(k)}, a<sub>1</sub> = ${N(a1)}, S<sub>5</sub> = ${N(a1*(k**5-1)/(k-1))}`,
   s:[`a<sub>5</sub> = a<sub>2</sub> · q³, więc q³ = ${fr(N(a1*k**4),N(a1*k))} = ${N(k**3)} i q = ${N(k)}.`,`a<sub>1</sub> = ${fr('a<sub>2</sub>','q')} = ${fr(N(a1*k),N(k))} = ${N(a1)}.`,`S<sub>5</sub> = a<sub>1</sub> · ${fr('1 − q<sup>5</sup>','1 − q')} = ${N(a1)} · ${fr(`1 − ${pN(k**5)}`,`1 − ${pN(k)}`)} = ${N(a1*(k**5-1)/(k-1))}.`]}}
-function gTrigB(){let[a,b,c]=pick([[3,4,5],[5,12,13],[8,15,17],[7,24,25]]);if(rnd()<.5)[a,b]=[b,a];const s=rnd()<.5,g=s?'sin':'cos',o=s?'cos':'sin';
+function gTrigB(){let[a,b,c]=pickTriple();if(rnd()<.5)[a,b]=[b,a];const s=rnd()<.5,g=s?'sin':'cos',o=s?'cos':'sin';
   return{q:`Kąt α jest ostry i ${g} α = ${fH(F(a,c))}. Oblicz ${o} α oraz tg α.`,a:s?`cos α = ${fH(F(b,c))}, tg α = ${fH(F(a,b))}`:`sin α = ${fH(F(b,c))}, tg α = ${fH(F(b,a))}`,
   s:[`Z jedynki trygonometrycznej: ${o}²α = 1 − ${g}²α = 1 − ${fr(a*a,c*c)} = ${fr(b*b,c*c)}.`,`Kąt jest ostry, więc ${o} α > 0: ${o} α = ${fH(F(b,c))}.`,`tg α = ${fr('sin α','cos α')} = ${s?fH(F(a,b)):fH(F(b,a))}.`,`Można też narysować trójkąt prostokątny o bokach ${a}, ${b}, ${c} (${a}² + ${b}² = ${c}²).`]}}
 function gTales(){const a=ri(2,6),s=ri(2,4),b=a*s,c=ri(2,9);
   return{q:`Ramiona kąta o wierzchołku O przecięto dwiema prostymi równoległymi. Pierwsza prosta przecina ramiona w punktach A i C, druga w punktach B i D (punkty A, B leżą na jednym ramieniu, a C, D na drugim). Wiadomo, że |OA| = ${a}, |AB| = ${b}, |OC| = ${c}. Oblicz |CD| oraz |OD|.`,a:`|CD| = ${s*c}, |OD| = ${c+s*c} (z twierdzenia Talesa: ${fr('|OA|','|AB|')} = ${fr('|OC|','|CD|')})`,
   s:[`Z twierdzenia Talesa odcinki na jednym ramieniu są proporcjonalne do odpowiednich odcinków na drugim: ${fr('|OA|','|AB|')} = ${fr('|OC|','|CD|')}.`,`${fr(a,b)} = ${fr(c,'|CD|')}, więc |CD| = ${fr(`${c} · ${b}`,a)} = ${s*c}.`,`|OD| = |OC| + |CD| = ${c} + ${s*c} = ${c+s*c}.`]}}
-function gEquil(){const k=ri(1,5),a=6*k;
-  return{q:`Trójkąt równoboczny ma bok długości ${a}. Oblicz jego wysokość, pole oraz promienie okręgów wpisanego i opisanego.`,a:`h = ${fsq(3*k,3)}, P = ${fsq(9*k*k,3)}, r = ${fsq(k,3)}, R = ${fsq(2*k,3)}`,
-  s:[`h = ${fr('a√3',2)} = ${fr(`${a}√3`,2)} = ${fsq(3*k,3)}.`,`P = ${fr('a²√3',4)} = ${fr(`${a*a}√3`,4)} = ${fsq(9*k*k,3)}.`,`Środek okręgu wpisanego i opisanego dzieli wysokość w stosunku 2 : 1, więc r = ${fr('h',3)} = ${fsq(k,3)}, R = ${fr('2h',3)} = ${fsq(2*k,3)}.`]}}
+function gEquil(){const m=ri(0,2);
+  if(m===0){const a=ri(2,24);
+    return{q:`Trójkąt równoboczny ma bok długości ${a}. Oblicz jego wysokość, pole oraz promienie okręgów wpisanego i opisanego.`,a:`h = ${fsq(F(a,2),3)}, P = ${fsq(F(a*a,4),3)}, r = ${fsq(F(a,6),3)}, R = ${fsq(F(a,3),3)}`,
+    s:[`h = ${fr('a√3',2)} = ${fr(`${a}√3`,2)} = ${fsq(F(a,2),3)}.`,`P = ${fr('a²√3',4)} = ${fr(`${a*a}√3`,4)} = ${fsq(F(a*a,4),3)}.`,`Środek okręgu wpisanego i opisanego dzieli wysokość w stosunku 2 : 1, więc r = ${fr('h',3)} = ${fsq(F(a,6),3)}, R = ${fr('2h',3)} = ${fsq(F(a,3),3)}.`]}}
+  if(m===1){const k=ri(1,12),a=2*k;
+    return{q:`Wysokość trójkąta równobocznego ma długość ${fsq(k,3)}. Oblicz długość boku, pole trójkąta oraz promień okręgu opisanego na nim.`,a:`a = ${a}, P = ${fsq(k*k,3)}, R = ${fsq(F(a,3),3)}`,
+    s:[`h = ${fr('a√3',2)}, więc a = ${fr('2h','√3')} = ${fr(`2 · ${fsq(k,3)}`,'√3')} = ${a}.`,`P = ${fr('a²√3',4)} = ${fr(`${a*a}√3`,4)} = ${fsq(k*k,3)} (albo P = ½ · a · h).`,`R = ${fr('2h',3)} = ${fsq(F(a,3),3)}.`]}}
+  const a=ri(2,16);
+  return{q:`Pole trójkąta równobocznego jest równe ${fsq(F(a*a,4),3)}. Oblicz długość boku i promień okręgu wpisanego w ten trójkąt.`,a:`a = ${a}, r = ${fsq(F(a,6),3)}`,
+  s:[`P = ${fr('a²√3',4)}, więc ${fr('a²√3',4)} = ${fsq(F(a*a,4),3)}.`,`Dzielimy obie strony przez ${fr('√3',4)}: a² = ${a*a}, a = ${a}.`,`r = ${fr('h',3)} = ${fr('a√3',6)} = ${fsq(F(a,6),3)}.`]}}
 function gInscribed(){const al=ri(20,85),m=ri(0,2);
   if(m===0)return{q:`Kąt środkowy AOB ma miarę ${2*al}°. Punkt C leży na dłuższym łuku AB. Oblicz miarę kąta wpisanego ACB.`,a:`${al}° (kąt wpisany to połowa kąta środkowego opartego na tym samym łuku)`};
   if(m===1)return{q:`Kąt środkowy AOB ma miarę ${2*al}°. Punkt C leży na krótszym łuku AB. Oblicz miarę kąta wpisanego ACB.`,a:`${180-al}° (C leży na krótszym łuku, więc kąt jest oparty na dłuższym łuku: (360° − ${2*al}°) : 2)`};
@@ -235,7 +245,13 @@ function gInscribed(){const al=ri(20,85),m=ri(0,2);
 function gSeg(){const x1=ri(-6,6),y1=ri(-6,6),t=pick([[3,4,5],[4,3,5],[6,8,10],[8,6,10],[5,12,13],[12,5,13]]),dx=t[0]*sg(),dy=t[1]*sg();
   return{q:`Dane są punkty A = (${N(x1)}, ${N(y1)}) i B = (${N(x1+dx)}, ${N(y1+dy)}). Oblicz długość odcinka AB i wyznacz współrzędne jego środka.`,a:`|AB| = ${t[2]}, S = (${fH(F(2*x1+dx,2))}, ${fH(F(2*y1+dy,2))})`,
   s:[`|AB| = √((x<sub>B</sub> − x<sub>A</sub>)² + (y<sub>B</sub> − y<sub>A</sub>)²) = √(${pN(dx)}² + ${pN(dy)}²) = √${dx*dx+dy*dy} = ${t[2]}.`,`Środek: S = (${fr('x<sub>A</sub> + x<sub>B</sub>',2)}, ${fr('y<sub>A</sub> + y<sub>B</sub>',2)}) = (${fr(N(2*x1+dx),2)}, ${fr(N(2*y1+dy),2)}) = (${fH(F(2*x1+dx,2))}, ${fH(F(2*y1+dy,2))}).`]}}
-function gCube(){const a=ri(2,9);
+function gCube(){const a=ri(2,15),m=ri(0,3);
+  if(m===1)return{q:`Przekątna sześcianu ma długość ${fsq(a,3)}. Oblicz pole powierzchni całkowitej i objętość tego sześcianu.`,a:`a = ${a}, P<sub>c</sub> = ${6*a*a}, V = ${a**3}`,
+    s:[`Przekątna sześcianu o krawędzi a ma długość a√3.`,`a√3 = ${fsq(a,3)}, więc a = ${a}.`,`P<sub>c</sub> = 6a² = ${6*a*a}, V = a³ = ${a**3}.`]};
+  if(m===2)return{q:`Pole powierzchni całkowitej sześcianu jest równe ${6*a*a}. Oblicz objętość sześcianu i długość jego przekątnej.`,a:`a = ${a}, V = ${a**3}, d = ${fsq(a,3)}`,
+    s:[`P<sub>c</sub> = 6a², więc 6a² = ${6*a*a}, a² = ${a*a}, a = ${a}.`,`V = a³ = ${a**3}.`,`d = a√3 = ${fsq(a,3)}.`]};
+  if(m===3)return{q:`Przekątna ściany sześcianu ma długość ${fsq(a,2)}. Oblicz objętość sześcianu oraz długość jego przekątnej.`,a:`a = ${a}, V = ${a**3}, d = ${fsq(a,3)}`,
+    s:[`Ściana to kwadrat, jego przekątna ma długość a√2.`,`a√2 = ${fsq(a,2)}, więc a = ${a}.`,`V = ${a**3}, d = a√3 = ${fsq(a,3)}.`]};
   return{q:`Sześcian ma krawędź długości ${a}. Oblicz długość przekątnej sześcianu, długość przekątnej ściany, pole powierzchni całkowitej i objętość.`,a:`d = ${fsq(a,3)}, przekątna ściany = ${fsq(a,2)}, P<sub>c</sub> = ${6*a*a}, V = ${a**3}`,
   s:[`Przekątna ściany (kwadratu): z twierdzenia Pitagorasa √(${a}² + ${a}²) = ${fsq(a,2)}.`,`Przekątna sześcianu: trójkąt prostokątny z krawędzią i przekątną ściany, d = √(${a}² + (${fsq(a,2)})²) = √${3*a*a} = ${fsq(a,3)}.`,`P<sub>c</sub> = 6a² = 6 · ${a*a} = ${6*a*a}, V = a³ = ${a**3}.`]}}
 function gPrism(){const a=ri(2,8),h=ri(2,10);
@@ -276,8 +292,10 @@ const PROOF_B=[
 const staticGen=L=>()=>{const[q,a,f]=pick(L);return{q,a:hint(a)+(f?f():'')}};
 
 /* ---------- ROZSZERZENIE ---------- */
-function gLogExpr(){const m=ri(1,3),n=ri(1,3);
-  return{q:`Wiadomo, że log<sub>2</sub>3 = c. Wyraź log<sub>6</sub>${2**m*3**n} za pomocą c.`,a:`${fr(`${m} + ${n===1?'':n}c`,'1 + c')}<br>${hint(`zamień podstawę na 2: log<sub>6</sub>${2**m*3**n} = ${fr(`log<sub>2</sub>${2**m*3**n}`,'log<sub>2</sub>6')}, a ${2**m*3**n} = 2${m>1?SUP[m]:''} · 3${n>1?SUP[n]:''}`)}`}}
+function gLogExpr(){const[p,q]=pick([[2,3],[2,5],[3,5],[2,7],[3,2],[5,2],[3,7]]),[i,j]=pick([[1,1],[1,1],[2,1],[1,2]]);let m,n;do{m=ri(0,3);n=ri(0,3)}while(!m&&!n||m*j===n*i);
+  const lin=(u,w)=>[u?''+u:'',w?(w===1?'c':w+'c'):''].filter(Boolean).join(' + ')||'0',pw=(b,e)=>e?b+(e>1?SUP[e]:''):'',num=p**m*q**n,base=p**i*q**j,fac=(x,y)=>[pw(p,x),pw(q,y)].filter(Boolean).join(' · ');
+  return{q:`Wiadomo, że log<sub>${p}</sub>${q} = c. Wyraź log<sub>${base}</sub>${num} za pomocą c.`,a:fr(lin(m,n),lin(i,j)),
+  s:[`Zamieniamy podstawę na ${p}: log<sub>${base}</sub>${num} = ${fr(`log<sub>${p}</sub>${num}`,`log<sub>${p}</sub>${base}`)}.`,`${num} = ${fac(m,n)}, więc log<sub>${p}</sub>${num} = ${[m?`${m === 1 ? '' : m}log<sub>${p}</sub>${p}`:'',n?`${n===1?'':n}log<sub>${p}</sub>${q}`:''].filter(Boolean).join(' + ')} = ${lin(m,n)}.`,`${base} = ${fac(i,j)}, więc log<sub>${p}</sub>${base} = ${lin(i,j)}.`,`Wynik: ${fr(lin(m,n),lin(i,j))}.`]}}
 function gAbsR(){const[a,b]=distinct(2,-6,6).sort((x,y)=>x-y),c=b-a+2*ri(1,4),L=(a+b-c)/2,R=(a+b+c)/2,rel=pick([...RELS,'=']);
   const eq=rel==='=',ans=eq?`x = ${N(L)} lub x = ${N(R)}`:signSolve([{v:L},{v:R}],1,rel),mid=c-(b-a);
   return{q:`Rozwiąż ${eq?'równanie':'nierówność'} |${sh(a)}| + |${sh(b)}| ${eq?'=':REL[rel]} ${c}`,a:ans,
@@ -292,10 +310,18 @@ function gViete(){let p,q;do{p=riNZ(-7,7);q=riNZ(-6,6)}while(p*p-4*q<=0);
   return{q:`Równanie ${poly([1,p,q])} = 0 ma dwa pierwiastki x<sub>1</sub>, x<sub>2</sub>. Nie wyznaczając ich, oblicz x<sub>1</sub>² + x<sub>2</sub>² oraz ${fr(1,'x<sub>1</sub>')} + ${fr(1,'x<sub>2</sub>')}.`,
   a:`x<sub>1</sub>² + x<sub>2</sub>² = (x<sub>1</sub> + x<sub>2</sub>)² − 2x<sub>1</sub>x<sub>2</sub> = ${N(p*p-2*q)}; ${fr(1,'x<sub>1</sub>')} + ${fr(1,'x<sub>2</sub>')} = ${fr('x<sub>1</sub> + x<sub>2</sub>','x<sub>1</sub>x<sub>2</sub>')} = ${fH(F(-p,q))}`,
   s:[`Sprawdzamy, że pierwiastki istnieją: Δ = ${pN(p)}² − 4 · ${pN(q)} = ${p*p-4*q} > 0.`,`Wzory Viète'a: x<sub>1</sub> + x<sub>2</sub> = ${fr('−b','a')} = ${N(-p)}, x<sub>1</sub>x<sub>2</sub> = ${fr('c','a')} = ${N(q)}.`,`x<sub>1</sub>² + x<sub>2</sub>² = (x<sub>1</sub> + x<sub>2</sub>)² − 2x<sub>1</sub>x<sub>2</sub> = ${pN(-p)}² − 2 · ${pN(q)} = ${N(p*p-2*q)}.`,`${fr(1,'x<sub>1</sub>')} + ${fr(1,'x<sub>2</sub>')} = ${fr('x<sub>1</sub> + x<sub>2</sub>','x<sub>1</sub>x<sub>2</sub>')} = ${fr(N(-p),N(q))} = ${fH(F(-p,q))}.`]}}
-function gParamDelta(){const r=ri(2,5),k=r*r-r,base=[`Równanie kwadratowe ma dwa różne rozwiązania, gdy Δ > 0: Δ = (2m)² − 4(m + ${k}) = 4m² − 4m − ${4*k}.`,`4m² − 4m − ${4*k} > 0 ⇔ m² − m − ${k} > 0. Pierwiastki: m = ${N(1-r)} i m = ${r} (bo ${N(1-r)} · ${r} = ${N(-k)}, a suma = 1).`,`Ramiona w górę, więc Δ > 0 dla m ∈ (${M}∞, ${N(1-r)}) ∪ (${r}, +∞).`];
-  if(rnd()<.5)return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie x² + 2mx + m + ${k} = 0 ma dwa różne rozwiązania rzeczywiste.`,a:`m ∈ (${M}∞, ${N(1-r)}) ∪ (${r}, +∞)<br>${hint(`Δ = 4m² − 4m − ${4*k} > 0`)}`,s:base};
-  return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie x² + 2mx + m + ${k} = 0 ma dwa różne rozwiązania dodatnie.`,a:`m ∈ (${N(-k)}, ${N(1-r)})<br>${hint('warunki: Δ > 0, x<sub>1</sub> + x<sub>2</sub> = −2m > 0, x<sub>1</sub>x<sub>2</sub> = m + '+k+' > 0')}`,
-  s:[`Dwa różne pierwiastki dodatnie ⇔ Δ > 0 oraz x<sub>1</sub> + x<sub>2</sub> > 0 oraz x<sub>1</sub>x<sub>2</sub> > 0.`,...base,`Ze wzorów Viète'a: x<sub>1</sub> + x<sub>2</sub> = −2m > 0 ⇔ m < 0.`,`x<sub>1</sub>x<sub>2</sub> = m + ${k} > 0 ⇔ m > ${N(-k)}.`,`Część wspólna trzech warunków: m ∈ (${N(-k)}, ${N(1-r)}).`]}}
+function gParamDelta(){for(let tries=0;;tries++){const[u,v]=distinct(2,-6,6).sort((x,y)=>x-y),s=u+v,k=-u*v,ty=ri(0,3);
+  if(!s&&ty>0&&tries<40)continue;
+  const m0=s?-k/s:null,lab=x=>m0!==null&&Math.abs(x-m0)<1e-9?fH(F(-k,s)):N(x),pts=[u,v,0,...(m0!==null?[m0]:[])],ss=f=>setStr(f,pts,lab);
+  const D=m=>(m-u)*(m-v)>1e-9,P=m=>s*m+k>1e-9,Pn=m=>s*m+k<-1e-9;
+  const conds=[[D],[D,m=>m<0,P],[D,m=>m>0,P],[Pn]][ty],res=ss(m=>conds.every(c=>c(m)));
+  if(ty>0&&res==='∅'&&tries<40)continue;
+  const Q=['dwa różne rozwiązania rzeczywiste','dwa różne rozwiązania dodatnie','dwa różne rozwiązania ujemne','dwa rozwiązania różnych znaków'][ty],prod=poly([s,k],'m');
+  const dSteps=[`Δ = (2m)² − 4(${prod}) = 4m²${term(-4*s,'m')}${term(-4*k,'')} = 4(${sh(u,'m')})(${sh(v,'m')}).`,`Δ > 0 ⇔ (${sh(u,'m')})(${sh(v,'m')}) > 0 ⇔ m ∈ ${ss(D)} (parabola z ramionami w górę, pierwiastki ${N(u)} i ${N(v)}).`];
+  const st=ty===0?dSteps:ty===3?[`Pierwiastki są różnych znaków ⇔ x<sub>1</sub>x<sub>2</sub> < 0 (wtedy Δ > 0 automatycznie, bo ac < 0).`,`Ze wzorów Viète'a: x<sub>1</sub>x<sub>2</sub> = ${prod} < 0 ⇔ m ∈ ${ss(Pn)}.`]
+    :[`Warunki: Δ > 0, x<sub>1</sub> + x<sub>2</sub> ${ty===1?'>':'<'} 0, x<sub>1</sub>x<sub>2</sub> > 0.`,...dSteps,`x<sub>1</sub> + x<sub>2</sub> = −2m ${ty===1?'> 0 ⇔ m < 0':'< 0 ⇔ m > 0'}.`,`x<sub>1</sub>x<sub>2</sub> = ${prod} > 0 ⇔ m ∈ ${ss(P)}.`];
+  st.push(`Odpowiedź (część wspólna warunków): m ∈ ${res}${res==='∅'?' — takie m nie istnieje':''}.`);
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie x² + 2mx${term(s,'m')}${term(k,'')} = 0 ma ${Q}.`,a:`m ∈ ${res}<br>${hint(ty===3?'x₁x₂ < 0':ty===0?'Δ > 0':'Δ > 0 i wzory Viète\'a')}`,s:st}}}
 function gPolyIneq(){const nr=pick([3,3,4]),rs=distinct(nr,nr===4?-3:-4,nr===4?3:4),l=pick([1,-1]),rel=pick(RELS),cs=expand(rs,l),so=rs.slice().sort((a,b)=>a-b),r0=rs[0];
   return{q:`Rozwiąż nierówność ${poly(cs)} ${REL[rel]} 0`,a:signSolve(rs.map(v=>({v})),l,rel)+`<br>${hint('pierwiastki: '+so.map(N).join(', ')+'; szukaj ich wśród dzielników wyrazu wolnego')}`,
   s:[`Pierwiastków całkowitych szukamy wśród dzielników wyrazu wolnego ${N(cs[cs.length-1])}.`,`Sprawdzamy: W(${N(r0)}) = 0, więc W(x) dzieli się przez (${sh(r0)}) (twierdzenie Bézouta). Dzielimy (np. schematem Hornera) i rozkładamy dalej.`,`W(x) = ${l<0?M:''}${so.map(v=>`(${sh(v)})`).join('')}.`,snake(l,rel),`Odpowiedź: ${signSolve(rs.map(v=>({v})),l,rel)}`]}}
@@ -333,7 +359,7 @@ function gLimFn(){const r=ri(-4,4);if(rnd()<.6){let s;do s=ri(-5,5);while(s===r)
   s:[`Podstawienie x = ${N(r)} daje symbol ${fr(0,0)}, więc trzeba przekształcić wyrażenie.`,`${N(r)} jest pierwiastkiem licznika, więc licznik dzieli się przez (${sh(r)}): ${poly(expand([r,s]))} = (${sh(r)})(${sh(s)}).`,`Skracamy (dla x ≠ ${N(r)}): ${fr(`(${sh(r)})(${sh(s)})`,sh(r))} = ${sh(s)}.`,`lim<sub>x→${N(r)}</sub> (${sh(s)}) = ${N(r)} − ${pN(s)} = ${N(r-s)}.`]}}
   const r2=r||2;return{q:`Oblicz granicę: lim<sub>x→${N(r2)}</sub> ${fr(poly([1,0,0,-(r2**3)]),sh(r2))}`,a:`${3*r2*r2}<br>${hint('wzór a³ − b³ = (a − b)(a² + ab + b²)')}`,
   s:[`Podstawienie daje ${fr(0,0)}. Licznik to x³ − ${pN(r2)}³, więc korzystamy ze wzoru a³ − b³ = (a − b)(a² + ab + b²).`,`x³ − ${pN(r2)}³ = (${sh(r2)})(${poly([1,r2,r2*r2])}).`,`Po skróceniu: lim<sub>x→${N(r2)}</sub> (${poly([1,r2,r2*r2])}) = ${r2*r2} + ${pN(r2*r2)} + ${r2*r2} = ${3*r2*r2}.`]}}
-function gLimSqrt(){const k=riNZ(-8,8);
+function gLimSqrt(){const k=riNZ(-16,16);
   return{q:`Oblicz granicę: lim<sub>n→∞</sub> (√<span class="ov">${poly([1,k,0],'n')}</span> − n)`,a:`${fH(F(k,2))}<br>${hint('pomnóż i podziel przez sumę √(…) + n')}`,
   s:[`To symbol ∞ − ∞. Mnożymy i dzielimy przez sprzężenie √(${poly([1,k,0],'n')}) + n.`,`Licznik: (${poly([1,k,0],'n')}) − n² = ${lead(k,'n')}, więc wyrażenie = ${fr(lead(k,'n'),`√(${poly([1,k,0],'n')}) + n`)}.`,`Dzielimy licznik i mianownik przez n: ${fr(N(k),`√(1 ${k<0?'−':'+'} ${fr(Math.abs(k),'n')}) + 1`)} → ${fr(N(k),'1 + 1')} = ${fH(F(k,2))}.`]}}
 function gDeriv(){const a=pick([1,-1,2,-2]);let r1,r2;do{[r1,r2]=distinct(2,-4,4).sort((x,y)=>x-y)}while(a%2&&(r1+r2)%2);
@@ -345,12 +371,15 @@ function gDeriv(){const a=pick([1,-1,2,-2]);let r1,r2;do{[r1,r2]=distinct(2,-4,4
 function gTangent(){const cs=[pick([1,-1]),ri(-4,4),ri(-4,4),ri(-4,4)],x0=ri(-2,2),k=3*cs[0]*x0*x0+2*cs[1]*x0+cs[2],y0=ev(cs,x0);
   return{q:`Wyznacz równanie stycznej do wykresu funkcji f(x) = ${poly(cs)} w punkcie o odciętej x<sub>0</sub> = ${N(x0)}.`,a:`y = ${poly([k,y0-k*x0])}<br>${hint(`f'(${N(x0)}) = ${N(k)}, f(${N(x0)}) = ${N(y0)}`)}`,
   s:[`Równanie stycznej: y = f'(x<sub>0</sub>)(x − x<sub>0</sub>) + f(x<sub>0</sub>).`,`f(${N(x0)}) = ${N(y0)}.`,`f'(x) = ${poly([3*cs[0],2*cs[1],cs[2]])}, więc f'(${N(x0)}) = ${N(k)}.`,`y = ${N(k)}(${sh(x0)}) + ${pN(y0)}, czyli y = ${poly([k,y0-k*x0])}.`]}}
-function gOptBox(){const[a,b,s]=pick([[8,5,7],[16,10,14],[24,15,21],[21,16,19],[32,20,28]]),x=F(a+b-s,6),xv=x.n/x.d,V=F(Math.round(xv*(a-2*xv)*(b-2*xv)*27),27);
+/* kartony a × b, dla których V'(x) = 0 ma wymierny pierwiastek: a² − ab + b² musi być kwadratem */
+const OPTBOX=(()=>{const o=[];for(let a=4;a<=40;a++)for(let b=3;b<a;b++){const s=Math.round(Math.sqrt(a*a-a*b+b*b));if(s*s===a*a-a*b+b*b)o.push([a,b,s])}return o})();
+function gOptBox(){const[a,b,s]=pick(OPTBOX),x=F(a+b-s,6),V=fmul(fmul(x,fadd(F(a),fmul(F(-2),x))),fadd(F(b),fmul(F(-2),x)));
   return{q:`Z prostokątnego kartonu o wymiarach ${a} cm × ${b} cm wycinamy w rogach cztery jednakowe kwadraty o boku x i zaginamy boki, tworząc otwarte pudełko. Dla jakiego x objętość pudełka jest największa? Oblicz tę objętość.`,
-  a:`x = ${fH(x)} cm, V<sub>max</sub> = ${fH(V)} cm³<br>${hint(`V(x) = x(${a} − 2x)(${b} − 2x), x ∈ (0, ${fH(F(b,2))}); rozwiąż V'(x) = 0`)}`}}
-function gOptProd(){const k=ri(2,10),S=3*k;
-  return{q:`Liczbę ${S} przedstaw w postaci sumy dwóch liczb dodatnich x i y tak, aby iloczyn x · y² był największy. Podaj tę największą wartość.`,a:`x = ${k}, y = ${2*k}, największy iloczyn = ${4*k**3}<br>${hint(`f(x) = x(${S} − x)², f'(x) = (${S} − x)(${S} − 3x)`)}`,
-  s:[`y = ${S} − x, a z warunku x > 0 i y > 0 mamy x ∈ (0, ${S}).`,`Badamy f(x) = x(${S} − x)². Pochodna: f'(x) = (${S} − x)² − 2x(${S} − x) = (${S} − x)(${S} − 3x).`,`W przedziale (0, ${S}) pochodna zeruje się tylko w x = ${k}. Dla x < ${k} jest f' > 0, dla x > ${k} jest f' < 0, więc w x = ${k} jest maksimum.`,`x = ${k}, y = ${S} − ${k} = ${2*k}, x · y² = ${k} · ${4*k*k} = ${4*k**3}.`]}}
+  a:`x = ${fH(x)} cm, V<sub>max</sub> = ${fH(V)} cm³<br>${hint(`V(x) = x(${a} − 2x)(${b} − 2x), x ∈ (0, ${fH(F(b,2))}); rozwiąż V'(x) = 0`)}`,
+  s:[`Pudełko ma wymiary (${a} − 2x) × (${b} − 2x) × x, więc V(x) = x(${a} − 2x)(${b} − 2x), gdzie x ∈ (0, ${fH(F(b,2))}).`,`Po wymnożeniu: V(x) = 4x³ − ${2*(a+b)}x² + ${a*b}x, więc V'(x) = 12x² − ${4*(a+b)}x + ${a*b}.`,`V'(x) = 0: Δ = ${16*(a+b)**2} − ${48*a*b} = ${16*(a+b)**2-48*a*b} = (${4*s})², x = ${fr(`${4*(a+b)} ∓ ${4*s}`,24)}, czyli x = ${fH(x)} lub x = ${fH(F(a+b+s,6))}.`,`Tylko x = ${fH(x)} leży w dziedzinie (drugi pierwiastek jest większy od ${fH(F(b,2))}). V' zmienia tam znak z + na −, więc to maksimum.`,`V<sub>max</sub> = V(${fH(x)}) = ${fH(V)} cm³.`]}}
+function gOptProd(){const[p,q]=pick([[1,2],[2,1],[1,3],[3,1],[2,3],[3,2],[1,1]]),k=ri(2,p+q>=5?4:8),S=(p+q)*k,x=p*k,y=q*k,val=x**p*y**q,pw=(v,e)=>v+(e>1?SUP[e]:'');
+  return{q:`Liczbę ${S} przedstaw w postaci sumy dwóch liczb dodatnich x i y tak, aby iloczyn ${pw('x',p)} · ${pw('y',q)} był największy. Podaj tę największą wartość.`,a:`x = ${x}, y = ${y}, największy iloczyn = ${val}<br>${hint(`f(x) = ${pw('x',p)}(${S} − x)${q>1?SUP[q]:''}`)}`,
+  s:[`y = ${S} − x, a z warunku x > 0 i y > 0 mamy x ∈ (0, ${S}).`,`Badamy f(x) = ${pw('x',p)}(${S} − x)${q>1?SUP[q]:''}. Pochodna iloczynu: f'(x) = ${p>1?p+pw('x',p-1):''}(${S} − x)${q>1?SUP[q]:''} − ${q>1?q:''}${pw('x',p)}${q>1?`(${S} − x)${q>2?SUP[q-1]:''}`:''}.`,(CF=>`Wyłączamy wspólny czynnik: f'(x) = ${CF?CF+' · ':''}[${p}(${S} − x) − ${q}x] = ${CF?CF+' · ':''}(${p*S} − ${p+q}x).`)(`${p>1?pw('x',p-1):''}${q>1?`(${S} − x)${q>2?SUP[q-1]:''}`:''}`),`W przedziale (0, ${S}) pochodna zeruje się tylko w x = ${fr(p*S,p+q)} = ${x}; przed tym punktem f' > 0, za nim f' < 0, więc to maksimum.`,`x = ${x}, y = ${S} − ${x} = ${y}, iloczyn = ${pw(x,p)} · ${pw(y,q)} = ${val}.`]}}
 const TRIG_EQ=[
  [`sin x = ${fr(1,2)}`,`x ∈ {${fr('π',6)}, ${fr('5π',6)}}`],
  [`cos x = ${M}${fr('√2',2)}`,`x ∈ {${fr('3π',4)}, ${fr('5π',4)}}`],
@@ -368,10 +397,12 @@ const TRIG_EQ=[
  [`sin x · cos x = ${fr('√3',4)}`,`x ∈ {${fr('π',6)}, ${fr('π',3)}, ${fr('7π',6)}, ${fr('4π',3)}}`],
  ['tg x = 2sin x',`x ∈ {0, ${fr('π',3)}, π, ${fr('5π',3)}, 2π}`]];
 function gTrigEq(){const[e,a]=pick(TRIG_EQ);return{q:`Rozwiąż równanie ${e} w przedziale ⟨0, 2π⟩.`,a}}
-function gTrigId(){const[a,b]=pick([[1,2],[1,3],[2,3],[3,4],[4,3],[5,4],[6,5],[7,5],[-1,2],[-1,3]]);
-  return{q:`Kąt α spełnia warunek sin α + cos α = ${fH(F(a,b))}. Oblicz sin α · cos α oraz (sin α − cos α)².`,a:`sin α · cos α = ${fH(F(a*a-b*b,2*b*b))}, (sin α − cos α)² = ${fH(F(2*b*b-a*a,b*b))}<br>${hint('podnieś warunek do kwadratu i skorzystaj z jedynki trygonometrycznej')}`}}
-function gTrigTg(){const[n,d]=pick([[2,1],[3,1],[1,2],[3,4],[4,3],[5,12],[1,3],[2,3],[4,1]]);
-  return{q:`Kąt α jest ostry i tg α = ${fH(F(n,d))}. Oblicz sin α · cos α oraz ${fr('sin α + cos α','sin α − cos α')}.`,a:`sin α · cos α = ${fH(F(n*d,n*n+d*d))}, ${fr('sin α + cos α','sin α − cos α')} = ${fH(F(n+d,n-d))}<br>${hint('podziel licznik i mianownik przez cos α; sin α cos α = tg α / (1 + tg²α)')}`}}
+function gTrigId(){let a,b;do{b=ri(2,9);a=ri(-b+1,Math.floor(b*1.41))}while(!a||Math.abs(a)===b||gcd(a,b)!==1);
+  return{q:`Kąt α spełnia warunek sin α + cos α = ${fH(F(a,b))}. Oblicz sin α · cos α oraz (sin α − cos α)².`,a:`sin α · cos α = ${fH(F(a*a-b*b,2*b*b))}, (sin α − cos α)² = ${fH(F(2*b*b-a*a,b*b))}<br>${hint('podnieś warunek do kwadratu i skorzystaj z jedynki trygonometrycznej')}`,
+  s:[`Podnosimy warunek do kwadratu: sin²α + 2sin α cos α + cos²α = ${fr(a*a,b*b)}.`,`sin²α + cos²α = 1, więc 1 + 2sin α cos α = ${fr(a*a,b*b)} i sin α · cos α = ${fH(F(a*a-b*b,2*b*b))}.`,`(sin α − cos α)² = 1 − 2sin α cos α = 1 − ${pF(F(a*a-b*b,b*b))} = ${fH(F(2*b*b-a*a,b*b))}.`]}}
+function gTrigTg(){let n,d;do{n=ri(1,9);d=ri(1,9)}while(n===d||gcd(n,d)!==1);
+  return{q:`Kąt α jest ostry i tg α = ${fH(F(n,d))}. Oblicz sin α · cos α oraz ${fr('sin α + cos α','sin α − cos α')}.`,a:`sin α · cos α = ${fH(F(n*d,n*n+d*d))}, ${fr('sin α + cos α','sin α − cos α')} = ${fH(F(n+d,n-d))}<br>${hint('podziel licznik i mianownik przez cos α; sin α cos α = tg α / (1 + tg²α)')}`,
+  s:[`Dzielimy licznik i mianownik ułamka przez cos α ≠ 0: ${fr('sin α + cos α','sin α − cos α')} = ${fr('tg α + 1','tg α − 1')} = ${fr(`${fH(F(n,d))} + 1`,`${fH(F(n,d))} − 1`)} = ${fH(F(n+d,n-d))}.`,`sin α · cos α = ${fr('sin α · cos α','sin²α + cos²α')} = (dzielimy przez cos²α) ${fr('tg α','tg²α + 1')}.`,`= ${fr(fH(F(n,d)),`${fH(F(n*n,d*d))} + 1`)} = ${fH(F(n*d,n*n+d*d))}.`]}}
 function gCosLaw(){const b=ri(2,9),c=ri(2,9),ang=pick([60,120]),a2=b*b+c*c+(ang===60?-1:1)*b*c;
   return{q:`W trójkącie ABC: |AC| = ${b}, |AB| = ${c}, a kąt BAC ma miarę ${ang}°. Oblicz długość boku BC oraz pole trójkąta.`,a:`|BC| = ${sq(a2)}, P = ${fsq(F(b*c,4),3)}<br>${hint(`|BC|² = ${b}² + ${c}² − 2 · ${b} · ${c} · cos ${ang}°`)}`,
   s:[`Twierdzenie cosinusów: |BC|² = |AC|² + |AB|² − 2 · |AC| · |AB| · cos ${ang}°.`,`cos ${ang}° = ${ang===60?fr(1,2):M+fr(1,2)}, więc |BC|² = ${b*b} + ${c*c} ${ang===60?'−':'+'} ${b*c} = ${a2}, |BC| = ${sq(a2)}.`,`Pole: P = ½ · |AC| · |AB| · sin ${ang}° = ½ · ${b} · ${c} · ${fr('√3',2)} = ${fsq(F(b*c,4),3)}.`]}}
@@ -429,11 +460,11 @@ const PROOF_T=[
  ['Punkt P leży wewnątrz trójkąta równobocznego ABC o boku a. Wykaż, że suma odległości punktu P od boków trójkąta jest równa jego wysokości.','połącz P z wierzchołkami. Pole ABC jest sumą pól trójkątów ABP, BCP i CAP: ½a·d₁ + ½a·d₂ + ½a·d₃ = ½a·h, więc d₁ + d₂ + d₃ = h.',figEqui]];
 function gTrapPerp(){const b=ri(2,8),a=b+2*ri(1,5);
   return{q:`W trapezie równoramiennym podstawy mają długości ${a} i ${b}, a przekątne są prostopadłe. Oblicz wysokość i pole tego trapezu.`,a:`h = ${fH(F(a+b,2))}, P = ${fH(F((a+b)**2,4))}<br>${hint('przesuń jedną przekątną równolegle do wierzchołka drugiej podstawy: powstaje trójkąt prostokątny równoramienny o przeciwprostokątnej a + b, a h to połowa przeciwprostokątnej')}${figTrapPerp()}`}}
-function gCommonTangent(){const[R,r]=pick([[9,4],[8,2],[16,9],[25,9],[18,8],[12,3],[9,1],[16,4],[25,16],[27,12]]);
+function gCommonTangent(){const t=ri(1,3),[u,v]=distinct(2,1,6).sort((x,y)=>x-y),r=t*u*u,R=t*v*v;
   return{q:`Dwa okręgi o promieniach ${R} i ${r} są styczne zewnętrznie. Prosta jest ich wspólną styczną zewnętrzną w punktach A i B. Oblicz |AB|.`,a:`|AB| = 2√(${R} · ${r}) = ${2*Math.sqrt(R*r)}<br>${hint('dorysuj promienie do punktów styczności i przez środek mniejszego okręgu poprowadź prostą równoległą do AB')}${figCirc(1)}`}}
-function gTrapRight(){const k=pick([[3,10,8],[4,10,6],[6,13,5],[5,26,24],[12,26,10]]),[r,c,d]=k,s=c+2*r,a=(s+d)/2,b=(s-d)/2;
+function gTrapRight(){const k=ri(1,2),[p,q,c]=pickTriple(k===1?65:37).map(v=>v*k),useP=p%2===0&&(q%2||rnd()<.5),L=useP?p:q,d=useP?q:p,r=L/2,s=c+2*r,a=(s+d)/2,b=(s-d)/2;
   return{q:`W trapez prostokątny wpisano okrąg o promieniu ${r}. Dłuższe ramię trapezu ma długość ${c}. Oblicz długości podstaw i pole trapezu.`,a:`podstawy: ${a} i ${b}, P = ${s*r}<br>${hint(`wysokość = 2r = ${2*r}; dorysuj wysokość CH: z trójkąta prostokątnego a − b = √(${c}² − ${2*r}²) = ${d}; z warunku czworokąta opisanego a + b = ${c} + ${2*r}`)}${figTrapRight()}`}}
-function gEquiDist(){const a=ri(2,12);
+function gEquiDist(){const a=ri(2,30);
   return{q:`Punkt P leży wewnątrz trójkąta równobocznego o boku ${a}. Oblicz sumę odległości punktu P od boków trójkąta.`,a:`${fsq(F(a,2),3)} (wysokość trójkąta, niezależnie od położenia P)<br>${hint('połącz P z wierzchołkami i porównaj pola')}${figEqui()}`}}
 function gMedianPara(){for(;;){const[a,b,c]=[ri(3,10),ri(3,10),ri(3,10)];if(a+b<=c||a+c<=b||b+c<=a)continue;const n=2*b*b+2*c*c-a*a,{k,m}=simp(n);
   return{q:`Trójkąt ABC ma boki |BC| = ${a}, |AC| = ${b}, |AB| = ${c}. Oblicz długość środkowej AM.`,a:`|AM| = ${fsq(F(k,2),m)}<br>${hint(`przedłuż AM o jej długość do A′; w równoległoboku ABA′C suma kwadratów przekątnych = suma kwadratów boków: (2|AM|)² + ${a}² = 2 · ${b}² + 2 · ${c}²`)}${figMedian()}`}}}
@@ -469,11 +500,14 @@ function gDistPL(){const t=pick([[3,4,5],[4,3,5],[5,12,13],[12,5,13],[6,8,10],[8
   const rho=d.d===1&&rnd()<.4&&d.n>0?d.n:ri(1,6),dv=d.n/d.d,rel=Math.abs(dv-rho)<1e-9?'styczna do okręgu':dv<rho?'sieczna (przecina okrąg w dwóch punktach)':'rozłączna z okręgiem';
   return{q:`Określ wzajemne położenie prostej ${line} i okręgu o środku S = (${N(x0)}, ${N(y0)}) i promieniu ${rho}.`,a:`odległość środka od prostej d = ${fH(d)}, więc prosta jest ${rel}.`,
   s:['Położenie prostej względem okręgu zależy od odległości d środka od prostej: d < r (sieczna), d = r (styczna), d > r (rozłączna).',...st,`Porównujemy: d = ${fH(d)} ${Math.abs(dv-rho)<1e-9?'=':dv<rho?'<':'>'} r = ${rho}, więc prosta jest ${rel}.`]}}
-function gPyramid(){const[h2,H]=pick([[3,4],[4,3],[6,8],[8,6],[5,12],[12,5]]),a=2*h2,hs=Math.round(Math.hypot(h2,H));
+function gPyramid(){const k=ri(1,2),[p,q,hs]=pickTriple(k===1?41:29).map(v=>v*k),sw=rnd()<.5,h2=sw?p:q,H=sw?q:p,a=2*h2;
   return{q:`Ostrosłup prawidłowy czworokątny ma krawędź podstawy ${a} i wysokość ${H}. Oblicz wysokość ściany bocznej, pole powierzchni całkowitej, objętość oraz tangens kąta nachylenia ściany bocznej do płaszczyzny podstawy.`,
-  a:`h<sub>s</sub> = ${hs}, P<sub>c</sub> = ${a*a} + ${2*a*hs} = ${a*a+2*a*hs}, V = ${fH(F(a*a*H,3))}, tg α = ${fH(F(H,h2))}`}}
-function gCone(){const[r,h,l]=pick([[3,4,5],[4,3,5],[6,8,10],[8,6,10],[5,12,13],[12,5,13],[9,12,15]]);const V=F(r*r*h,3);
-  return{q:`Stożek ma promień podstawy ${r} i wysokość ${h}. Oblicz długość tworzącej, pole powierzchni całkowitej i objętość stożka.`,a:`l = ${l}, P<sub>c</sub> = ${r*(r+l)}π, V = ${V.d===1?V.n:fH(V)}π`}}
+  a:`h<sub>s</sub> = ${hs}, P<sub>c</sub> = ${a*a} + ${2*a*hs} = ${a*a+2*a*hs}, V = ${fH(F(a*a*H,3))}, tg α = ${fH(F(H,h2))}`,
+  s:[`Wysokość ostrosłupa H, połowa krawędzi podstawy (${h2}) i wysokość ściany bocznej h<sub>s</sub> tworzą trójkąt prostokątny.`,`h<sub>s</sub> = √(${H}² + ${h2}²) = √${hs*hs} = ${hs}.`,`P<sub>c</sub> = a² + 4 · ½ · a · h<sub>s</sub> = ${a*a} + ${2*a*hs} = ${a*a+2*a*hs}.`,`V = ⅓ · a² · H = ⅓ · ${a*a} · ${H} = ${fH(F(a*a*H,3))}.`,`Kąt nachylenia ściany bocznej leży przy podstawie tego trójkąta: tg α = ${fr('H',h2)} = ${fH(F(H,h2))}.`]}}
+function gCone(){const k=ri(1,3),[p,q,l]=pickTriple(k===1?41:k===2?29:17).map(v=>v*k),sw=rnd()<.5,r=sw?p:q,h=sw?q:p,V=F(r*r*h,3),Vs=V.d===1?V.n:fH(V),giv=rnd()<.4;
+  return{q:giv?`Tworząca stożka ma długość ${l}, a promień podstawy ${r}. Oblicz wysokość, pole powierzchni całkowitej i objętość stożka.`:`Stożek ma promień podstawy ${r} i wysokość ${h}. Oblicz długość tworzącej, pole powierzchni całkowitej i objętość stożka.`,
+  a:`${giv?`h = ${h}`:`l = ${l}`}, P<sub>c</sub> = ${r*(r+l)}π, V = ${Vs}π`,
+  s:[giv?`Wysokość, promień i tworząca tworzą trójkąt prostokątny: h = √(${l}² − ${r}²) = √${h*h} = ${h}.`:`Tworząca, promień i wysokość tworzą trójkąt prostokątny: l = √(${r}² + ${h}²) = √${l*l} = ${l}.`,`P<sub>c</sub> = πr² + πrl = ${r*r}π + ${r*l}π = ${r*(r+l)}π.`,`V = ⅓πr²h = ⅓ · ${r*r} · ${h} · π = ${Vs}π.`]}}
 function gBernoulli(){const m=ri(0,2);
   const BS='Schemat Bernoullego: n niezależnych prób, w każdej sukces z prawdopodobieństwem p. P(k sukcesów) = C(n, k) · p<sup>k</sup> · (1 − p)<sup>n − k</sup>.';
   if(m===0){const n=ri(4,8),k=ri(1,n-1);return{q:`Rzucamy ${n} razy symetryczną monetą. Oblicz prawdopodobieństwo otrzymania dokładnie ${k===1?'jednego orła':k+' orłów'}.`,a:`P = C(${n}, ${k}) · ${fr(1,`2<sup>${n}</sup>`)} = ${fH(F(C(n,k),2**n))}`,
@@ -549,17 +583,17 @@ function gRecur(){const a1=ri(-4,4),c=riNZ(-5,5),k=pick([2,-1,3]),m=rnd()<.5;let
   return{q:`Ciąg (a<sub>n</sub>) jest określony rekurencyjnie: a<sub>1</sub> = ${N(a1)}, a<sub>n+1</sub> = ${m?'n · a<sub>n</sub>':lead(k,'a<sub>n</sub>')}${term(c,'')} dla n ≥ 1. Oblicz a<sub>4</sub>.`,a:`a<sub>2</sub> = ${N(vs[1])}, a<sub>3</sub> = ${N(vs[2])}, a<sub>4</sub> = ${N(vs[3])}`}}
 function gArithProof(){const p=riNZ(-6,6),q=ri(-9,9);
   return{q:`Ciąg (a<sub>n</sub>) jest określony wzorem a<sub>n</sub> = ${poly([p,q],'n')} dla n ≥ 1. Wykaż, że jest to ciąg arytmetyczny, i podaj jego różnicę.`,a:`a<sub>n+1</sub> − a<sub>n</sub> = ${N(p)}: różnica jest stała, więc ciąg jest arytmetyczny, r = ${N(p)}`}}
-function gTrigObt(){let[a,b,c]=pick([[3,4,5],[5,12,13],[8,15,17],[7,24,25]]);if(rnd()<.5)[a,b]=[b,a];
+function gTrigObt(){let[a,b,c]=pickTriple();if(rnd()<.5)[a,b]=[b,a];
   return{q:`Kąt α spełnia warunki: sin α = ${fH(F(a,c))} oraz 90° < α < 180°. Oblicz cos α oraz tg α.`,a:`cos α = ${M}${fH(F(b,c))}, tg α = ${M}${fH(F(a,b))}<br>${hint('w II ćwiartce cosinus i tangens są ujemne')}`,
   s:[`Z jedynki trygonometrycznej: cos²α = 1 − sin²α = 1 − ${fr(a*a,c*c)} = ${fr(b*b,c*c)}, więc |cos α| = ${fH(F(b,c))}.`,`Kąt jest rozwarty (II ćwiartka), więc cos α < 0: cos α = ${M}${fH(F(b,c))}.`,`tg α = ${fr('sin α','cos α')} = ${fr(fH(F(a,c)),M+fH(F(b,c)))} = ${M}${fH(F(a,b))}.`]}}
 function gMedian(){const c=ri(4,12),a=2*ri(2,6),B=pick([60,120]),h=a/2,d2=c*c+h*h+(B===60?-1:1)*c*h;
   return{q:`W trójkącie ABC: |AB| = ${c}, |BC| = ${a}, |∢ABC| = ${B}°. Oblicz długość środkowej AD poprowadzonej z wierzchołka A.`,a:`|AD| = ${sq(d2)}<br>${hint(`D jest środkiem BC, |BD| = ${h}; twierdzenie cosinusów w trójkącie ABD`)}`}}
 function gSinSmall(){for(;;){const[a,b,c]=distinct(3,2,9).sort((x,y)=>x-y);if(a+b<=c)continue;const cs=F(b*b+c*c-a*a,2*b*c),{k,m}=simp(cs.d*cs.d-cs.n*cs.n);
   return{q:`Trójkąt ma boki długości ${a}, ${b} i ${c}. Oblicz sinus najmniejszego kąta tego trójkąta.`,a:`cos α = ${fH(cs)}, sin α = ${fsq(F(k,cs.d),m)}<br>${hint(`najmniejszy kąt leży naprzeciw boku ${a}; twierdzenie cosinusów, potem jedynka trygonometryczna`)}`}}}
-function gIncircleRight(){const[a,b,c]=pick([[3,4,5],[5,12,13],[8,15,17],[7,24,25],[6,8,10],[9,12,15]]);
+function gIncircleRight(){const k=ri(1,3),[a,b,c]=pickTriple(k===1?65:k===2?41:29).map(v=>v*k);
   return{q:`Trójkąt prostokątny ma przyprostokątne długości ${a} i ${b}. Oblicz promienie okręgów wpisanego w ten trójkąt i opisanego na nim.`,a:`c = ${c}, r = ${fH(F(a+b-c,2))}, R = ${fH(F(c,2))}<br>${hint('r = (a + b − c)/2, R = c/2')}`,
   s:[`Przeciwprostokątna z twierdzenia Pitagorasa: c = √(${a}² + ${b}²) = √${c*c} = ${c}.`,`W trójkącie prostokątnym promień okręgu wpisanego: r = ${fr('a + b − c',2)} = ${fr(`${a} + ${b} − ${c}`,2)} = ${fH(F(a+b-c,2))}. (Albo z pola: r = ${fr('2P','a + b + c')} = ${fr(a*b,a+b+c)}.)`,`Środek okręgu opisanego to środek przeciwprostokątnej, więc R = ${fr('c',2)} = ${fH(F(c,2))}.`]}}
-function gCentroid(){const t=ri(2,9);return rnd()<.5?{q:`Punkt S jest środkiem ciężkości trójkąta ABC, a |SA| = ${2*t}. Oblicz długość środkowej trójkąta poprowadzonej z wierzchołka A.`,a:`${3*t}<br>${hint('środek ciężkości dzieli środkową w stosunku 2 : 1, licząc od wierzchołka')}`}
+function gCentroid(){const t=ri(2,18);return rnd()<.5?{q:`Punkt S jest środkiem ciężkości trójkąta ABC, a |SA| = ${2*t}. Oblicz długość środkowej trójkąta poprowadzonej z wierzchołka A.`,a:`${3*t}<br>${hint('środek ciężkości dzieli środkową w stosunku 2 : 1, licząc od wierzchołka')}`}
   :{q:`Środkowa AD trójkąta ABC ma długość ${3*t}. Oblicz odległość środka ciężkości S tego trójkąta od wierzchołka A i od punktu D.`,a:`|AS| = ${2*t}, |SD| = ${t}`}}
 function gTangentChord(){const al=ri(20,80);
   return{q:`Prosta k jest styczna do okręgu o środku S w punkcie A. Cięciwa AB tworzy z prostą k kąt ostry o mierze ${al}°. Punkt C leży na okręgu, a kąt wpisany ACB jest ostry. Oblicz miary kątów ACB i ASB.`,a:`|∢ACB| = ${al}°, |∢ASB| = ${2*al}°<br>${hint('kąt między styczną a cięciwą jest równy kątowi wpisanemu opartemu na tej cięciwie')}`}}
@@ -570,7 +604,7 @@ function gDiagInter(){for(;;){const S=[ri(-4,4),ri(-4,4)],d1=[riNZ(-3,3),ri(-3,3
   return{q:`Punkty A = ${P(-1,d1,t[0])}, B = ${P(-1,d2,t[1])}, C = ${P(1,d1,t[2])} i D = ${P(1,d2,t[3])} są wierzchołkami czworokąta ABCD. Oblicz współrzędne punktu przecięcia przekątnych tego czworokąta.`,a:`S = (${N(S[0])}, ${N(S[1])})<br>${hint('wyznacz równania prostych AC i BD i rozwiąż układ')}`}}}
 function gSimilarSolids(){const k=ri(2,5),P=ri(5,40);
   return{q:`Dwa prostopadłościany są podobne. Objętość drugiego jest ${k**3} razy większa od objętości pierwszego. Pole powierzchni całkowitej pierwszego jest równe ${P}. Oblicz pole powierzchni całkowitej drugiego.`,a:`skala k = ${k}, P<sub>2</sub> = ${k*k} · ${P} = ${k*k*P}<br>${hint('stosunek objętości to k³, stosunek pól to k²')}`}}
-function gPyrAngle(){const al=pick([30,45,60]),t=ri(1,4);let a,V,Pc;
+function gPyrAngle(){const al=pick([30,45,60]),t=ri(1,10);let a,V,Pc;
   if(al===30){a=fsq(2*t,3);V=''+4*t**3;Pc=`${12*t*t} + ${8*t*t}√3`}else if(al===45){a=''+2*t;V=fH(F(4*t**3,3));Pc=`${4*t*t} + ${4*t*t}√2`}else{a=''+2*t;V=fsq(F(4*t**3,3),3);Pc=''+12*t*t}
   return{q:`Ściana boczna ostrosłupa prawidłowego czworokątnego jest nachylona do płaszczyzny podstawy pod kątem ${al}°, a krawędź podstawy ma długość ${a}. Oblicz objętość i pole powierzchni całkowitej tego ostrosłupa.`,a:`V = ${V}, P<sub>c</sub> = ${Pc}<br>${hint(`trójkąt prostokątny: wysokość ostrosłupa, połowa krawędzi podstawy i wysokość ściany bocznej, kąt ${al}° przy podstawie`)}`}}
 function gCylinder(){const r=ri(1,6),h=ri(2,10);
@@ -640,7 +674,8 @@ function gTriArea(){for(;;){const P=[0,0,0,0,0,0].map(()=>ri(-6,6)),u=[P[2]-P[0]
   return{q:`Oblicz pole trójkąta o wierzchołkach A = (${N(P[0])}, ${N(P[1])}), B = (${N(P[2])}, ${N(P[3])}), C = (${N(P[4])}, ${N(P[5])}).`,a:`P = ${fH(F(Math.abs(d),2))}<br>${hint(`wektory AB = [${N(u[0])}, ${N(u[1])}], AC = [${N(v[0])}, ${N(v[1])}], P = ½|det(AB, AC)|`)}`}}}
 function gParaVec(){for(;;){const v=[riNZ(-9,9),ri(-9,9)],w=[ri(-9,9),riNZ(-9,9)],d=v[0]*w[1]-v[1]*w[0];if(!d)continue;const s=[v[0]+w[0],v[1]+w[1]];
   return{q:`Czworokąt ABCD jest równoległobokiem, w którym wektor AB = [${N(v[0])}, ${N(v[1])}], a wektor AD = [${N(w[0])}, ${N(w[1])}]. Oblicz pole tego równoległoboku i długość przekątnej AC.`,a:`P = |det(AB, AD)| = ${Math.abs(d)}, |AC| = ${sq(s[0]**2+s[1]**2)}<br>${hint('wektor AC = AB + AD')}`}}}
-function gCuboidDiag(){const[a,b,c,d]=pick([[1,2,2,3],[2,3,6,7],[1,4,8,9],[4,4,7,9],[2,6,9,11],[6,6,7,11]]),k=ri(1,2);
+const QUADS=(()=>{const o=[];for(let a=1;a<=12;a++)for(let b=a;b<=12;b++)for(let c=1;c<=14;c++){const d=Math.round(Math.sqrt(a*a+b*b+c*c));if(d*d===a*a+b*b+c*c&&gcd(gcd(a,b),gcd(c,d))===1)o.push([a,b,c,d])}return o})();
+function gCuboidDiag(){const[a,b,c,d]=pick(QUADS),k=ri(1,2);
   return{q:`Prostopadłościan ma krawędzie podstawy ${a*k} i ${b*k} oraz wysokość ${c*k}. Oblicz długość przekątnej prostopadłościanu oraz sinus i cosinus kąta nachylenia tej przekątnej do płaszczyzny podstawy.`,a:`d = ${d*k}, sin α = ${fH(F(c,d))}, cos α = ${fsq(F(simp(a*a+b*b).k,d),simp(a*a+b*b).m)}`}}
 function gBernoulliN(){const p=pick([.2,.3,.4,.5]),thr=pick([.9,.95,.99]);let n=1;while(1-(1-p)**n<=thr)n++;
   return{q:`Prawdopodobieństwo wygrania jednej partii wynosi ${dec(p)}, a wyniki kolejnych partii są niezależne. Ile co najmniej partii trzeba rozegrać, aby prawdopodobieństwo wygrania co najmniej jednej z nich było większe od ${dec(thr)}?`,
@@ -721,7 +756,7 @@ function cProc(){const p=pick([10,20,25,50]),q=pick([10,20,25,40]),v=((100+p)*(1
   return mc(`Cenę podwyższono o ${p}%, a następnie obniżono o ${q}%. W wyniku obu zmian cena`,t(v),[t(p-q),t(q-p),t(v===0?p:-v),t(p)],`mnożnik ${dec(1+p/100)} · ${dec(1-q/100)} = ${dec(1+v/100)}; procentów nie wolno po prostu odjąć`)}
 function cArith(){const a1=ri(-8,8),r=riNZ(-4,4),n=ri(6,15);
   return mc(`W ciągu arytmetycznym a<sub>1</sub> = ${N(a1)} i r = ${N(r)}. Wyraz a<sub>${n}</sub> jest równy`,N(a1+(n-1)*r),[N(a1+n*r),N(a1+(n-2)*r),N(a1*n+r),N(a1+(n-1)*r+1)])}
-function cTrig(){let[a,b,c]=pick([[3,4,5],[5,12,13],[8,15,17]]);if(rnd()<.5)[a,b]=[b,a];const ob=rnd()<.5;
+function cTrig(){let[a,b,c]=pickTriple(41);if(rnd()<.5)[a,b]=[b,a];const ob=rnd()<.5;
   return mc(`Kąt α spełnia warunki sin α = ${fH(F(a,c))} oraz ${ob?'90° < α < 180°':'0° < α < 90°'}. Wtedy cos α jest równy`,(ob?M:'')+fH(F(b,c)),[(ob?'':M)+fH(F(b,c)),fH(F(a,b)),(ob?M:'')+fH(F(a,b))])}
 function cVertex(){const a=pick([1,-1,2,-2]),p=riNZ(-5,5),q=riNZ(-6,6);
   return mc(`Wierzchołkiem paraboli y = ${poly([a,-2*a*p,a*p*p+q])} jest punkt`,`(${N(p)}, ${N(q)})`,[`(${N(-p)}, ${N(q)})`,`(${N(p)}, ${N(-q)})`,`(${N(-p)}, ${N(-q)})`])}
@@ -729,9 +764,12 @@ function cParallel(){const a=riNZ(-4,4),b=ri(-5,5),x0=ri(-4,4),y0=ri(-5,5),bb=y0
   return mc(`Prosta równoległa do prostej y = ${poly([a,b])} przechodząca przez punkt (${N(x0)}, ${N(y0)}) ma równanie`,`y = ${poly([a,bb])}`,[`y = ${poly([a,y0+a*x0])}`,`y = ${poly([F(-1,a),y0+x0/a===Math.round(y0+x0/a)?y0+x0/a:y0])}`,`y = ${poly([-a,y0+a*x0])}`,`y = ${poly([a,b+y0])}`])}
 function cCircle(){const a=riNZ(-5,5),b=riNZ(-5,5),r=ri(2,6);
   return mc(`Okrąg o równaniu (${sh(a)})² + (${sh(b,'y')})² = ${r*r} ma środek S i promień r. Wtedy`,`S = (${N(a)}, ${N(b)}), r = ${r}`,[`S = (${N(-a)}, ${N(-b)}), r = ${r}`,`S = (${N(a)}, ${N(b)}), r = ${r*r}`,`S = (${N(-a)}, ${N(-b)}), r = ${r*r}`])}
-function cDice(){const s=ri(3,11),k=dice((x,y)=>x+y===s);
-  return mc(`Rzucamy dwa razy symetryczną kostką. Prawdopodobieństwo, że suma oczek będzie równa ${s}, jest równe`,fH(F(k,36)),[fH(F(k+1,36)),fH(F(k,11)),fH(F(1,s)),fH(F(k-1||2,36))])}
-function cCubeMC(){const a=ri(2,9);return mc(`Przekątna sześcianu o krawędzi ${a} ma długość`,fsq(a,3),[fsq(a,2),''+3*a,fsq(a*a,3),''+a*a])}
+function cDice(){const m=ri(0,2);let t,k;
+  if(m===0){const s=ri(3,11);t=`suma oczek będzie równa ${s}`;k=dice((x,y)=>x+y===s)}
+  else if(m===1){const s=ri(4,10);t=`suma oczek będzie większa od ${s}`;k=dice((x,y)=>x+y>s)}
+  else{const d=ri(1,4);t=`różnica między większą a mniejszą liczbą oczek będzie równa ${d}`;k=dice((x,y)=>Math.abs(x-y)===d)}
+  return mc(`Rzucamy dwa razy symetryczną kostką. Prawdopodobieństwo, że ${t}, jest równe`,fH(F(k,36)),[fH(F(k+1,36)),...(k<11?[fH(F(k,11))]:[]),...(k<21?[fH(F(k,21))]:[]),fH(F(k-1||2,36)),fH(F(k+2,36))],'wszystkich wyników (par uporządkowanych) jest 36')}
+function cCubeMC(){const a=ri(2,16);return mc(`Przekątna sześcianu o krawędzi ${a} ma długość`,fsq(a,3),[fsq(a,2),''+3*a,fsq(a*a,3),''+a*a])}
 function cStat(){const arr=Array.from({length:ri(5,8)},()=>ri(1,9)),s=arr.slice().sort((x,y)=>x-y),n=s.length,med=n%2?F(s[(n-1)/2]):F(s[n/2-1]+s[n/2],2),mean=F(arr.reduce((x,y)=>x+y,0),n);
   return mc(`Mediana liczb ${arr.join(', ')} jest równa`,fH(med),[fH(mean),N(arr[Math.floor(n/2)]),fH(F(s[0]+s[n-1],2)),N(s[Math.floor(n/2)]+1)],`uporządkuj: ${s.join(', ')}`)}
 function cPFLinear(){const a=riNZ(-4,4),b=riNZ(-6,6),k=ri(-3,3),t=[rnd()<.5,rnd()<.5,rnd()<.5];
@@ -787,12 +825,21 @@ function gBacteria(){const N0=pick([100,200,500,1000]),T=pick([2,3,4,5,6]),k=ri(
 function gTravel(){const a=pick([10,12,15,20,30]),v1=ri(2,6),v2=ri(1,5),den=v1*v1+v2*v2,t=F(a*v1,den),d2=F(a*a*v2*v2,den),{k,m}=simp(d2.n*d2.d);
   return{q:`Dwie drogi przecinają się pod kątem prostym w punkcie O. O godzinie 9:00 turysta A wyrusza z punktu oddalonego o ${a} km od O i idzie w stronę O z prędkością ${v1} km/h, a turysta B wyrusza z punktu O drugą drogą z prędkością ${v2} km/h. Po jakim czasie odległość między nimi będzie najmniejsza? Oblicz tę odległość.`,
   a:`t = ${fH(t)} h, d<sub>min</sub> = ${fsq(F(k,d2.d),m)} km<br>${hint(`d²(t) = (${a} − ${v1}t)² + (${v2}t)² — funkcja kwadratowa, szukaj wierzchołka`)}`}}
-function gBoxMin(){const x=2*ri(1,6),V=x**3/2;
+function gBoxMin(){if(rnd()<.5){const x=2*ri(1,10),V=x**3/2;
   return{q:`Prostopadłościenne pudełko bez pokrywki ma podstawę kwadratową i objętość ${V} cm³. Jakie powinny być jego wymiary, aby zużyć jak najmniej materiału? Oblicz to najmniejsze pole powierzchni.`,
-  a:`krawędź podstawy ${x} cm, wysokość ${x/2} cm, P<sub>min</sub> = ${3*x*x} cm²<br>${hint(`P(x) = x² + ${fr(4*V,'x')}, P'(x) = 2x − ${fr(4*V,'x²')}`)}`}}
-function gCanMin(){const r=ri(1,6);
+  a:`krawędź podstawy ${x} cm, wysokość ${x/2} cm, P<sub>min</sub> = ${3*x*x} cm²<br>${hint(`P(x) = x² + ${fr(4*V,'x')}, P'(x) = 2x − ${fr(4*V,'x²')}`)}`,
+  s:[`Niech x — krawędź podstawy, h — wysokość. x²h = ${V}, więc h = ${fr(V,'x²')}.`,`Bez pokrywki: P = x² + 4xh = x² + ${fr(4*V,'x')}, x > 0.`,`P'(x) = 2x − ${fr(4*V,'x²')} = ${fr(`2(x³ − ${x**3})`,'x²')}. P' = 0 dla x = ${x}; wcześniej P' < 0, później P' > 0, więc to minimum.`,`x = ${x} cm, h = ${fr(V,x*x)} = ${x/2} cm, P<sub>min</sub> = ${x*x} + ${2*x*x} = ${3*x*x} cm².`]}}
+  const x=ri(2,12),V=x**3;
+  return{q:`Prostopadłościenne pudełko z pokrywką ma podstawę kwadratową i objętość ${V} cm³. Jakie powinny być jego wymiary, aby zużyć jak najmniej materiału? Oblicz to najmniejsze pole powierzchni.`,
+  a:`sześcian o krawędzi ${x} cm, P<sub>min</sub> = ${6*x*x} cm²<br>${hint(`P(x) = 2x² + ${fr(4*V,'x')}`)}`,
+  s:[`x²h = ${V}, więc h = ${fr(V,'x²')}.`,`Z pokrywką: P = 2x² + 4xh = 2x² + ${fr(4*V,'x')}, x > 0.`,`P'(x) = 4x − ${fr(4*V,'x²')} = ${fr(`4(x³ − ${V})`,'x²')} = 0 dla x = ${x}; tam P' zmienia znak z − na +, więc to minimum.`,`h = ${fr(V,x*x)} = ${x}, czyli najlepszy jest sześcian; P<sub>min</sub> = 6 · ${x*x} = ${6*x*x} cm².`]}}
+function gCanMin(){const r=ri(1,12),open=rnd()<.4;
+  if(open)return{q:`Naczynie w kształcie walca bez pokrywki ma objętość ${r**3}π cm³. Jaki promień i jaką wysokość powinno mieć naczynie, aby jego pole powierzchni było najmniejsze? Oblicz to pole.`,
+    a:`r = ${r} cm, h = ${r} cm, P<sub>min</sub> = ${3*r*r}π cm²<br>${hint(`h = ${fr(r**3,'r²')}, P(r) = πr² + ${fr(`${2*r**3}π`,'r')}`)}`,
+    s:[`πr²h = ${r**3}π, więc h = ${fr(r**3,'r²')}.`,`Bez pokrywki: P = πr² + 2πrh = πr² + ${fr(`${2*r**3}π`,'r')}, r > 0.`,`P'(r) = 2πr − ${fr(`${2*r**3}π`,'r²')} = ${fr(`2π(r³ − ${r**3})`,'r²')} = 0 dla r = ${r}; to minimum (P' zmienia znak z − na +).`,`h = ${r} cm, P<sub>min</sub> = ${r*r}π + ${2*r*r}π = ${3*r*r}π cm².`]};
   return{q:`Puszka w kształcie walca (z pokrywką) ma objętość ${2*r**3}π cm³. Jaki promień i jaką wysokość powinna mieć puszka, aby jej pole powierzchni całkowitej było najmniejsze? Oblicz to pole.`,
-  a:`r = ${r} cm, h = ${2*r} cm, P<sub>min</sub> = ${6*r*r}π cm²<br>${hint(`h = ${fr(2*r**3,'r²')}, P(r) = 2πr² + ${fr(`${4*r**3}π`,'r')}`)}`}}
+  a:`r = ${r} cm, h = ${2*r} cm, P<sub>min</sub> = ${6*r*r}π cm²<br>${hint(`h = ${fr(2*r**3,'r²')}, P(r) = 2πr² + ${fr(`${4*r**3}π`,'r')}`)}`,
+  s:[`πr²h = ${2*r**3}π, więc h = ${fr(2*r**3,'r²')}.`,`P = 2πr² + 2πrh = 2πr² + ${fr(`${4*r**3}π`,'r')}, r > 0.`,`P'(r) = 4πr − ${fr(`${4*r**3}π`,'r²')} = ${fr(`4π(r³ − ${r**3})`,'r²')} = 0 dla r = ${r}; to minimum.`,`h = ${2*r} cm (wysokość równa średnicy), P<sub>min</sub> = ${2*r*r}π + ${4*r*r}π = ${6*r*r}π cm².`]}}
 function gBounce(){const h=pick([1,2,3,4,5,6,8,10]),q=F(...pick([[1,2],[2,3],[3,4],[3,5],[1,3]])),tot=fadd(F(h),F(2*h*q.n,q.d-q.n));
   return{q:`Piłkę upuszczono z wysokości ${h} m. Po każdym odbiciu wznosi się na wysokość równą ${fH(q)} poprzedniej. Jaką łączną drogę pokona piłka, zanim się zatrzyma (przyjmij, że odbija się nieskończenie wiele razy)?`,
   a:`${fH(tot)} m<br>${hint(`droga = ${h} + 2 · (${fH(fmul(F(h),q))} + ${fH(fmul(fmul(F(h),q),q))} + …) = ${h} + 2 · ${fr(`${fH(fmul(F(h),q))}`,`1 − ${fH(q)}`)}`)}`}}
@@ -882,7 +929,7 @@ function gExpFn(){const b=pick([2,3,F(1,2),F(1,3)]),p=ri(-3,3),q=ri(-4,4),B=toF(
   const f0=fadd(B.d===1?(p<=0?F(B.n**(-p)):F(1,B.n**p)):(p<=0?F(1,B.d**(-p)):F(B.d**p)),F(q));
   return{q:`Funkcja f jest określona wzorem f(x) = ${bs}<sup>${sh(p)}</sup>${term(q,'')}. Podaj zbiór wartości funkcji, równanie asymptoty poziomej jej wykresu, oblicz f(0) i określ monotoniczność.`,
   a:`ZW = (${N(q)}, +∞), asymptota y = ${N(q)}, f(0) = ${fH(f0)}, funkcja jest ${B.d===1?'rosnąca':'malejąca'}<br>${hint(`wykres y = ${bs}<sup>x</sup> przesunięty o ${N(p)} w poziomie i ${N(q)} w pionie`)}`}}
-function gAbsParam(){const k=ri(1,4),t=ri(0,2),Q=['dokładnie cztery rozwiązania','dokładnie trzy rozwiązania','dokładnie dwa rozwiązania'][t],A=[`m ∈ (0, ${k*k})`,`m = ${k*k}`,`m ∈ {0} ∪ (${k*k}, +∞)`][t];
+function gAbsParam(){const k=ri(1,8),t=ri(0,2),Q=['dokładnie cztery rozwiązania','dokładnie trzy rozwiązania','dokładnie dwa rozwiązania'][t],A=[`m ∈ (0, ${k*k})`,`m = ${k*k}`,`m ∈ {0} ∪ (${k*k}, +∞)`][t];
   return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie |x² − ${k*k}| = m ma ${Q}.`,a:`${A}<br>${hint(`narysuj wykres y = |x² − ${k*k}| (parabola odbita w górę między ${M}${k} a ${k}, lokalne maksimum ${k*k} w x = 0) i przecinaj go prostymi y = m`)}`}}
 function gWordPerm(){const w=pick(['MATURA','KAJAK','ANANAS','PAPUGA','BANAN','LALKA','KAKAO','TATAR','POTOP','KALINA']),perm=new Set(),go=(s,r)=>{if(!r.length){perm.add(s);return}for(let i=0;i<r.length;i++)go(s+r[i],r.slice(0,i)+r.slice(i+1))};go('',w);
   const all=[...perm],cnt={};[...w].forEach(c=>cnt[c]=(cnt[c]||0)+1),rep=Object.entries(cnt).filter(e=>e[1]>1),L=rep[0][0];
@@ -930,6 +977,43 @@ function gInverse(){const m=ri(0,2);
   return{q:`Wielkości x i y są odwrotnie proporcjonalne. Dla x = ${N(p)} wartość y = ${N(q)}. Oblicz y dla x = ${N(k)}.`,a:`y = ${N(a/k)}`,
     s:[`Odwrotna proporcjonalność: x · y = a (stała), czyli y = ${fr('a','x')}.`,`a = ${N(p)} · ${pN(q)} = ${N(a)}.`,`Dla x = ${N(k)}: y = ${fr(N(a),N(k))} = ${N(a/k)}.`]}}
 
+/* ---------- trudniejsze typy na rozszerzenie ---------- */
+function gSetsR(){for(let t=0;;t++){const a=ri(-4,4),b=ri(1,5),[p,q]=distinct(2,-6,6).sort((x,y)=>x-y),r1=pick(['<','<=']),r2=pick(['>','>=']);
+  const inA=x=>{const d=Math.abs(x-a);return r1==='<'?d<b-1e-9:d<=b+1e-9},fq=x=>(x-p)*(x-q),inB=x=>r2==='>'?fq(x)>1e-9:fq(x)>=-1e-9,pts=[a-b,a+b,p,q];
+  const ops=shuffle([['A ∩ B',x=>inA(x)&&inB(x)],['A ∪ B',x=>inA(x)||inB(x)],['A \\ B',x=>inA(x)&&!inB(x)],['B \\ A',x=>inB(x)&&!inA(x)]]).slice(0,2),res=ops.map(([n,f])=>`${n} = ${setStr(f,pts)}`);
+  if(res.some(r=>r.endsWith('∅'))&&t<30)continue;
+  return{q:`Dane są zbiory A = {x ∈ ℝ: |${sh(a)}| ${REL[r1]} ${b}} oraz B = {x ∈ ℝ: ${poly(expand([p,q]))} ${REL[r2]} 0}. Wyznacz ${ops[0][0]} oraz ${ops[1][0]}.`,a:res.join('<br>'),
+  s:[`A: |${sh(a)}| ${REL[r1]} ${b} ⇔ ${N(a-b)} ${REL[r1]} x ${REL[r1]} ${N(a+b)}, więc A = ${setStr(inA,pts)}.`,`B: ${poly(expand([p,q]))} = (${sh(p)})(${sh(q)}), parabola z ramionami w górę, więc B = ${setStr(inB,pts)}.`,`Zaznaczamy oba zbiory na jednej osi i uważnie sprawdzamy końce przedziałów.`,...res.map(r=>r+'.')]}}}
+const ABSQ=(()=>{const o=[];for(let p=2;p<=10;p++)for(let q=1;q<=30;q++){const u=p*p+4*q,w=p*p-4*q,su=Math.round(Math.sqrt(u)),sw=w>0?Math.round(Math.sqrt(w)):-1;if(su*su===u&&sw>0&&sw*sw===w)o.push([p,q])}return o})();
+function gAbsQuad(){const[p,q]=pick(ABSQ),sgn=rnd()<.5?1:-1,P=sgn*p,rel=pick(['<','<=','>','>=','=']),f=x=>x*x-P*x;
+  const t1=Math.round(Math.sqrt(p*p+4*q)),t2=Math.round(Math.sqrt(p*p-4*q)),R=[(P-t1)/2,(P+t1)/2],S=[(P-t2)/2,(P+t2)/2],pts=[...R,...S];
+  const cmp={'<':v=>v<q-1e-9,'<=':v=>v<=q+1e-9,'>':v=>v>q+1e-9,'>=':v=>v>=q-1e-9,'=':v=>Math.abs(v-q)<1e-9}[rel],ans=rel==='='?`x ∈ {${pts.slice().sort((x,y)=>x-y).map(N).join(', ')}}`:`x ∈ ${setStr(x=>cmp(Math.abs(f(x))),pts)}`,ex=poly([1,-P,0]);
+  return{q:`Rozwiąż ${rel==='='?'równanie':'nierówność'} |${ex}| ${rel==='='?'=':REL[rel]} ${q}.`,a:ans,
+  s:[rel==='='?`|u| = ${q} ⇔ u = ${q} lub u = −${q}.`:rel[0]==='<'?`|u| ${REL[rel]} ${q} ⇔ −${q} ${REL[rel]} u ${REL[rel]} ${q}, czyli dwie nierówności naraz.`:`|u| ${REL[rel]} ${q} ⇔ u ${REL[rel]} ${q} lub u ${REL[{'>':'<','>=':'<='}[rel]]} −${q}.`,
+    `${ex} − ${q} = 0: Δ = ${p*p+4*q}, pierwiastki ${N(R[0])} i ${N(R[1])}.`,`${ex} + ${q} = 0: Δ = ${p*p-4*q}, pierwiastki ${N(S[0])} i ${N(S[1])}.`,
+    rel==='='?'Wszystkie cztery liczby są rozwiązaniami.':`Rozwiązujemy obie nierówności kwadratowe (parabole z ramionami w górę) i bierzemy ${rel[0]==='<'?'część wspólną':'sumę'} rozwiązań.`,`Odpowiedź: ${ans}.`]}}
+function gLinParam2(){const k=ri(1,4),ds=[];for(let i=1;i<=k*k;i++)if(k*k%i===0)ds.push(i,-i);let a=pick(ds);const c=k*k/a;let b,d;
+  if(rnd()<.6){d=riNZ(-4,4);b=rnd()<.5?d*k/c:-d*k/c;if(!Number.isInteger(b)){b=d*k;d=d*c}}else{b=riNZ(-6,6);d=riNZ(-6,6)}
+  const cons=m=>b*c===d*m,txt=m=>cons(m)?'nieskończenie wiele rozwiązań (równania opisują tę samą prostą)':'brak rozwiązań (proste równoległe)';
+  return{q:`Zbadaj liczbę rozwiązań układu równań<br>mx${term(a,'y')} = ${N(b)}<br>${lead(c,'x')} + my = ${N(d)}<br>w zależności od parametru m.`,
+  a:`m ∉ {${M}${k}, ${k}}: dokładnie jedno rozwiązanie; m = ${k}: ${txt(k)}; m = ${M}${k}: ${txt(-k)}`,
+  s:[`Wyznacznik główny: W = m · m − ${pN(a)} · ${pN(c)} = m² − ${k*k}.`,`W ≠ 0 ⇔ m ≠ ±${k}: wtedy układ ma dokładnie jedno rozwiązanie.`,`m = ${k}: układ to ${k}x${term(a,'y')} = ${N(b)} i ${lead(c,'x')}${term(k,'y')} = ${N(d)}. Współczynniki przy x i y są proporcjonalne; sprawdzamy, czy wyrazy wolne też: ${cons(k)?'tak':'nie'}, więc ${txt(k)}.`,`m = ${M}${k}: układ to ${M}${k}x${term(a,'y')} = ${N(b)} i ${lead(c,'x')}${term(-k,'y')} = ${N(d)}; wyrazy wolne ${cons(-k)?'są':'nie są'} proporcjonalne, więc ${txt(-k)}.`]}}
+function gRemainder2(){const[a,b]=(()=>{let t;do t=distinct(2,-4,4);while(t.includes(0));return t.sort((x,y)=>x-y)})(),r=riNZ(-5,5),s=ri(-8,8),pa=r*a+s,pb=r*b+s;
+  return{q:`Reszta z dzielenia wielomianu W przez dwumian (${sh(a)}) jest równa ${N(pa)}, a reszta z dzielenia W przez dwumian (${sh(b)}) jest równa ${N(pb)}. Wyznacz resztę z dzielenia W przez wielomian ${poly(expand([a,b]))}.`,a:`R(x) = ${poly([r,s])}`,
+  s:[`Dzielnik ${poly(expand([a,b]))} = (${sh(a)})(${sh(b)}) jest stopnia 2, więc reszta ma postać R(x) = px + q, a W(x) = (${sh(a)})(${sh(b)}) · Q(x) + px + q.`,`Z twierdzenia o reszcie: W(${N(a)}) = ${N(pa)} i W(${N(b)}) = ${N(pb)}.`,`Podstawiamy: ${N(a)}p + q = ${N(pa)} oraz ${N(b)}p + q = ${N(pb)}.`,`Odejmujemy: ${N(b-a)}p = ${N(pb-pa)}, więc p = ${N(r)}, q = ${N(s)}.`,`R(x) = ${poly([r,s])}.`]}}
+/* podstawa: więcej typów w działach, w których było ich mało */
+function gAbsB2(){const a=pick([2,3,4]),b=riNZ(-9,9),c=ri(1,9),rel=pick(RELS),L=F(b-c,a),R=F(b+c,a),ans=signSolve([{v:L},{v:R}],1,rel);
+  return{q:`Rozwiąż nierówność |${a}x ${b<0?'+':'−'} ${Math.abs(b)}| ${REL[rel]} ${c}`,a:ans,
+  s:[rel[0]==='<'?`|u| ${REL[rel]} ${c} ⇔ −${c} ${REL[rel]} u ${REL[rel]} ${c}: −${c} ${REL[rel]} ${a}x ${b<0?'+':'−'} ${Math.abs(b)} ${REL[rel]} ${c}.`:`|u| ${REL[rel]} ${c} ⇔ u ${REL[rel]} ${c} lub u ${REL[{'>':'<','>=':'<='}[rel]]} −${c}.`,`Dodajemy ${N(b)} do każdej strony i dzielimy przez ${a} > 0 (znak się nie zmienia).`,`Punkty graniczne: x = ${fr(`${N(b)} − ${c}`,a)} = ${fH(L)} oraz x = ${fr(`${N(b)} + ${c}`,a)} = ${fH(R)}.`,`Odpowiedź: ${ans}`]}}
+function gLineProps(){const a=pick([F(1),F(-1),F(2),F(-2),F(3),F(-3),F(1,2),F(-1,2),F(1,3),F(2,3),F(-3,2)]),x0=ri(-6,6)||3,b=fmul(fmul(F(-1),a),F(x0)),bs=poly([a,b]),Pt=fmul(F(Math.abs(x0)),F(Math.abs(b.n),2*b.d));
+  return{q:`Funkcja liniowa jest określona wzorem f(x) = ${bs}. Wyznacz miejsce zerowe, punkt przecięcia wykresu z osią Oy, określ monotoniczność i oblicz pole trójkąta, który wykres tworzy z osiami układu współrzędnych.`,
+  a:`x<sub>0</sub> = ${N(x0)}, (0, ${fH(b)}), funkcja ${a.n>0?'rosnąca':'malejąca'}, P = ${fH(Pt)}`,
+  s:[`Miejsce zerowe: ${bs} = 0 ⇔ x = ${N(x0)}.`,`Przecięcie z osią Oy: f(0) = ${fH(b)}, czyli punkt (0, ${fH(b)}).`,`Współczynnik kierunkowy a = ${fH(a)} ${a.n>0?'> 0, więc funkcja jest rosnąca':'< 0, więc funkcja jest malejąca'}.`,`Trójkąt ma przyprostokątne ${Math.abs(x0)} i ${fH(F(Math.abs(b.n),b.d))}: P = ½ · ${Math.abs(x0)} · ${fH(F(Math.abs(b.n),b.d))} = ${fH(Pt)}.`]}}
+function gLineParamB(){const p=pick([1,2,3,-1,-2,-3]),q=ri(-8,8),c=ri(-5,5),ty=pick(['rosnąca','malejąca','stała']),m0=F(-q,p),rel=ty==='stała'?'=':(ty==='rosnąca')===(p>0)?'>':'<';
+  const ans=ty==='stała'?`m = ${fH(m0)}`:`m ${rel} ${fH(m0)}`;
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których funkcja f(x) = (${poly([p,q],'m')})x${term(c,'')} jest ${ty}.`,a:ans,
+  s:[`Funkcja liniowa f(x) = ax + b jest rosnąca, gdy a > 0, malejąca, gdy a < 0, i stała, gdy a = 0.`,`Tu a = ${poly([p,q],'m')}, więc warunek: ${poly([p,q],'m')} ${ty==='stała'?'=':ty==='rosnąca'?'>':'<'} 0.`,p<0&&ty!=='stała'?`Dzielimy przez ${p} < 0 i zmieniamy zwrot nierówności: ${ans}.`:`${ans}.`]}}
+
 /* ---------- dodatkowe dowody (z pełnym rozwiązaniem) ---------- */
 const staticProof=L=>()=>{const[q,h,s]=pick(L);return{q,a:hint(h),s}};
 const PROOF_B2=[
@@ -968,9 +1052,9 @@ const BASIC=[
  {name:'Wyrażenia algebraiczne',g:[gShortMult,gShortMult,gIrrDen,gSciNot]},
  {name:'Proporcjonalność odwrotna',g:[gInverse]},
  {name:'Logarytmy',g:[gLog,gLogVal,gLogDiff]},
- {name:'Wartość bezwzględna',g:[gAbsB]},
+ {name:'Wartość bezwzględna',g:[gAbsB,gAbsB2]},
  {name:'Równania i nierówności',g:[gQuadIneq,gSystem,gRatEq,gLinIneqFrac,gQuadIneq2]},
- {name:'Funkcja liniowa',g:[gLine2,gPerp]},
+ {name:'Funkcja liniowa',g:[gLine2,gPerp,gLineProps,gLineParamB]},
  {name:'Funkcja kwadratowa',g:[gVertex,gQuadInt,gQuadFromAxis,gFence]},
  {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof,gSeqMono]},
  {name:'Trygonometria',g:[gTrigB,gTrigObt,cRedukcja]},
@@ -985,31 +1069,38 @@ const BASIC=[
  {name:'Zadania z treścią',g:[gField,gAmphi,gBacteria,gTravel,gLokata,gFence,gInverse]},
  {name:'Zadania wieloczęściowe',g:[gMultiQuad,gMultiTri]}];
 const EXT=[
- {id:'zbiory',name:'Liczby rzeczywiste i zbiory',g:[gSets]},
- {id:'log',name:'Logarytmy',g:[gLogExpr,gLogDiff,gLogEq,gLogExpr2]},
- {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq,gAbsParam]},
- {id:'lin',name:'Funkcja liniowa',g:[gLinParam,gParamLines]},
- {id:'kw',name:'Funkcja kwadratowa',g:[gViete,gParamDelta,gRootsDiff,gSumSqParam]},
- {id:'wiel',name:'Wielomiany',g:[gPolyIneq,gBezout,gRemainder,gPolyOneRoot,gDarboux]},
+ {id:'zbiory',name:'Liczby rzeczywiste i zbiory',g:[gSets,gSetsR,gSetsR]},
+ {id:'log',name:'Logarytmy',g:[gLogExpr,gLogExpr,gLogEq,gLogEq,gLogExpr2]},
+ {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq,gAbsParam,gAbsQuad,gAbsQuad]},
+ {id:'lin',name:'Funkcja liniowa',g:[gLinParam2,gLinParam2,gParamLines,gLinParam]},
+ {id:'kw',name:'Funkcja kwadratowa',g:[gViete,gParamDelta,gParamDelta,gRootsDiff,gSumSqParam]},
+ {id:'wiel',name:'Wielomiany',g:[gPolyIneq,gBezout,gRemainder2,gPolyOneRoot,gDarboux]},
  {id:'dow',name:'Dowody algebraiczne',g:[staticGen(PROOF_A),gProofGen,gModProof,gPowProof,staticProof(PROOF_A2),staticProof(PROOF_A2)]},
  {id:'wym',name:'Funkcje wymierne',g:[gRatIneq,gLattice,gMonoProof]},
- {id:'wyk',name:'Funkcja wykładnicza',g:[gExpEq,gExpIneq,gExpFn]},
+ {id:'wyk',name:'Funkcja wykładnicza',g:[gExpEq,gExpIneq]},
  {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom,gSeqMono]},
  {id:'gran',name:'Granice',g:[gLimSeq,gLimFn,gLimSqrt,gLimRoot,gLimParam]},
  {id:'poch',name:'Pochodne i optymalizacja',g:[gDeriv,gTangent,gOptBox,gOptProd,gProfit,gMotion,gQuarticMin]},
  {id:'tryg',name:'Trygonometria',g:[gTrigEqGen,gTrigEqGen,gTrigEq,gTrigIneq,gTrigId,gTrigTg]},
- {id:'plan',name:'Planimetria i dowody geometryczne',g:[gCosLaw,gSinLaw,staticGen(PROOF_G),staticGen(PROOF_G2),staticProof(PROOF_G3),gMedian,gSinSmall,gPolygon,gSimilarArea]},
- {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gTangentLines,gTriArea,gParaVec,gVector,gSymPoint]},
+ {id:'plan',name:'Planimetria i dowody geometryczne',g:[gCosLaw,gSinLaw,staticGen(PROOF_G),staticGen(PROOF_G2),staticProof(PROOF_G3),gMedian,gSinSmall,gMedianPara,gTrapPerp]},
+ {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gDistPL,gTangentLines,gTriArea,gParaVec]},
  {id:'dorys',name:'Geometria z dorysowaniem (tricky)',g:[staticGen(PROOF_T),staticGen(PROOF_G2),gTrapPerp,gCommonTangent,gTrapRight,gEquiDist,gMedianPara]},
- {id:'graf',name:'Wykresy funkcji i przekształcenia',g:[gTransformR,gGraphRead,gQuadGraph,gPiecewise]},
+ {id:'graf',name:'Wykresy funkcji i przekształcenia',g:[gTransformR,gTransformR,gAbsParam,gQuadGraph]},
  {id:'model',name:'Modelowanie i optymalizacja z treścią',g:[gTravel,gBoxMin,gCanMin,gBounce,gProfit,gMotion,gOptBox]},
  {id:'multi',name:'Zadania wieloetapowe',g:[gMultiPoly,gMultiTri,gMultiQuad]},
- {id:'stereo',name:'Stereometria',g:[gPyramid,gCone,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral]},
+ {id:'stereo',name:'Stereometria',g:[gPyramid,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral]},
  {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths,gWordPerm]}];
 const DEF=['zbiory','abs','lin','kw','wiel','dow'];
 globalThis.__T={BASIC,EXT,seed:f=>{rnd=f}};
 
-function make(t,lvl){for(let k=0;k<8;k++){try{const r=pick(t.g)();if(r&&r.q)return{...r,lvl,topic:t.name}}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania — wylosuj inny zestaw.',a:'',lvl,topic:t.name}}
+/* antypowtórki: av = {q: Set skrótów treści z ostatnich dni, g: Set typów zadań z ostatnich dni} */
+const qKey=q=>hashStr(q.replace(/<div class="mc"[\s\S]*$/,'').replace(/<[^>]+>/g,'')).toString(36);
+const gKey=(t,g)=>t.name+'#'+t.g.indexOf(g);
+function make(t,lvl,av){let best=null;
+  for(let k=0;k<14;k++){const g=pick(t.g);try{const r=g();if(!r||!r.q)continue;const o={...r,lvl,topic:t.name,qk:qKey(r.q),gk:gKey(t,g)};
+    if(!best)best=o;if(!av)return o;const newQ=!av.q.has(o.qk),newG=!av.g.has(o.gk);
+    if(newQ&&(newG||k>=7))return o;if(newQ&&av.q.has(best.qk))best=o}catch(e){console.error(e)}}
+  return best||{q:'Nie udało się wylosować zadania — wylosuj inny zestaw.',a:'',lvl,topic:t.name}}
 
 /* ---------- więcej zadań zamkniętych (do arkuszy) ---------- */
 function cAbs(){const a=riNZ(-5,5),b=ri(1,6);return mc(`Zbiorem wszystkich rozwiązań nierówności |${sh(a)}| ≤ ${b} jest przedział`,`⟨${N(a-b)}, ${N(a+b)}⟩`,[`⟨${N(-a-b)}, ${N(-a+b)}⟩`,`(${M}∞, ${N(a-b)}⟩ ∪ ⟨${N(a+b)}, +∞)`,`⟨${N(b-a)}, ${N(a+b)}⟩`,`⟨${N(a)}, ${N(a+b)}⟩`])}
@@ -1046,13 +1137,14 @@ function buildExam(type,seed){rnd=mulberry(seed);const out=[];
   if(type==='p'){shuffle(CLOSED).slice(0,25).forEach(([g,r])=>out.push({...gen([g]),pts:1,closed:true,r}));OPEN_P.forEach(o=>out.push({...gen(o.g),pts:o.p,r:o.r}));out.sort((a,b)=>a.r-b.r)}
   else OPEN_R.forEach(o=>out.push({...gen(o.g),pts:o.p}));
   return out}
-globalThis.__T.CLOSED=CLOSED;globalThis.__T.buildExam=buildExam;
+globalThis.__T.CLOSED=CLOSED;globalThis.__T.buildExam=buildExam;globalThis.__T.make=make;globalThis.__T.shuffle=shuffle;globalThis.__T.mulberry=mulberry;
 
 /* ---------- aplikacja ---------- */
 if(typeof document!=='undefined'){
 const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const now=new Date(),day=`${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+const now=new Date(),p2=n=>String(n).padStart(2,'0'),dstr=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,day=dstr(now),recentCut=dstr(new Date(now.getTime()-3*864e5));
+const hist=(h=>h&&typeof h==='object'?h:{})(store.get('mm_hist',{}));
 let done=new Set(store.get('mm_ext',DEF)),cnt=store.get('mm_cnt',{b:5,r:3}),st=store.get('mm_day',{}),mode=store.get('mm_mode','d');
 const EX={p:store.get('mm_exam_p',{}),r:store.get('mm_exam_r',{})};
 if(st.day!==day)st={day,roll:0,done:[]};
@@ -1067,8 +1159,13 @@ if(theme!=='auto')applyTheme();else $('#theme').textContent='Motyw: '+TH[theme];
 function build(){
   rnd=mulberry(hashStr([day,st.roll,cnt.b,cnt.r,[...done].sort().join('.')].join('|')));
   const out=[],bt=shuffle(BASIC),et=shuffle(EXT.filter(t=>done.has(t.id)));
-  for(let i=0;i<cnt.b;i++)out.push(make(bt[i%bt.length],'Podstawa'));
-  if(et.length)for(let i=0;i<cnt.r;i++)out.push(make(et[i%et.length],'Rozszerzenie'));
+  /* historia z poprzednich dni (bez dzisiejszego), więc zestaw na dziś jest stały przez cały dzień */
+  const av={q:new Set(),g:new Set()};Object.entries(hist).forEach(([d,h])=>{if(d===day)return;(h.q||[]).forEach(x=>av.q.add(x));if(d>=recentCut)(h.g||[]).forEach(x=>av.g.add(x))});
+  const add=o=>{out.push(o);if(o.qk)av.q.add(o.qk);if(o.gk)av.g.add(o.gk)};
+  for(let i=0;i<cnt.b;i++)add(make(bt[i%bt.length],'Podstawa',av));
+  if(et.length)for(let i=0;i<cnt.r;i++)add(make(et[i%et.length],'Rozszerzenie',av));
+  hist[day]={q:out.map(o=>o.qk).filter(Boolean),g:out.map(o=>o.gk).filter(Boolean)};
+  Object.keys(hist).sort().slice(0,-30).forEach(d=>delete hist[d]);store.set('mm_hist',hist);
   return out}
 function progress(){if(mode!=='d')return;const n=tasks.length,d=st.done.filter(i=>i<n).length;$('#pn').textContent=`${d} / ${n}`;$('#pl').textContent='zrobione';$('#pb').style.width=n?d/n*100+'%':'0'}
 function renderDaily(){
@@ -1092,7 +1189,9 @@ function tick(){if(mode==='d')return;const e=EX[mode],left=TOTAL-elapsed(e);$('#
 function score(){const e=EX[mode];let s=0,g=0,max=0;tasks.forEach((t,i)=>{max+=t.pts;if(e.pts[i]!==undefined&&e.pts[i]!==''){s+=+e.pts[i];g++}});
   $('#escore').innerHTML=e.done?`<b>Wynik: ${s} / ${max} pkt (${Math.round(s/max*100)}%)</b>${g<tasks.length?` · oceń jeszcze ${tasks.length-g} ${tasks.length-g===1?'zadanie':'zadań'} otwartych, porównując rozwiązanie z odpowiedzią`:''}`:''}
 function renderExam(){const e=EX[mode];if(!e.seed){Object.assign(e,{seed:Math.floor(Math.random()*1e9),acc:0,running:false,done:false,pts:{},sel:{}});save()}
-  tasks=buildExam(mode,e.seed);const max=tasks.reduce((a,t)=>a+t.pts,0),nc=tasks.filter(t=>t.closed).length;
+  /* arkusz zapisujemy, żeby aktualizacja generatorów nie zmieniła rozpoczętego arkusza */
+  if(!Array.isArray(e.tasks)){e.tasks=buildExam(mode,e.seed);save()}
+  tasks=e.tasks;const max=tasks.reduce((a,t)=>a+t.pts,0),nc=tasks.filter(t=>t.closed).length;
   $('#einfo').innerHTML=`<b>${EXAMS[mode].name}</b> · 180 minut · ${max} punktów · ${tasks.length} zadań${nc?` (${nc} zamkniętych za 1 pkt, ${tasks.length-nc} otwartych)`:', wszystkie otwarte'}. Rozwiązuj na kartce; odpowiedzi zobaczysz po kliknięciu „Zakończ i sprawdź”.`;
   $('#list').innerHTML=tasks.map((t,i)=>`<article class="task" data-i="${i}"><div class="meta"><span class="lvl ${mode==='p'?'b':'r'}">${t.closed?'Zamknięte':'Otwarte'}</span></div>
     <h3>Zadanie ${i+1}. <span class="pts">(0–${t.pts})</span></h3><div class="q">${t.q}</div>
