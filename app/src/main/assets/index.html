@@ -104,11 +104,18 @@ footer{margin-top:22px;color:var(--mut);font-size:14px}
     <button class="main" id="roll">Wylosuj inny zestaw</button>
   </div>
 
+  <details class="panel" id="detb">
+    <summary>Działy z podstawy <span class="cnt" id="tcb"></span></summary>
+    <div class="topics" id="topicsb"></div>
+    <div class="quick"><button id="allb">Zaznacz wszystkie</button><button id="noneb">Odznacz wszystkie</button></div>
+    <p class="note">Zadania z podstawy są losowane tylko z zaznaczonych działów.</p>
+  </details>
+
   <details class="panel" id="det">
     <summary>Przerobione działy z rozszerzenia <span class="cnt" id="tc"></span></summary>
     <div class="topics" id="topics"></div>
     <div class="quick"><button id="all">Zaznacz wszystkie</button><button id="none">Odznacz wszystkie</button></div>
-    <p class="note">Zadania z rozszerzenia są losowane tylko z zaznaczonych działów. Zadania z podstawy są losowane ze wszystkich działów.</p>
+    <p class="note">Zadania z rozszerzenia są losowane tylko z zaznaczonych działów.</p>
   </details>
   </div>
 
@@ -1164,11 +1171,11 @@ const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const now=new Date(),p2=n=>String(n).padStart(2,'0'),dstr=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,day=dstr(now),recentCut=dstr(new Date(now.getTime()-3*864e5));
 const hist=(h=>h&&typeof h==='object'?h:{})(store.get('mm_hist',{}));
-let done=new Set(store.get('mm_ext',DEF)),cnt=store.get('mm_cnt',{b:5,r:3}),st=store.get('mm_day',{}),mode=store.get('mm_mode','d');
+let offB=new Set(store.get('mm_basic_off',[])),done=new Set(store.get('mm_ext',DEF)),cnt=store.get('mm_cnt',{b:5,r:3}),st=store.get('mm_day',{}),mode=store.get('mm_mode','d');
 const EX={p:store.get('mm_exam_p',{}),r:store.get('mm_exam_r',{})};
 if(st.day!==day)st={day,roll:0,done:[]};
 let tasks=[];
-const save=()=>{store.set('mm_ext',[...done]);store.set('mm_cnt',cnt);store.set('mm_day',st);store.set('mm_mode',mode);store.set('mm_exam_p',EX.p);store.set('mm_exam_r',EX.r)};
+const save=()=>{store.set('mm_basic_off',[...offB]);store.set('mm_ext',[...done]);store.set('mm_cnt',cnt);store.set('mm_day',st);store.set('mm_mode',mode);store.set('mm_exam_p',EX.p);store.set('mm_exam_r',EX.r)};
 $('#date').textContent=now.toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 /* motyw */
 const TH={auto:'automatyczny',light:'jasny',dark:'ciemny'};let theme=store.get('mm_theme','auto');
@@ -1176,12 +1183,12 @@ const applyTheme=()=>{if(theme==='auto')delete document.documentElement.dataset.
 if(theme!=='auto')applyTheme();else $('#theme').textContent='Motyw: '+TH[theme];
 
 function build(){
-  rnd=mulberry(hashStr([day,st.roll,cnt.b,cnt.r,[...done].sort().join('.')].join('|')));
-  const out=[],bt=shuffle(BASIC),et=shuffle(EXT.filter(t=>done.has(t.id)));
+  rnd=mulberry(hashStr([day,st.roll,cnt.b,cnt.r,[...done].sort().join('.')].join('|')+(offB.size?'|b:'+[...offB].sort().join('.'):'')));
+  const out=[],bt=shuffle(BASIC.filter(t=>!offB.has(t.name))),et=shuffle(EXT.filter(t=>done.has(t.id)));
   /* historia z poprzednich dni (bez dzisiejszego), więc zestaw na dziś jest stały przez cały dzień */
   const av={q:new Set(),g:new Set()};Object.entries(hist).forEach(([d,h])=>{if(d===day)return;(h.q||[]).forEach(x=>av.q.add(x));if(d>=recentCut)(h.g||[]).forEach(x=>av.g.add(x))});
   const add=o=>{out.push(o);if(o.qk)av.q.add(o.qk);if(o.gk)av.g.add(o.gk)};
-  for(let i=0;i<cnt.b;i++)add(make(bt[i%bt.length],'Podstawa',av));
+  if(bt.length)for(let i=0;i<cnt.b;i++)add(make(bt[i%bt.length],'Podstawa',av));
   if(et.length)for(let i=0;i<cnt.r;i++)add(make(et[i%et.length],'Rozszerzenie',av));
   hist[day]={q:out.map(o=>o.qk).filter(Boolean),g:out.map(o=>o.gk).filter(Boolean)};
   Object.keys(hist).sort().slice(0,-30).forEach(d=>delete hist[d]);store.set('mm_hist',hist);
@@ -1191,13 +1198,16 @@ function renderDaily(){
   tasks=build();$('#nb').textContent=cnt.b;$('#nr').textContent=cnt.r;
   $('#topics').innerHTML=EXT.map(t=>`<label><input type="checkbox" value="${t.id}" ${done.has(t.id)?'checked':''}>${t.name}</label>`).join('');
   $('#tc').textContent=`(${done.size} z ${EXT.length})`;
+  $('#topicsb').innerHTML=BASIC.map((t,i)=>`<label><input type="checkbox" value="${i}" ${offB.has(t.name)?'':'checked'}>${t.name}</label>`).join('');
+  $('#tcb').textContent=`(${BASIC.length-BASIC.filter(t=>offB.has(t.name)).length} z ${BASIC.length})`;
   let html=tasks.map((t,i)=>{const d=st.done.includes(i);return`<article class="task${d?' is-done':''}" data-i="${i}">
     <div class="meta"><span class="lvl ${t.lvl==='Podstawa'?'b':'r'}">${t.lvl}</span><span>${t.topic}</span></div>
     <h3>Zadanie ${i+1}</h3><div class="q">${t.q}</div>
     <div class="acts"><button data-act="ans" aria-expanded="false">Pokaż odpowiedź</button>${t.s?'<button data-act="sol" aria-expanded="false">Pokaż rozwiązanie</button>':''}<button class="chk" data-act="done" aria-pressed="${d}">${d?'✓ Zrobione':'Oznacz jako zrobione'}</button></div>
     <div class="ans" hidden>${t.a}</div>${t.s?`<ol class="sol" hidden>${t.s.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}</article>`}).join('');
+  if(cnt.b>0&&BASIC.every(t=>offB.has(t.name)))html+='<div class="empty">Zaznacz działy z podstawy, a pojawią się tu zadania z podstawy.</div>';
   if(cnt.r>0&&!done.size)html+='<div class="empty">Zaznacz przerobione działy z rozszerzenia, a pojawią się tu zadania z rozszerzenia.</div>';
-  if(!tasks.length&&done.size)html='<div class="empty">Ustaw liczbę zadań przyciskiem +.</div>';
+  if(!tasks.length&&!cnt.b&&!cnt.r)html='<div class="empty">Ustaw liczbę zadań przyciskiem +.</div>';
   $('#list').innerHTML=html;progress()}
 /* arkusz */
 const TOTAL=180*60*1000;
@@ -1239,12 +1249,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
   if(b.dataset.s){const k=b.dataset.s;cnt[k]=Math.max(0,Math.min(15,cnt[k]+ +b.dataset.d));reset()}
   else if(b.id==='roll'){st.roll++;reset()}
   else if(b.id==='all'){EXT.forEach(t=>done.add(t.id));reset()}
+  else if(b.id==='allb'){offB.clear();reset();$('#detb').open=true}
+  else if(b.id==='noneb'){BASIC.forEach(t=>offB.add(t.name));reset();$('#detb').open=true}
   else if(b.id==='none'){done.clear();reset()}
   else if(b.dataset.act==='ans'){const a=b.closest('.task').querySelector('.ans'),o=a.hidden;a.hidden=!o;b.textContent=o?'Ukryj odpowiedź':'Pokaż odpowiedź';b.setAttribute('aria-expanded',o)}
   else if(b.dataset.act==='sol'){const a=b.closest('.task').querySelector('.sol'),o=a.hidden;a.hidden=!o;b.textContent=o?'Ukryj rozwiązanie':'Pokaż rozwiązanie';b.setAttribute('aria-expanded',o)}
   else if(b.dataset.act==='done'){const art=b.closest('.task'),i=+art.dataset.i,on=!st.done.includes(i);
     st.done=on?[...st.done,i]:st.done.filter(x=>x!==i);art.classList.toggle('is-done',on);b.setAttribute('aria-pressed',on);b.textContent=on?'✓ Zrobione':'Oznacz jako zrobione';save();progress()}});
-document.addEventListener('change',e=>{if(e.target.matches('#topics input')){e.target.checked?done.add(e.target.value):done.delete(e.target.value);reset();$('#det').open=true}
+document.addEventListener('change',e=>{if(e.target.matches('#topicsb input')){const n=BASIC[+e.target.value].name;e.target.checked?offB.delete(n):offB.add(n);reset();$('#detb').open=true}
+  if(e.target.matches('#topics input')){e.target.checked?done.add(e.target.value):done.delete(e.target.value);reset();$('#det').open=true}
   if(e.target.matches('select[data-pts]')){EX[mode].pts[e.target.dataset.pts]=e.target.value;save();score()}});
 setInterval(tick,1000);
 render()}
