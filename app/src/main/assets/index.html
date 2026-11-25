@@ -1312,6 +1312,50 @@ function gBalls(){const n=ri(3,5),k=ri(2,Math.min(4,n)),tot=n**k;let diff=1;for(
   return{q:`${k} rozróżnialnych kul rozmieszczamy losowo w ${n} szufladach (każda kula niezależnie, do dowolnej szuflady). Oblicz prawdopodobieństwo, że (a) pierwsza szuflada będzie pusta, (b) każda kula trafi do innej szuflady.`,a:`(a) ${fH(pE)}, (b) ${fH(pD)}`,
   s:[`|Ω| = ${n}<sup>${k}</sup> = ${tot} (każda kula ma ${n} możliwości).`,`(a) Każda kula omija pierwszą szufladę: ${n-1}<sup>${k}</sup> = ${(n-1)**k}, P = ${fr((n-1)**k,tot)} = ${fH(pE)}.`,`(b) Kule w różnych szufladach: ${Array.from({length:k},(_,i)=>n-i).join(' · ')} = ${diff}, P = ${fr(diff,tot)} = ${fH(pD)}.`]}}
 
+/* ---------- uzupełnienie typów 2 ---------- */
+function gTriType(){let a,b,c;do{[a,b,c]=[ri(2,15),ri(2,15),ri(2,16)].sort((x,y)=>x-y)}while(a+b<=c);if(rnd()<.3){const t=pickTriple(41),k=ri(1,2);[a,b,c]=t.map(v=>v*k)}
+  const d=a*a+b*b-c*c,typ=d>0?'ostrokątny':d===0?'prostokątny':'rozwartokątny',cg=F(d,2*a*b);
+  return{q:`Trójkąt ma boki długości ${a}, ${b} i ${c}. Rozstrzygnij, czy jest ostrokątny, prostokątny czy rozwartokątny. Oblicz cosinus jego największego kąta.`,a:`trójkąt ${typ}, cos γ = ${fH(cg)}`,
+  s:[`Największy kąt γ leży naprzeciw najdłuższego boku (${c}).`,`Twierdzenie cosinusów: ${c}² = ${a}² + ${b}² − 2 · ${a} · ${b} · cos γ, więc cos γ = ${fr(`${a*a} + ${b*b} − ${c*c}`,`2 · ${a} · ${b}`)} = ${fH(cg)}.`,
+    `${a}² + ${b}² = ${a*a+b*b} ${d>0?'>':d===0?'=':'<'} ${c*c} = ${c}², czyli cos γ ${d>0?'> 0 — kąt ostry':d===0?'= 0 — kąt prosty':'< 0 — kąt rozwarty'}.`,`Skoro największy kąt jest ${d>0?'ostry, wszystkie są ostre':d===0?'prosty':'rozwarty'} — trójkąt ${typ}.`]}}
+function gSymCircle(){const a=riNZ(-6,6),b=riNZ(-6,6),r=ri(1,6),t=ri(0,2),[nm,A,B]=[['osi Ox',a,-b],['osi Oy',-a,b],['początku układu współrzędnych',-a,-b]][t];
+  if(rnd()<.6)return{q:`Wyznacz równanie okręgu symetrycznego do okręgu ${circStr(a,b,r*r)} względem ${nm}.`,a:circStr(A,B,r*r),
+    s:[`Środek S = (${N(a)}, ${N(b)}), r = ${r}. Symetria nie zmienia promienia, przenosi tylko środek.`,`Symetria względem ${nm}: ${t===0?'(x, y) → (x, −y)':t===1?'(x, y) → (−x, y)':'(x, y) → (−x, −y)'}, więc S' = (${N(A)}, ${N(B)}).`,`Równanie: ${circStr(A,B,r*r)}.`]};
+  const P=[[riNZ(-6,6),riNZ(-6,6)],[riNZ(-6,6),riNZ(-6,6)],[riNZ(-6,6),riNZ(-6,6)]],f=([x,y])=>t===0?[x,-y]:t===1?[-x,y]:[-x,-y],s=p=>`(${N(p[0])}, ${N(p[1])})`,L='ABC';
+  return{q:`Trójkąt ma wierzchołki A = ${s(P[0])}, B = ${s(P[1])}, C = ${s(P[2])}. Wyznacz współrzędne wierzchołków trójkąta A'B'C' symetrycznego względem ${nm}.`,a:P.map((p,i)=>`${L[i]}' = ${s(f(p))}`).join(', '),
+  s:[`Symetria względem ${nm}: ${t===0?'zmieniamy znak drugiej współrzędnej':t===1?'zmieniamy znak pierwszej współrzędnej':'zmieniamy znaki obu współrzędnych'}.`,P.map((p,i)=>`${L[i]}' = ${s(f(p))}`).join(', ')+'.','Symetria jest izometrią — trójkąt A\'B\'C\' ma takie same boki, kąty i pole jak ABC.']}}
+function gSeqSign(){if(rnd()<.5){const p=ri(0,4),q=p+ri(3,12),cs=[1,-(p+q),p*q],cnt=q-p-1;
+    return{q:`Ciąg (a<sub>n</sub>) jest określony wzorem a<sub>n</sub> = ${poly(cs,'n')} dla n ≥ 1. Ile wyrazów tego ciągu jest ujemnych?`,a:`${cnt}`,
+    s:[`a<sub>n</sub> = ${p===0?`n(${sh(q,'n')})`:`(${sh(p,'n')})(${sh(q,'n')})`}.`,`a<sub>n</sub> < 0 ⇔ n ∈ (${p}, ${q}) (parabola ramionami do góry).`,`n jest liczbą naturalną ≥ 1: n ∈ {${p+1}, …, ${q-1}}, czyli ${cnt} wyrazów.`]}}
+  const d=ri(2,7);let c;do c=ri(20,90);while(c%d===0&&false);const last=Math.ceil(c/d)-1;
+  return{q:`Ciąg (a<sub>n</sub>) jest określony wzorem a<sub>n</sub> = ${c} − ${d}n dla n ≥ 1. Ile wyrazów tego ciągu jest dodatnich?`,a:`${last}`,
+  s:[`a<sub>n</sub> > 0 ⇔ ${c} − ${d}n > 0 ⇔ n < ${fH(F(c,d))}${c%d?` ≈ ${dec(c/d)}`:''}.`,`Największa liczba naturalna spełniająca nierówność to ${last}${c%d?'':` (dla n = ${c/d} wyraz jest równy 0, a 0 nie jest dodatnie)`}.`,`Dodatnie są wyrazy a<sub>1</sub>, …, a<sub>${last}</sub> — jest ich ${last}.`]}}
+const radF=f=>f.n===0?'0':(f.n===1&&f.d===1?'π':f.d===1?f.n+'π':(f.n<0?M:'')+fr((Math.abs(f.n)===1?'':Math.abs(f.n))+'π',f.d));
+function gRadian(){const m=ri(0,2);
+  if(m===0){const al=pick([15,18,20,30,36,40,45,60,72,75,90,100,120,135,150,210,225,240,270,300,315,330]),f=F(al,180);
+    return{q:`Zamień ${al}° na radiany.`,a:radF(f),s:[`180° = π rad, więc α = ${fr(al,180)} · π.`,`${al}° = ${radF(f)} rad.`]}}
+  if(m===1){const f=F(...pick([[1,6],[1,5],[2,9],[3,4],[5,6],[7,12],[5,4],[5,3],[7,6],[11,6],[3,10]]));
+    return{q:`Zamień ${radF(f)} rad na stopnie.`,a:`${180*f.n/f.d}°`,s:[`π rad = 180°, więc ${radF(f)} = ${fH(f)} · 180°.`,`= ${180*f.n/f.d}°.`]}}
+  const r=ri(2,12),f=F(...pick([[1,3],[1,4],[2,3],[3,4],[5,6],[1,6],[3,2]])),l=fmul(f,F(r)),P=fmul(fmul(f,F(r*r)),F(1,2));
+  return{q:`Kąt środkowy ma miarę ${radF(f)} rad, a promień okręgu jest równy ${r}. Oblicz długość łuku i pole wycinka koła wyznaczonego przez ten kąt.`,a:`l = ${radF(l)}, P = ${radF(P)}`,
+  s:['W mierze łukowej: l = r · α oraz P = ½ r² α.',`l = ${r} · ${radF(f)} = ${radF(l)}.`,`P = ½ · ${r*r} · ${radF(f)} = ${radF(P)}.`]}}
+function gNewton(){const m=ri(0,2);
+  if(m===0){const n=ri(4,20),k=C(n,2);return{q:`Rozwiąż równanie (<sup>n</sup><sub>2</sub>) = ${k}, gdzie n ≥ 2 jest liczbą naturalną. (Np. tyle jest uścisków dłoni w grupie n osób.)`,a:`n = ${n}`,
+    s:[`(<sup>n</sup><sub>2</sub>) = ${fr('n!','2!(n − 2)!')} = ${fr('n(n − 1)',2)}.`,`${fr('n(n − 1)',2)} = ${k} ⇔ n² − n − ${2*k} = 0.`,...deltaSteps(1,-1,-2*k).map(z=>z.replace(/x/g,'n')),`n musi być naturalne, więc n = ${n} (drugi pierwiastek ${N(1-n)} odrzucamy).`]}}
+  if(m===1){const n=ri(8,20),k=n-ri(1,3);return{q:`Oblicz (<sup>${n}</sup><sub>${k}</sub>).`,a:`${C(n,k)}`,s:[`Z własności symbolu Newtona (<sup>n</sup><sub>k</sub>) = (<sup>n</sup><sub>n − k</sub>): (<sup>${n}</sup><sub>${k}</sub>) = (<sup>${n}</sup><sub>${n-k}</sub>).`,`(<sup>${n}</sup><sub>${n-k}</sub>) = ${fr(Array.from({length:n-k},(_,i)=>n-i).join(' · '),`${n-k}!`)} = ${C(n,k)}.`]}}
+  const n=ri(5,12),k=ri(2,4);return{q:`Oblicz (<sup>${n}</sup><sub>${k}</sub>) + (<sup>${n}</sup><sub>${k+1}</sub>) i zapisz wynik w postaci jednego symbolu Newtona.`,a:`(<sup>${n+1}</sup><sub>${k+1}</sub>) = ${C(n+1,k+1)}`,
+  s:[`Własność: (<sup>n</sup><sub>k</sub>) + (<sup>n</sup><sub>k + 1</sub>) = (<sup>n + 1</sup><sub>k + 1</sub>) (trójkąt Pascala).`,`(<sup>${n}</sup><sub>${k}</sub>) + (<sup>${n}</sup><sub>${k+1}</sub>) = ${C(n,k)} + ${C(n,k+1)} = ${C(n+1,k+1)} = (<sup>${n+1}</sup><sub>${k+1}</sub>).`]}}
+function gDerivPow(){const s=pick([1,2,3]),x0=s*s,a=pick([2,4,6,-2,-4]),b=pick([1,2,4,-1,-2,-8,8,9]),m=fadd(F(a,2*s),F(-b,x0*x0)),f0=fadd(F(a*s),F(b,x0)),c0=fadd(f0,fmul(F(-1),fmul(m,F(x0))));
+  const fx=`${a===1?'':a===-1?M:N(a)}√x ${b<0?'−':'+'} ${fr(Math.abs(b),'x')}`;
+  return{q:`Wyznacz równanie stycznej do wykresu funkcji f(x) = ${fx} w punkcie o odciętej x<sub>0</sub> = ${x0}.`,a:`y = ${poly([m,c0])}`,
+  s:[`(√x)' = (x<sup>1/2</sup>)' = ${fr(1,'2√x')}, (${fr(1,'x')})' = (x<sup>−1</sup>)' = −${fr(1,'x²')}.`,`f'(x) = ${fr(N(a),'2√x')} ${b<0?'+':'−'} ${fr(Math.abs(b),'x²')}.`,`f'(${x0}) = ${fr(N(a),2*s)} ${b<0?'+':'−'} ${fr(Math.abs(b),x0*x0)} = ${fH(m)}; f(${x0}) = ${N(a)} · ${s} ${b<0?'−':'+'} ${fr(Math.abs(b),x0)} = ${fH(f0)}.`,`y = ${fH(m)}(${sh(x0)}) ${f0.n<0?'−':'+'} ${fH(F(Math.abs(f0.n),f0.d))} ⇒ y = ${poly([m,c0])}.`]}}
+function gShortestPath(){if(rnd()<.5){let a,b,c;do[a,b,c]=[ri(2,9),ri(2,9),ri(2,9)];while(new Set([a,b,c]).size<3);const opts=[[(a+b),c],[(a+c),b],[(b+c),a]].map(([p,q])=>p*p+q*q),best=Math.min(...opts);
+    return{q:`Mrówka idzie po powierzchni prostopadłościanu o wymiarach ${a} × ${b} × ${c} z wierzchołka A do wierzchołka G (końce przekątnej prostopadłościanu). Oblicz długość najkrótszej drogi.`,a:sq(best),
+    s:['Rozkładamy dwie sąsiednie ściany na płaszczyznę — najkrótsza droga staje się odcinkiem (przekątną prostokąta).','Są trzy sposoby rozłożenia (sumujemy dwa wymiary, trzeci zostaje):',`√((${a} + ${b})² + ${c}²) = ${sq(opts[0])}, √((${a} + ${c})² + ${b}²) = ${sq(opts[1])}, √((${b} + ${c})² + ${a}²) = ${sq(opts[2])}.`,`Najkrótsza: ${sq(best)}. Zwykle wychodzi, gdy sumujemy dwa krótsze wymiary.`]}}
+  const[k,th,res]=pick([[6,60,l=>`${l}`],[4,90,l=>`${l}√2`],[3,120,l=>`${l}√3`]]),r=ri(1,4),l=k*r;
+  return{q:`Stożek ma promień podstawy ${r} i tworzącą ${l}. Z punktu A na okręgu podstawy prowadzimy po powierzchni bocznej najkrótszą drogę, która okrąża stożek i wraca do A. Oblicz jej długość.`,a:res(l),
+  s:[`Rozcinamy powierzchnię boczną wzdłuż tworzącej SA: powstaje wycinek koła o promieniu ${l} i kącie α = 360° · ${fr(r,l)} = ${th}°.`,`Punkt A jest teraz na obu brzegach wycinka (A i A'), najkrótsza droga to odcinek AA'.`,`Trójkąt SAA': |SA| = |SA'| = ${l}, kąt ${th}°. ${th===60?'Trójkąt równoboczny, więc |AA\'| = '+l:th===90?`|AA'| = ${l}√2 (przekątna kwadratu)`:`Z twierdzenia cosinusów |AA'|² = 2 · ${l*l} − 2 · ${l*l} · cos 120° = 3 · ${l*l}, |AA'| = ${l}√3`}.`]}}
+
 /* ---------- działy ---------- */
 const BASIC=[
  {name:'Potęgi, pierwiastki, procenty',g:[gPow,gProc,gLokata,gPensja,gCbrt,gAbsRoot,gSciNot,gPctPoints,gApproxErr,gRatPow]},
@@ -1323,10 +1367,10 @@ const BASIC=[
  {name:'Równania i nierówności',g:[gQuadIneq,gSystem,gRatEq,gLinIneqFrac,gQuadIneq2,gSysLinQuad,gSystemType,gPolyEqP,gFactorGroup]},
  {name:'Funkcja liniowa',g:[gLine2,gPerp,gLineProps,gLineParamB,gTableFn]},
  {name:'Funkcja kwadratowa',g:[gVertex,gQuadInt,gQuadFromAxis,gFence]},
- {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof,gSeqMono]},
- {name:'Trygonometria',g:[gTrigB,gTrigObt,cRedukcja]},
- {name:'Planimetria',g:[gTales,gEquil,gInscribed,gMedian,gSinSmall,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist,gPolygon,gSimilarArea,gCircleArc,gQuadArea]},
- {name:'Geometria analityczna',g:[gSeg,gIsoOx,gDiagInter,gSymPoint,gVector,gCircleP,gTriArea]},
+ {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof,gSeqMono,gSeqSign]},
+ {name:'Trygonometria',g:[gTrigB,gTrigObt,cRedukcja,gCosLaw,gCosLaw,gTriType]},
+ {name:'Planimetria',g:[gTales,gEquil,gInscribed,gMedian,gSinSmall,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist,gPolygon,gSimilarArea,gCircleArc,gQuadArea,gTriType,gCosLaw]},
+ {name:'Geometria analityczna',g:[gSeg,gIsoOx,gDiagInter,gSymPoint,gVector,gCircleP,gTriArea,gSymCircle]},
  {name:'Stereometria',g:[gCube,gPrism,gSimilarSolids,gPyrAngle,gCylinder,gCuboidSec,gSphere,gConeNet,gCone,gCuboidDiag]},
  {name:'Kombinatoryka i prawdopodobieństwo',g:[gDiceB,()=>gDigits(3),gChoose,gProbDigits,gBraille,gReplace,gNoReplace]},
  {name:'Statystyka',g:[gStats,gStatTable,gStatBars]},
@@ -1347,16 +1391,16 @@ const EXT=[
  {id:'wyk',name:'Funkcja wykładnicza',g:[gExpEq,gExpIneq]},
  {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom,gSeqMono,gSeriesEq]},
  {id:'gran',name:'Granice',g:[gLimSeq,gLimFn,gLimSqrt,gLimRoot,gLimParam]},
- {id:'poch',name:'Pochodne i optymalizacja',g:[gDeriv,gTangent,gOptBox,gOptProd,gProfit,gMotion,gQuarticMin,gDerivQuotient,gMinMaxInterval,gTangentCond]},
- {id:'tryg',name:'Trygonometria',g:[gTrigEqGen,gTrigEqGen,gTrigEq,gTrigIneq,gTrigId,gTrigTg,gTrigSum,gTrigIdentity,gTrigGraph]},
+ {id:'poch',name:'Pochodne i optymalizacja',g:[gDeriv,gTangent,gOptBox,gOptProd,gProfit,gMotion,gQuarticMin,gDerivQuotient,gMinMaxInterval,gTangentCond,gDerivPow]},
+ {id:'tryg',name:'Trygonometria',g:[gTrigEqGen,gTrigEqGen,gTrigEq,gTrigIneq,gTrigId,gTrigTg,gTrigSum,gTrigIdentity,gTrigGraph,gRadian]},
  {id:'plan',name:'Planimetria i dowody geometryczne',g:[gCosLaw,gSinLaw,staticGen(PROOF_G),staticGen(PROOF_G2),staticProof(PROOF_G3),gMedian,gSinSmall,gMedianPara,gTrapPerp,gSecantTangent,gCyclicQuad]},
  {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gTangentLines,gTriArea,gParaVec,gSysCircleLine,gTwoCircles,gTangentFromPoint,gCircumcircle,gParallelDist]},
- {id:'dorys',name:'Geometria z dorysowaniem (tricky)',g:[staticGen(PROOF_T),staticGen(PROOF_G2),gTrapPerp,gCommonTangent,gTrapRight,gEquiDist,gMedianPara]},
+ {id:'dorys',name:'Geometria z dorysowaniem (tricky)',g:[staticGen(PROOF_T),staticGen(PROOF_G2),gTrapPerp,gCommonTangent,gTrapRight,gEquiDist,gMedianPara,gShortestPath]},
  {id:'graf',name:'Wykresy funkcji i przekształcenia',g:[gTransformR,gTransformR,gAbsParam,gQuadGraph]},
  {id:'model',name:'Modelowanie i optymalizacja z treścią',g:[gTravel,gBoxMin,gCanMin,gBounce,gProfit,gMotion,gOptBox]},
  {id:'multi',name:'Zadania wieloetapowe',g:[gMultiPoly,gMultiTri,gMultiQuad]},
- {id:'stereo',name:'Stereometria',g:[gPyramid,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral,gPyrSection,gSphereInOut,gEdgeAngle]},
- {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths,gWordPerm,gVariation,gBalls]}];
+ {id:'stereo',name:'Stereometria',g:[gPyramid,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral,gPyrSection,gSphereInOut,gEdgeAngle,gShortestPath]},
+ {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths,gWordPerm,gVariation,gBalls,gNewton]}];
 const DEF=['zbiory','abs','lin','kw','wiel','dow'];
 globalThis.__T={BASIC,EXT,seed:f=>{rnd=f}};
 
@@ -1394,10 +1438,10 @@ function cMeanW(){const c=[ri(1,5),ri(1,5),ri(1,5),ri(1,5)],n=c.reduce((a,b)=>a+
 const CLOSED=[[cLog,1],[cPow,1],[cProc,1],[cRootMC,1],[cLokataMC,1],[cAbs,2],[cQuadSet,2],[cSystemMC,2],[cDomain,3],[cSlope,3],[cParallel,3],[cPerpMC,3],[cVertex,3],[cDelta,3],[cPFLinear,3],[cPFQuad,3],
  [cArith,4],[cGeomMC,4],[cSumArith,4],[cTrig,5],[cRedukcja,5],[cInscribedMC,6],[cTalesMC,6],[cCircle,7],[cMidMC,7],[cCubeMC,8],[cCylMC,8],[cDice,9],[cChooseMC,9],[cStat,9],[cMeanW,9]];
 const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac,gPolyEqP,gFactorGroup]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
- {p:4,r:3.5,g:[gFence,gField,gTravel,gSysLinQuad]},{p:2,r:4,g:[gArith,gGeom,gRecur]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight,gQuadArea,gCircleArc]},{p:3,r:7,g:[gIsoOx,gDiagInter,gCircleP]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder,gSphere,gConeNet]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
+ {p:4,r:3.5,g:[gFence,gField,gTravel,gSysLinQuad]},{p:2,r:4,g:[gArith,gGeom,gRecur,gSeqSign]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight,gQuadArea,gCircleArc,gCosLaw,gTriType]},{p:3,r:7,g:[gIsoOx,gDiagInter,gCircleP,gSymCircle]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder,gSphere,gConeNet]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
 const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogEqSub,gLogEqBoth,gLogIneq,gLogBase]},{p:2,g:[gAbsR,gAbsEq,gAbsNested,gAbsQuad]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot,gCubeFormulas,gRatEqR]},{p:3,g:[staticGen(PROOF_A),gProofGen]},{p:3,g:[gTrigEqGen,gTrigEq,gTrigIneq,gTrigSum,gTrigIdentity]},
- {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof,gDerivQuotient,gTangentCond]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2),gSecantTangent,gCyclicQuad]},
- {p:4,g:[gTangentLines,gTriArea,gMultiTri,gSysCircleLine,gCircumcircle,gTangentFromPoint]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge,gPyrSection,gSphereInOut]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths,gVariation,gBalls]}];
+ {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof,gDerivQuotient,gTangentCond,gDerivPow]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2),gSecantTangent,gCyclicQuad]},
+ {p:4,g:[gTangentLines,gTriArea,gMultiTri,gSysCircleLine,gCircumcircle,gTangentFromPoint]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge,gPyrSection,gSphereInOut,gShortestPath]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths,gVariation,gBalls,gNewton]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
 function gen(gs){for(let k=0;k<8;k++){try{const r=pick(gs)();if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
 function buildExam(type,seed){rnd=mulberry(seed);const out=[];
