@@ -1072,50 +1072,291 @@ function gAbsNested(){const m=ri(0,4);
       :lt?`${N(b-c)} ${REL[rel]} ${X} ⇔ x ${REL[op]} ${N(a-b+c)} lub x ${REL[rel]} ${N(a+b-c)}.`:`${X} ${REL[op]} ${N(b-c)} ⇔ ${N(a-b+c)} ${REL[op]} x ${REL[op]} ${N(a+b-c)}.`,
     `${lt?'Bierzemy część wspólną':'Bierzemy sumę'} rozwiązań (najlepiej na osi liczbowej): x ∈ ${res}.`]}}
 
+/* ---------- uzupełnienie typów: PODSTAWA ---------- */
+const pctF=f=>{f=toF(f);return f.d===1?N(f.n):`${fH(f)} ≈ ${dec(f.n/f.d)}`};
+const fsub=(a,b)=>fadd(toF(a),fmul(F(-1),toF(b)));
+function gPctPoints(){const a=ri(2,30);let d;do d=riNZ(-12,15);while(a+d<=0);const b=a+d,ctx=pick(['Oprocentowanie lokaty','Bezrobocie w pewnym powiecie','Poparcie dla pewnego kandydata','Oprocentowanie kredytu']),rel=F(100*Math.abs(d),a);
+  return{q:`${ctx} zmieniło się z ${a}% do ${b}%. O ile punktów procentowych i o ile procent się zmieniło?`,a:`${d>0?'wzrost':'spadek'} o ${Math.abs(d)} pkt proc., czyli o ${pctF(rel)}%`,
+  s:[`Punkty procentowe to zwykła różnica procentów: ${b}% − ${a}% = ${N(d)} pkt proc.`,`Zmiana procentowa liczona jest względem wartości początkowej: ${fr(Math.abs(d),a)} · 100% = ${pctF(rel)}%.`,`Odpowiedź: ${d>0?'wzrost':'spadek'} o ${Math.abs(d)} punktów procentowych, czyli o ${pctF(rel)}%.`]}}
+function gApproxErr(){const[p,q]=pick([[2,3],[1,3],[5,6],[1,6],[4,7],[3,7],[5,9],[7,11],[1,7],[8,9]]),k=pick([1,2]),A=Math.round(p/q*10**k),ap=F(A,10**k),err=F(Math.abs(p*10**k-A*q),q*10**k),rel=fmul(fmul(err,F(q,p)),F(100));
+  const aps=(A/10**k).toFixed(k).replace('.',',');
+  return{q:`Liczbę ${fr(p,q)} przybliżono do ${k===1?'części dziesiątych':'części setnych'}: ${aps}. Oblicz błąd bezwzględny i błąd względny tego przybliżenia (w procentach).`,a:`błąd bezwzględny = ${fH(err)}, błąd względny = ${pctF(rel)}%`,
+  s:[`Błąd bezwzględny to |wartość dokładna − przybliżenie| = |${fr(p,q)} − ${aps}|.`,`${aps} = ${fH(ap)}, więc |${fr(p,q)} − ${fH(ap)}| = |${fr(p*10**k,q*10**k)} − ${fr(A*q,q*10**k)}| = ${fH(err)}.`,`Błąd względny = ${fr('błąd bezwzględny','|wartość dokładna|')} · 100% = ${fH(err)} : ${fr(p,q)} · 100% = ${pctF(rel)}%.`]}}
+function gRatPow(){const B=[[4,2,2],[9,2,3],[25,2,5],[8,3,2],[27,3,3],[64,3,4],[125,3,5],[16,4,2],[81,4,3],[32,5,2]];const t=[pick(B),pick(B)],ex=t.map(([n,r])=>pick([1,2,3,4,-1,-2,-3].filter(e=>gcd(Math.abs(e),r)===1&&Math.abs(e)<r+2)));
+  const val=t.map(([n,r,k],i)=>{const e=ex[i];return e>=0?F(k**e):F(1,k**(-e))}),sum=fadd(val[0],val[1]);
+  const term_=(i)=>`${t[i][0]}<sup>${e2s(ex[i],t[i][1])}</sup>`,e2s=(e,r)=>`${e<0?M:''}${Math.abs(e)}/${r}`;
+  return{q:`Oblicz: ${term_(0)} + ${term_(1)}`,a:fH(sum),
+  s:[`a<sup>p/r</sup> = (<sup>r</sup>√a)<sup>p</sup>, a ujemny wykładnik oznacza odwrotność.`,...t.map(([n,r,k],i)=>`${n}<sup>${e2s(ex[i],r)}</sup> = (<sup>${r}</sup>√${n})<sup>${ex[i]}</sup> = ${k}<sup>${ex[i]}</sup> = ${fH(val[i])}`),`Suma: ${fH(val[0])} + ${fH(val[1])} = ${fH(sum)}.`]}}
+function gLogPowA(){const b=pick([2,3,5]),x=pick([2,3,4,5,6,7,9].filter(v=>v!==b)),m=ri(0,3);let q,v,st;
+  if(m===0){const k=ri(1,3);q=`${b}<sup>${k} + log<sub>${b}</sub>${x}</sup>`;v=b**k*x;st=[`a<sup>u + w</sup> = a<sup>u</sup> · a<sup>w</sup>, więc ${q} = ${b}<sup>${k}</sup> · ${b}<sup>log<sub>${b}</sub>${x}</sup>.`,`Z definicji logarytmu ${b}<sup>log<sub>${b}</sub>${x}</sup> = ${x}.`,`Wynik: ${b**k} · ${x} = ${v}.`]}
+  else if(m===1){const k=pick([2,3]);q=`${b}<sup>${k}log<sub>${b}</sub>${x}</sup>`;v=x**k;st=[`k · log<sub>a</sub>x = log<sub>a</sub>x<sup>k</sup>, więc ${q} = ${b}<sup>log<sub>${b}</sub>${x}<sup>${k}</sup></sup>.`,`= ${x}<sup>${k}</sup> = ${v}.`]}
+  else if(m===2){q=`${b*b}<sup>log<sub>${b}</sub>${x}</sup>`;v=x*x;st=[`${b*b} = ${b}², więc ${q} = (${b}<sup>log<sub>${b}</sub>${x}</sup>)² .`,`= ${x}² = ${v}.`]}
+  else{const k=ri(1,2);q=`${b}<sup>log<sub>${b}</sub>${x} − ${k}</sup>`;const f=F(x,b**k);v=fH(f);st=[`a<sup>u − w</sup> = a<sup>u</sup> : a<sup>w</sup>, więc ${q} = ${b}<sup>log<sub>${b}</sub>${x}</sup> : ${b}<sup>${k}</sup>.`,`= ${x} : ${b**k} = ${v}.`]}
+  return{q:`Oblicz: ${q}`,a:''+v,s:st}}
+function gLogOrder(){const pool=[];for(const b of[2,3,4,5,8,9])for(const v of[F(-2),F(-1),F(-1,2),F(0),F(1,2),F(1),F(3,2),F(2),F(3)]){const sq={4:2,9:3}[b];let arg=null;
+  if(v.d===1)arg=v.n>=0?F(b**v.n):F(1,b**(-v.n));else if(sq)arg=v.n>0?F(sq**v.n):F(1,sq**(-v.n));if(arg&&arg.n<1000&&arg.d<1000)pool.push({b,v,arg})}
+  let ch;do ch=shuffle(pool).slice(0,4);while(new Set(ch.map(c=>c.v.n/c.v.d)).size<4);const lab=c=>`log<sub>${c.b}</sub>${fH(c.arg)}`,srt=ch.slice().sort((a,b)=>a.v.n/a.v.d-b.v.n/b.v.d);
+  return{q:`Uporządkuj rosnąco liczby: ${ch.map(lab).join(', ')}.`,a:srt.map(lab).join(' < '),
+  s:[...ch.map(c=>`${lab(c)} = ${fH(c.v)}, bo ${c.b}<sup>${c.v.d===1?N(c.v.n):N(c.v.n)+'/'+c.v.d}</sup> = ${fH(c.arg)}`),`Porządkujemy wartości: ${srt.map(c=>fH(c.v)).join(' < ')}.`]}}
+function gLogContext(){const m=ri(0,2);
+  if(m===0){const k=ri(2,6),d=ri(1,3);return{q:`pH roztworu oblicza się ze wzoru pH = −log[H⁺], gdzie [H⁺] to stężenie jonów wodorowych (mol/dm³). Roztwór A ma [H⁺] = 10<sup>${M}${k}</sup>, a roztwór B ma pH o ${d} większe. Oblicz pH roztworu A oraz ile razy stężenie [H⁺] w roztworze A jest większe niż w B.`,a:`pH<sub>A</sub> = ${k}, stężenie w A jest ${10**d} razy większe`,
+    s:[`pH<sub>A</sub> = −log 10<sup>${M}${k}</sup> = −(${M}${k}) = ${k}.`,`pH<sub>B</sub> = ${k+d}, więc [H⁺]<sub>B</sub> = 10<sup>${M}${k+d}</sup>.`,`${fr(`10<sup>${M}${k}</sup>`,`10<sup>${M}${k+d}</sup>`)} = 10<sup>${d}</sup> = ${10**d}.`]}}
+  if(m===1){const k=ri(3,10);return{q:`Poziom natężenia dźwięku oblicza się ze wzoru L = 10 · log${fr('I','I<sub>0</sub>')} (w decybelach). Ile decybeli ma dźwięk o natężeniu I = 10<sup>${k}</sup> · I<sub>0</sub>? Ile razy wzrośnie natężenie, gdy poziom wzrośnie o 20 dB?`,a:`L = ${10*k} dB; natężenie wzrośnie 100 razy`,
+    s:[`L = 10 · log 10<sup>${k}</sup> = 10 · ${k} = ${10*k} dB.`,`Wzrost o 20 dB: 10 · log${fr('I<sub>2</sub>','I<sub>1</sub>')} = 20, czyli log${fr('I<sub>2</sub>','I<sub>1</sub>')} = 2 i ${fr('I<sub>2</sub>','I<sub>1</sub>')} = 10² = 100.`]}}
+  const N0=pick([1000,2000,4000,8000]),T=pick([2,3,5,8]),k=ri(2,4);return{q:`Masa substancji promieniotwórczej maleje zgodnie ze wzorem m(t) = m<sub>0</sub> · (${fr(1,2)})<sup>t/${T}</sup>, gdzie t to czas w latach. Początkowo było ${N0} g. Po ilu latach zostanie ${dec(N0/2**k)} g? Ile substancji zostanie po ${T*(k+1)} latach?`,a:`po ${k*T} latach; po ${T*(k+1)} latach zostanie ${dec(N0/2**(k+1))} g`,
+    s:[`${N0} · (${fr(1,2)})<sup>t/${T}</sup> = ${dec(N0/2**k)} ⇔ (${fr(1,2)})<sup>t/${T}</sup> = ${fr(1,2**k)} = (${fr(1,2)})<sup>${k}</sup>.`,`t/${T} = ${k}, czyli t = ${k*T} lat (można też: t/${T} = log<sub>1/2</sub>${fr(1,2**k)}).`,`m(${T*(k+1)}) = ${N0} · (${fr(1,2)})<sup>${k+1}</sup> = ${dec(N0/2**(k+1))} g.`]}}
+function gRatExpr(){const m=ri(0,3);let a=riNZ(-6,6),b;do b=riNZ(-6,6);while(Math.abs(b)===Math.abs(a));
+  if(m===0)return{q:`Wyznacz dziedzinę i uprość wyrażenie ${fr(poly([1,0,-a*a]),poly([1,a,0]))}.`,a:`x ≠ 0 i x ≠ ${N(-a)}; ${fr(sh(a),'x')}`,
+    s:[`Dziedzina: mianownik ${poly([1,a,0])} = x(${sh(-a)}) ≠ 0, więc x ≠ 0 i x ≠ ${N(-a)}.`,`Licznik: x² − ${a*a} = (${sh(a)})(${sh(-a)}) (różnica kwadratów).`,`Skracamy (${sh(-a)}): ${fr(`(${sh(a)})(${sh(-a)})`,`x(${sh(-a)})`)} = ${fr(sh(a),'x')}.`]};
+  if(m===1)return{q:`Wykonaj mnożenie i uprość: ${fr(poly([1,0,-a*a]),poly([1,2*b,b*b]))} · ${fr(sh(-b),sh(a))}. Podaj założenia.`,a:`x ≠ ${N(-b)} i x ≠ ${N(a)}; ${fr(sh(-a),sh(-b))}`,
+    s:[`Założenia: mianowniki ≠ 0: (${sh(-b)})² ≠ 0 i ${sh(a)} ≠ 0, czyli x ≠ ${N(-b)}, x ≠ ${N(a)}.`,`Rozkładamy: x² − ${a*a} = (${sh(a)})(${sh(-a)}), ${poly([1,2*b,b*b])} = (${sh(-b)})².`,`${fr(`(${sh(a)})(${sh(-a)})`,`(${sh(-b)})²`)} · ${fr(sh(-b),sh(a))} — skracamy (${sh(a)}) i (${sh(-b)}).`,`Wynik: ${fr(sh(-a),sh(-b))}.`]};
+  if(m===2)return{q:`Wykonaj dzielenie i uprość: ${fr(poly([1,0,-a*a]),'x')} : ${fr(sh(-a),'x²')}. Podaj założenia.`,a:`x ≠ 0 i x ≠ ${N(-a)}; ${poly([1,-a,0])}`,
+    s:[`Założenia: x ≠ 0 (mianowniki) oraz dzielnik ≠ 0, czyli ${sh(-a)} ≠ 0, x ≠ ${N(-a)}.`,`Dzielenie zamieniamy na mnożenie przez odwrotność: ${fr(poly([1,0,-a*a]),'x')} · ${fr('x²',sh(-a))}.`,`= ${fr(`(${sh(a)})(${sh(-a)}) · x²`,`x(${sh(-a)})`)} = x(${sh(a)}) = ${poly([1,-a,0])}.`]};
+  const num=a-b;return{q:`Zapisz w postaci jednego ułamka: ${fr(1,sh(a))} − ${fr(1,sh(b))}. Podaj założenia.`,a:`x ≠ ${N(a)} i x ≠ ${N(b)}; ${fr(N(num),poly(expand([a,b])))}`,
+    s:[`Założenia: x ≠ ${N(a)} i x ≠ ${N(b)}.`,`Wspólny mianownik: (${sh(a)})(${sh(b)}).`,`${fr(`(${sh(b)}) − (${sh(a)})`,`(${sh(a)})(${sh(b)})`)} = ${fr(N(num),`(${sh(a)})(${sh(b)})`)} = ${fr(N(num),poly(expand([a,b])))}.`]}}
+function gFactorGroup(){let a,b;do{a=riNZ(-5,5);b=ri(1,5)}while(Math.abs(a)===b);const cs=[1,a,-b*b,-a*b*b],eq=rnd()<.6,roots=[-a,-b,b].sort((x,y)=>x-y);
+  const st=[`Grupujemy wyrazy: (x³${term(a,'x²')}) − (${b*b===1?'':b*b}x${term(a*b*b,'')}).`,`Wyłączamy wspólne czynniki: x²(${sh(-a)}) − ${b*b}(${sh(-a)}) = (${sh(-a)})(x² − ${b*b}).`,`x² − ${b*b} = (${sh(b)})(${sh(-b)}), więc W(x) = (${sh(-a)})(${sh(b)})(${sh(-b)}).`];
+  if(eq)st.push(`Iloczyn jest równy 0, gdy któryś czynnik jest równy 0: x ∈ {${roots.map(N).join(', ')}}.`);
+  return{q:eq?`Rozwiąż równanie ${poly(cs)} = 0.`:`Rozłóż wielomian W(x) = ${poly(cs)} na czynniki liniowe.`,a:eq?`x ∈ {${roots.map(N).join(', ')}}`:`W(x) = (${sh(-a)})(${sh(b)})(${sh(-b)})`,s:st}}
+function gPolyEqP(){const m=ri(0,1);
+  if(m===0){const k=ri(1,7);const rs=[-k,0,k];return{q:`Rozwiąż równanie x³ − ${k*k}x = 0.`,a:`x ∈ {${rs.map(N).join(', ')}}`,s:[`Wyłączamy x przed nawias: x(x² − ${k*k}) = 0.`,`x² − ${k*k} = (${sh(k)})(${sh(-k)}), więc x(${sh(k)})(${sh(-k)}) = 0.`,`x = 0 lub x = ${k} lub x = ${M}${k}.`]}}
+  const[r1,r2]=distinct(2,-6,6).filter(x=>x),r=[0,r1,r2];if(!r1||!r2)return gFactorGroup();const cs=expand([r1,r2]);const rs=r.slice().sort((x,y)=>x-y);
+  return{q:`Rozwiąż równanie ${poly([...cs,0])} = 0.`,a:`x ∈ {${rs.map(N).join(', ')}}`,s:[`Wyłączamy x: x(${poly(cs)}) = 0.`,`x = 0 lub ${poly(cs)} = 0.`,...deltaSteps(...cs),`Odpowiedź: x ∈ {${rs.map(N).join(', ')}}.`]}}
+const SOLVEFOR=[
+ ['P = ½(a + b) · h (pole trapezu)','h',`h = ${fr('2P','a + b')}`,['Mnożymy obie strony przez 2: 2P = (a + b)h.','Dzielimy przez (a + b) > 0: h = 2P/(a + b).']],
+ ['V = ⅓πr²h (objętość stożka)','h',`h = ${fr('3V','πr²')}`,['Mnożymy obie strony przez 3: 3V = πr²h.','Dzielimy przez πr²: h = 3V/(πr²).']],
+ [`${fr(1,'R')} = ${fr(1,'R<sub>1</sub>')} + ${fr(1,'R<sub>2</sub>')}`,'R<sub>2</sub>',`R<sub>2</sub> = ${fr('R · R<sub>1</sub>','R<sub>1</sub> − R')}`,[`${fr(1,'R<sub>2</sub>')} = ${fr(1,'R')} − ${fr(1,'R<sub>1</sub>')} = ${fr('R<sub>1</sub> − R','R · R<sub>1</sub>')}.`,'Odwracamy obie strony: R<sub>2</sub> = R · R<sub>1</sub>/(R<sub>1</sub> − R).']],
+ ['s = v<sub>0</sub>t + ½at²','a',`a = ${fr('2(s − v<sub>0</sub>t)','t²')}`,['Odejmujemy v<sub>0</sub>t: s − v<sub>0</sub>t = ½at².','Mnożymy przez 2 i dzielimy przez t²: a = 2(s − v<sub>0</sub>t)/t².']],
+ ['E = ½mv² (v > 0)','v',`v = √(2E/m)`,['Mnożymy przez 2 i dzielimy przez m: v² = 2E/m.','v > 0, więc v = √(2E/m).']],
+ [`y = ${fr('2x + 3','x − 1')}`,'x',`x = ${fr('y + 3','y − 2')}`,['Mnożymy przez (x − 1): y(x − 1) = 2x + 3, czyli xy − y = 2x + 3.','Wyrazy z x na lewą stronę: xy − 2x = y + 3, czyli x(y − 2) = y + 3.','Dzielimy przez (y − 2): x = (y + 3)/(y − 2) (dla y ≠ 2).']],
+ ['a<sub>n</sub> = a<sub>1</sub> + (n − 1)r','n',`n = ${fr('a<sub>n</sub> − a<sub>1</sub>','r')} + 1`,['a<sub>n</sub> − a<sub>1</sub> = (n − 1)r.','n − 1 = (a<sub>n</sub> − a<sub>1</sub>)/r, więc n = (a<sub>n</sub> − a<sub>1</sub>)/r + 1.']],
+ ['P = πr² + πrl (pole stożka)','l',`l = ${fr('P − πr²','πr')}`,['P − πr² = πrl.','Dzielimy przez πr: l = (P − πr²)/(πr).']]];
+function gSolveFor(){const[f,v,ans,st]=pick(SOLVEFOR);return{q:`Ze wzoru ${f} wyznacz ${v}.`,a:ans,s:st}}
+function gSysLinQuad(){const tan=rnd()<.25,[r1,r2]=tan?(r=>[r,r])(ri(-3,3)):distinct(2,-4,4).sort((x,y)=>x-y),m=ri(-3,3),k=ri(-5,5),b=m-(r1+r2),c=k+r1*r2;
+  const pts=[...new Set([r1,r2])].map(x=>`(${N(x)}, ${N(m*x+k)})`).join(' oraz ');
+  return{q:`Wyznacz współrzędne punktów wspólnych paraboli y = ${poly([1,b,c])} i prostej y = ${poly([m,k])}.`,a:tan?`jeden punkt wspólny ${pts} (prosta jest styczna do paraboli)`:pts,
+  s:[`Porównujemy prawe strony: ${poly([1,b,c])} = ${poly([m,k])}.`,`Porządkujemy: ${poly([1,b-m,c-k])} = 0.`,...deltaSteps(1,b-m,c-k),`Drugie współrzędne liczymy z równania prostej: ${[...new Set([r1,r2])].map(x=>`y(${N(x)}) = ${N(m*x+k)}`).join(', ')}.`,`Odpowiedź: ${pts}.`]}}
+function gSystemType(){const a=riNZ(-4,4),b=riNZ(-4,4),c=ri(-6,6),k=pick([2,3,-2]),t=ri(0,2);let a2,b2,c2;
+  if(t===0){a2=k*a;b2=k*b;c2=k*c}else if(t===1){a2=k*a;b2=k*b;c2=k*c+riNZ(-3,3)}else{do{a2=riNZ(-4,4);b2=riNZ(-4,4)}while(a*b2===a2*b);c2=ri(-6,6)}
+  const A=['nieskończenie wiele rozwiązań — równania opisują tę samą prostą','brak rozwiązań — proste są równoległe i różne','dokładnie jedno rozwiązanie — proste przecinają się w jednym punkcie'][t];
+  return{q:`Ile rozwiązań ma układ równań<br>${lead(a,'x')}${term(b,'y')} = ${N(c)}<br>${lead(a2,'x')}${term(b2,'y')} = ${N(c2)}<br>Podaj interpretację geometryczną.`,a:A,
+  s:[`Każde równanie opisuje prostą. Porównujemy współczynniki: ${t<2?`drugie równanie po lewej stronie to pierwsze pomnożone przez ${N(k)}`:`${fr(N(a2),N(a))} ≠ ${fr(N(b2),N(b))}, więc proste mają różne kierunki`}.`,
+    t===0?`Prawa strona też: ${N(c)} · ${pN(k)} = ${N(c2)}, więc to ta sama prosta.`:t===1?`Prawa strona: ${N(c)} · ${pN(k)} = ${N(k*c)} ≠ ${N(c2)}, więc proste są równoległe, ale różne.`:'Proste nierównoległe przecinają się w dokładnie jednym punkcie.',`Odpowiedź: ${A}.`]}}
+function gLogFn(){const B=pick([2,3,'1/2','1/3']),inv=typeof B==='string',n=inv?+B.slice(2):B,p=ri(-3,3),q=ri(-2,2),bs=inv?fr(1,n):''+n;
+  const pw=e=>inv?(e>=0?F(1,n**e):F(n**(-e))):(e>=0?F(n**e):F(1,n**(-e))),zero=fadd(F(p),pw(-q)),k=inv?-ri(1,2):ri(1,2),x1=fadd(F(p),pw(k)),f=x=>Math.log(x-p)/Math.log(inv?1/n:n)+q;
+  const pts=[];for(let x=p+0.03;x<=p+8.01;x+=0.03){const y=f(x);if(Math.abs(y)<=6)pts.push([+x.toFixed(2),y])}
+  return{q:`Funkcja f jest określona wzorem f(x) = log<sub>${bs}</sub>(${sh(p)})${term(q,'')}. Wyznacz dziedzinę funkcji, równanie asymptoty pionowej jej wykresu, miejsce zerowe, oblicz f(${fH(x1)}) i określ monotoniczność.`,
+  a:`D = (${N(p)}, +∞), asymptota x = ${N(p)}, miejsce zerowe x = ${fH(zero)}, f(${fH(x1)}) = ${N(k+q)}, funkcja ${inv?'malejąca':'rosnąca'}${plot([{pts}],`Wykres funkcji f (asymptota x = ${N(p)}).`)}`,
+  s:[`Liczba logarytmowana musi być dodatnia: ${sh(p)} > 0, więc D = (${N(p)}, +∞), a prosta x = ${N(p)} jest asymptotą pionową.`,`f(x) = 0 ⇔ log<sub>${bs}</sub>(${sh(p)}) = ${N(-q)} ⇔ ${sh(p)} = (${bs})<sup>${N(-q)}</sup> = ${fH(pw(-q))}, więc x = ${fH(zero)}.`,`f(${fH(x1)}) = log<sub>${bs}</sub>${fH(pw(k))}${term(q,'')} = ${N(k)}${term(q,'')} = ${N(k+q)}.`,`Podstawa ${inv?'jest mniejsza od 1, więc funkcja jest malejąca':'jest większa od 1, więc funkcja jest rosnąca'}.`]}}
+function gTableFn(){const a=F(...pick([[1,1],[2,1],[-1,1],[-2,1],[3,1],[1,2],[-1,2],[3,2]])),b=ri(-6,6),xs=distinct(3,-4,6).sort((x,y)=>x-y).map(x=>a.d===2?2*x:x),ys=xs.map(x=>fadd(fmul(a,F(x)),F(b))),z=fmul(F(-b),F(a.d,a.n));
+  return{q:`Funkcja liniowa f przyjmuje wartości podane w tabeli.<table class="tb"><tr><th>x</th>${xs.map(x=>`<td>${N(x)}</td>`).join('')}</tr><tr><th>f(x)</th>${ys.map(y=>`<td>${fH(y)}</td>`).join('')}</tr></table>Wyznacz wzór funkcji f, jej miejsce zerowe oraz f(10).`,
+  a:`f(x) = ${poly([a,b])}, miejsce zerowe x = ${fH(z)}, f(10) = ${fH(fadd(fmul(a,F(10)),F(b)))}`,
+  s:[`a = ${fr('f(x<sub>2</sub>) − f(x<sub>1</sub>)','x<sub>2</sub> − x<sub>1</sub>')} = ${fr(`${fH(ys[1])} − ${pF(ys[0])}`,`${N(xs[1])} − ${pN(xs[0])}`)} = ${fH(a)}.`,`b z dowolnego punktu: ${fH(ys[0])} = ${fH(a)} · ${pN(xs[0])} + b, więc b = ${N(b)}.`,`f(x) = ${poly([a,b])}; f(x) = 0 ⇔ x = ${fH(z)}; f(10) = ${fH(fadd(fmul(a,F(10)),F(b)))}.`]}}
+function gCircleArc(){const r=ri(2,12),al=pick([30,40,45,60,72,90,120,135,150,216,240]),Ps=F(al*r*r,360),Ls=F(al*2*r,360),pi=f=>(f.n===0?'0':(f.d===1?(f.n===1?'':f.n):fH(f))+'π');
+  return rnd()<.5?{q:`Oblicz pole wycinka koła o promieniu ${r} i kącie środkowym ${al}° oraz długość łuku tego wycinka.`,a:`P = ${pi(Ps)}, l = ${pi(Ls)}`,
+    s:[`Wycinek o kącie ${al}° to ${fr(al,360)} = ${fH(F(al,360))} koła.`,`P = ${fH(F(al,360))} · πr² = ${fH(F(al,360))} · ${r*r}π = ${pi(Ps)}.`,`l = ${fH(F(al,360))} · 2πr = ${fH(F(al,360))} · ${2*r}π = ${pi(Ls)}.`]}
+    :{q:`Obwód koła jest równy ${2*r}π. Oblicz pole tego koła oraz pole wycinka tego koła o kącie środkowym ${al}°.`,a:`P<sub>koła</sub> = ${r*r}π, P<sub>wycinka</sub> = ${pi(Ps)}`,s:[`2πr = ${2*r}π, więc r = ${r}.`,`P = πr² = ${r*r}π.`,`Wycinek: ${fH(F(al,360))} · ${r*r}π = ${pi(Ps)}.`]}}
+function gQuadArea(){if(rnd()<.5){const[u,v,w]=pickTriple(41),k=ri(1,2),d1=2*u*k,d2=2*v*k;
+    return{q:`Przekątne rombu mają długości ${d1} i ${d2}. Oblicz pole i obwód rombu oraz wysokość rombu.`,a:`P = ${d1*d2/2}, bok = ${w*k}, obwód = ${4*w*k}, h = ${fH(F(d1*d2/2,w*k))}`,
+    s:[`P = ${fr('d<sub>1</sub> · d<sub>2</sub>',2)} = ${fr(`${d1} · ${d2}`,2)} = ${d1*d2/2}.`,`Przekątne rombu są prostopadłe i dzielą się na połowy: bok = √(${u*k}² + ${v*k}²) = ${w*k}, obwód = ${4*w*k}.`,`P = a · h, więc h = ${fr(d1*d2/2,w*k)} = ${fH(F(d1*d2/2,w*k))}.`]}}
+  const a=ri(2,12),b=ri(2,12),al=pick([30,45,60,120,135,150]),S={30:[F(1,2),1],150:[F(1,2),1],45:[F(1,2),2],135:[F(1,2),2],60:[F(1,2),3],120:[F(1,2),3]}[al],P=fsq(fmul(S[0],F(a*b)),S[1]),sv=S[1]===1?fr(1,2):fr(`√${S[1]}`,2);
+  return{q:`Równoległobok ma boki długości ${a} i ${b}, a kąt między nimi ma miarę ${al}°. Oblicz pole równoległoboku.`,a:`P = ${P}`,s:[`P = a · b · sin α.`,`sin ${al}° = ${sv}.`,`P = ${a} · ${b} · ${sv} = ${P}.`]}}
+function gCircleP(){const a=ri(-5,5),b=ri(-5,5),u=riNZ(-5,5),v=ri(-5,5),r2=u*u+v*v,Q=[a+ri(-5,5),b+ri(-5,5)],dq=(Q[0]-a)**2+(Q[1]-b)**2,on=dq===r2?'leży na okręgu':dq<r2?'leży wewnątrz okręgu':'leży na zewnątrz okręgu';
+  return{q:`Wyznacz równanie okręgu o środku S = (${N(a)}, ${N(b)}) przechodzącego przez punkt P = (${N(a+u)}, ${N(b+v)}). Sprawdź, jak względem tego okręgu położony jest punkt Q = (${N(Q[0])}, ${N(Q[1])}).`,
+  a:`(${sh(a)})² + (${sh(b,'y')})² = ${r2}; Q ${on}`,
+  s:[`Promień to odległość S od P: r² = (${N(a+u)} − ${pN(a)})² + (${N(b+v)} − ${pN(b)})² = ${u*u} + ${v*v} = ${r2}.`,`Równanie: (${sh(a)})² + (${sh(b,'y')})² = ${r2}.`,`Dla Q: (${N(Q[0])} − ${pN(a)})² + (${N(Q[1])} − ${pN(b)})² = ${dq} ${dq===r2?'=':dq<r2?'<':'>'} ${r2}, więc Q ${on}.`]}}
+function gSphere(){const r=ri(1,9),m=ri(0,2),V=F(4*r**3,3),Vs=(V.d===1?V.n:fH(V))+'π';
+  if(m===0)return{q:`Oblicz objętość i pole powierzchni kuli o promieniu ${r}.`,a:`V = ${Vs}, P = ${4*r*r}π`,s:[`V = ${fr(4,3)}πr³ = ${fr(4,3)} · ${r**3}π = ${Vs}.`,`P = 4πr² = 4 · ${r*r}π = ${4*r*r}π.`]};
+  if(m===1)return{q:`Pole powierzchni kuli jest równe ${4*r*r}π. Oblicz objętość tej kuli.`,a:`r = ${r}, V = ${Vs}`,s:[`4πr² = ${4*r*r}π, więc r² = ${r*r}, r = ${r}.`,`V = ${fr(4,3)}πr³ = ${Vs}.`]};
+  return{q:`Objętość kuli jest równa ${Vs}. Oblicz pole powierzchni tej kuli.`,a:`r = ${r}, P = ${4*r*r}π`,s:[`${fr(4,3)}πr³ = ${Vs}, więc r³ = ${r**3}, r = ${r}.`,`P = 4πr² = ${4*r*r}π.`]}}
+function gConeNet(){if(rnd()<.5){const[p,l]=pick([[3,5],[4,5],[1,2],[1,3],[2,3],[1,4],[3,4],[5,6],[2,5]]),k=ri(1,4),r=p*k,L=l*k,ang=F(360*r,L);
+    return{q:`Stożek ma promień podstawy ${r} i tworzącą długości ${L}. Powierzchnię boczną rozcięto wzdłuż tworzącej i rozłożono — powstał wycinek koła. Oblicz miarę kąta środkowego tego wycinka i pole powierzchni bocznej stożka.`,
+    a:`α = ${pctF(ang)}°, P<sub>b</sub> = ${r*L}π`,s:[`Wycinek ma promień równy tworzącej (${L}), a jego łuk ma długość obwodu podstawy: 2π · ${r} = ${2*r}π.`,`${fr('α','360°')} · 2π · ${L} = ${2*r}π, więc α = 360° · ${fr(r,L)} = ${pctF(ang)}°.`,`P<sub>b</sub> = πrl = π · ${r} · ${L} = ${r*L}π.`]}}
+  const[al,frc]=pick([[90,F(1,4)],[120,F(1,3)],[180,F(1,2)],[216,F(3,5)],[240,F(2,3)],[288,F(4,5)]]),l=frc.d*ri(1,3)*(frc.d===5?1:2),r=l*frc.n/frc.d,h2=l*l-r*r;
+  return{q:`Wycinek koła o promieniu ${l} i kącie środkowym ${al}° zwinięto w powierzchnię boczną stożka. Oblicz promień podstawy i wysokość tego stożka.`,a:`r = ${r}, h = ${sq(h2)}`,
+  s:[`Łuk wycinka staje się obwodem podstawy: ${fr(al,360)} · 2π · ${l} = 2πr, więc r = ${fH(frc)} · ${l} = ${r}.`,`Tworząca to promień wycinka: l = ${l}.`,`h = √(l² − r²) = √(${l*l} − ${r*r}) = ${sq(h2)}.`]}}
+
+/* ---------- uzupełnienie typów: ROZSZERZENIE ---------- */
+const xs1=v=>v.d===1?N(v.n):N(v.n)+'/'+v.d;
+const pw2=(b,e)=>e>=0?F(b**e):F(1,b**(-e));
+function gLogEqSub(){const b=pick([2,3]),[m,n]=distinct(2,-2,3).sort((x,y)=>x-y),s=m+n,p=m*n,x1=pw2(b,m),x2=pw2(b,n);
+  return{q:`Rozwiąż równanie log<sub>${b}</sub>²x${s===0?'':` ${s>0?'−':'+'} ${Math.abs(s)===1?'':Math.abs(s)+' · '}log<sub>${b}</sub>x`}${term(p,'')} = 0.`,a:`x ∈ {${fH(x1)}, ${fH(x2)}}`,
+  s:[`Dziedzina: x > 0.`,`Podstawiamy t = log<sub>${b}</sub>x: ${poly([1,-s,p],'t')} = 0.`,...deltaSteps(1,-s,p).map(z=>z.replace(/x/g,'t')),`log<sub>${b}</sub>x = ${N(m)} ⇒ x = ${b}<sup>${N(m)}</sup> = ${fH(x1)};  log<sub>${b}</sub>x = ${N(n)} ⇒ x = ${b}<sup>${N(n)}</sup> = ${fH(x2)}.`,`Oba rozwiązania są dodatnie, więc należą do dziedziny.`]}}
+function gLogEqBoth(){const b=pick([2,3]),k=b===2?ri(2,4):2,i=pick([...Array(k+1).keys()].filter(j=>2*j!==k)),u=b**i,v=b**(k-i);let x0,p,q;do{x0=ri(-4,6);p=u-x0;q=v-x0}while(p===q||p===0&&q===0);
+  const x1=-(p+q)-x0,L=(z)=>`log<sub>${b}</sub>(${poly([1,z])})`;
+  return{q:`Rozwiąż równanie ${L(p)} + ${L(q)} = ${k}.`,a:`x = ${N(x0)}`,
+  s:[`Dziedzina: ${poly([1,p])} > 0 i ${poly([1,q])} > 0, czyli x > ${N(Math.max(-p,-q))}.`,`Suma logarytmów: log<sub>${b}</sub>[(${poly([1,p])})(${poly([1,q])})] = ${k}, więc (${poly([1,p])})(${poly([1,q])}) = ${b}<sup>${k}</sup> = ${b**k}.`,
+    `${poly([1,p+q,p*q-b**k])} = 0.`,...deltaSteps(1,p+q,p*q-b**k),`x = ${N(x1)} nie należy do dziedziny (${N(x1)} ≤ ${N(Math.max(-p,-q))}), zostaje x = ${N(x0)}.`]}}
+function gLogIneq(){const inv=rnd()<.5,b=pick([2,3]),p=ri(-5,5),k=inv?-ri(1,3):ri(1,3),rel=pick(['<','>','<=','>=']),bs=inv?fr(1,b):''+b,lim=p+b**Math.abs(k);
+  const grow=!inv,less=rel[0]==='<',eq=rel.length>1,small=grow===less;
+  const A=small?`x ∈ (${N(p)}, ${N(lim)}${eq?'⟩':')'}`:`x ∈ ${eq?'⟨':'('}${N(lim)}, +∞)`;
+  return{q:`Rozwiąż nierówność log<sub>${bs}</sub>(${sh(p)}) ${REL[rel]} ${N(k)}.`,a:A,
+  s:[`Dziedzina: ${sh(p)} > 0, czyli x > ${N(p)}.`,`${N(k)} = log<sub>${bs}</sub>(${bs})<sup>${N(k)}</sup> = log<sub>${bs}</sub>${b**Math.abs(k)}.`,
+    inv?`Podstawa ${fr(1,b)} < 1, więc funkcja logarytmiczna jest malejąca — przy opuszczaniu logarytmów zmieniamy znak nierówności.`:`Podstawa ${b} > 1, więc funkcja jest rosnąca — znak nierówności zostaje.`,
+    `${sh(p)} ${REL[small?(eq?'<=':'<'):(eq?'>=':'>')]} ${b**Math.abs(k)}, czyli x ${REL[small?(eq?'<=':'<'):(eq?'>=':'>')]} ${N(lim)}.`,`Część wspólna z dziedziną: ${A}.`]}}
+function gLogBase(){const r1=pick([2,3,4,5,6]),r2=-ri(1,4),a=r1+r2,b=-r1*r2;
+  return{q:`Rozwiąż równanie log<sub>x</sub>(${poly([a,b])}) = 2.`,a:`x = ${r1}`,
+  s:[`Dziedzina: podstawa x > 0 i x ≠ 1, liczba logarytmowana ${poly([a,b])} > 0.`,`Z definicji logarytmu: x² = ${poly([a,b])}, czyli ${poly([1,-a,-b])} = 0.`,...deltaSteps(1,-a,-b),`x = ${N(r2)} < 0 nie może być podstawą logarytmu. Dla x = ${r1}: ${poly([a,b])} = ${r1*r1} > 0 ✓.`,`Odpowiedź: x = ${r1}.`]}}
+function gLogParam(){const c=pick([2,4]),L=c*c/4,top=2**L;
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie x² − ${c}x + log<sub>2</sub>m = 0 ma dwa różne rozwiązania dodatnie.`,a:`m ∈ (1, ${top})`,
+  s:[`Dziedzina parametru: m > 0.`,`Dwa różne pierwiastki: Δ = ${c*c} − 4log<sub>2</sub>m > 0 ⇔ log<sub>2</sub>m < ${L} ⇔ m < 2<sup>${L}</sup> = ${top}.`,`Oba dodatnie (wzory Viète'a): x<sub>1</sub> + x<sub>2</sub> = ${c} > 0 ✓ oraz x<sub>1</sub>x<sub>2</sub> = log<sub>2</sub>m > 0 ⇔ m > 1.`,`Część wspólna: m ∈ (1, ${top}).`]}}
+function gCubeFormulas(){const a=pick([1,2,3]);let b;do b=ri(1,5);while(gcd(a,b)>1);const plus=rnd()<.5,A=a===1?'x':a+'x',sg=plus?'+':'−';
+  const cs=[a**3,0,0,plus?b**3:-(b**3)],qd=`${a===1?'':a*a}x² ${plus?'−':'+'} ${a*b===1?'':a*b}x + ${b*b}`,root=F(plus?-b:b,a);
+  return rnd()<.5?{q:`Rozłóż na czynniki wielomian W(x) = ${poly(cs)}.`,a:`W(x) = (${A} ${sg} ${b})(${qd})`,
+    s:[`Wzór: a³ ${sg} b³ = (a ${sg} b)(a² ${plus?'−':'+'} ab + b²).`,`${poly(cs)} = (${A})³ ${sg} ${b}³.`,`W(x) = (${A} ${sg} ${b})(${qd}); trójmian w drugim nawiasie ma Δ < 0, więc dalej się nie rozkłada.`]}
+   :{q:`Rozwiąż równanie ${poly(cs)} = 0.`,a:`x = ${fH(root)}`,
+    s:[`(${A})³ ${sg} ${b}³ = (${A} ${sg} ${b})(${qd}) = 0.`,`${A} ${sg} ${b} = 0 ⇒ x = ${fH(root)}.`,`Trójmian ${qd}: Δ = ${a*a*b*b} − 4 · ${a*a} · ${b*b} = ${N(-3*a*a*b*b)} < 0 — brak pierwiastków.`,`Odpowiedź: x = ${fH(root)}.`]}}
+function gPolyDiv(){const r=riNZ(-3,3),Q=[ri(1,3),ri(-5,5),ri(-5,5)],R=ri(-6,6),W=[Q[0],Q[1]-r*Q[0],Q[2]-r*Q[1],R-r*Q[2]];
+  const H=[W[0]];for(let i=1;i<4;i++)H.push(W[i]+r*H[i-1]);
+  return{q:`Podziel wielomian W(x) = ${poly(W)} przez dwumian ${sh(r)}. Podaj iloraz i resztę.`,a:`Q(x) = ${poly(Q)}, reszta R = ${N(R)}`,
+  s:[`Schemat Hornera dla x = ${N(r)}:<table class="tb"><tr><th></th>${W.map(c=>`<td>${N(c)}</td>`).join('')}</tr><tr><th>${N(r)}</th>${H.map(c=>`<td>${N(c)}</td>`).join('')}</tr></table>`,`Każdy kolejny wynik: poprzedni · ${pN(r)} + następny współczynnik.`,`Iloraz: Q(x) = ${poly(H.slice(0,3))}, reszta: ${N(H[3])} (= W(${N(r)}), zgodnie z twierdzeniem o reszcie).`]}}
+function gRatEqR(){let p,r1,r2;do{p=ri(-4,4);[r1,r2]=distinct(2,-5,6).sort((x,y)=>x-y)}while(r1===p||r2===p);const B=r1+r2-p,A=(r1-p)*(r2-p);
+  return{q:`Rozwiąż równanie x + ${fr(N(A),sh(p))} = ${N(B)}.`,a:`x ∈ {${N(r1)}, ${N(r2)}}`,
+  s:[`Dziedzina: x ≠ ${N(p)}.`,`Mnożymy przez (${sh(p)}): x(${sh(p)}) ${A<0?'−':'+'} ${Math.abs(A)} = ${N(B)}(${sh(p)}).`,`${poly([1,-p,A])} = ${poly([B,-B*p])} ⇔ ${poly([1,-p-B,A+B*p])} = 0.`,...deltaSteps(1,-p-B,A+B*p),`Oba różne od ${N(p)} — należą do dziedziny.`]}}
+const C25=[[5,0],[4,3],[3,4],[0,5],[-3,4],[-4,3],[-5,0],[-4,-3],[-3,-4],[0,-5],[3,-4],[4,-3]];
+const lineThrough=(P,Q)=>{const A=Q[1]-P[1],B=P[0]-Q[0],g=gcd(Math.abs(A),Math.abs(B))||1;let a=A/g,b=B/g;if(a<0||a===0&&b<0){a=-a;b=-b}return[a,b,-(a*P[0]+b*P[1])]};
+const lineStr=([a,b,c])=>`${a?lead(a,'x'):''}${a?term(b,'y'):lead(b,'y')}${term(c,'')} = 0`;
+const circStr=(a,b,r2)=>`${a?`(${sh(a)})²`:'x²'} + ${b?`(${sh(b,'y')})²`:'y²'} = ${r2}`;
+function gSysCircleLine(){const a=ri(-3,3),b=ri(-3,3),[i,j]=distinct(2,0,11),P=[C25[i][0]+a,C25[i][1]+b],Q=[C25[j][0]+a,C25[j][1]+b],L=lineThrough(P,Q),[la,lb,lc]=L,pts=[P,Q].sort((u,v)=>u[0]-v[0]||u[1]-v[1]);
+  const solv=lb!==0?`y = ${poly([F(-la,lb),F(-lc,lb)])}`:`x = ${fH(F(-lc,la))}`;
+  return{q:`Wyznacz współrzędne punktów wspólnych okręgu ${circStr(a,b,25)} i prostej ${lineStr(L)}.`,a:pts.map(p=>`(${N(p[0])}, ${N(p[1])})`).join(' i '),
+  s:[`Z równania prostej: ${solv}.`,`Podstawiamy do równania okręgu i otrzymujemy równanie kwadratowe z jedną niewiadomą.`,`Jego rozwiązania to ${lb!==0?'x':'y'} = ${pts.map(p=>N(lb!==0?p[0]:p[1])).join(' oraz ')} (Δ > 0, więc prosta jest sieczną).`,`Drugą współrzędną liczymy z równania prostej: ${pts.map(p=>`(${N(p[0])}, ${N(p[1])})`).join(', ')}.`]}}
+function gTwoCircles(){const[u,v,d]=pick([[3,4,5],[6,8,10],[0,5,5],[5,12,13],[8,6,10]]),a=ri(-3,3),b=ri(-3,3),t=ri(0,4);let r1,r2;
+  if(t===0){r1=ri(1,d-1);r2=d-r1}else if(t===1){r1=ri(1,d-2);r2=ri(1,d-r1-1)}else if(t===2){r1=ri(Math.ceil(d/2)+1,d+2);r2=ri(Math.max(1,d-r1+1),d+r1-1);if(Math.abs(r1-r2)>=d)r2=r1}
+  else if(t===3){r2=ri(1,4);r1=d+r2}else{r2=ri(1,3);r1=d+r2+ri(1,3)}
+  const dd=d,cls=dd>r1+r2?'rozłączne zewnętrznie':dd===r1+r2?'styczne zewnętrznie':dd>Math.abs(r1-r2)?'przecinające się w dwóch punktach':dd===Math.abs(r1-r2)?'styczne wewnętrznie':'rozłączne wewnętrznie (jeden w drugim)';
+  return{q:`Określ wzajemne położenie okręgów o<sub>1</sub>: ${circStr(a,b,r1*r1)} oraz o<sub>2</sub>: ${circStr(a+u,b+v,r2*r2)}.`,a:`okręgi ${cls}`,
+  s:[`S<sub>1</sub> = (${N(a)}, ${N(b)}), r<sub>1</sub> = ${r1}; S<sub>2</sub> = (${N(a+u)}, ${N(b+v)}), r<sub>2</sub> = ${r2}.`,`|S<sub>1</sub>S<sub>2</sub>| = √(${u}² + ${v}²) = ${d}.`,`r<sub>1</sub> + r<sub>2</sub> = ${r1+r2}, |r<sub>1</sub> − r<sub>2</sub>| = ${Math.abs(r1-r2)}.`,`Porównujemy: ${d} ${d>r1+r2?'> r₁ + r₂':d===r1+r2?'= r₁ + r₂':d>Math.abs(r1-r2)?'leży między |r₁ − r₂| a r₁ + r₂':d===Math.abs(r1-r2)?'= |r₁ − r₂|':'< |r₁ − r₂|'}, więc okręgi są ${cls}.`]}}
+function gTangentFromPoint(){const a=ri(-3,3),b=ri(-3,3);if(rnd()<.5){const[px,py]=pick(C25),P=[px+a,py+b],L=lineThrough([P[0],P[1]],[P[0]-py,P[1]+px]);
+    return{q:`Wyznacz równanie stycznej do okręgu ${circStr(a,b,25)} w punkcie P = (${N(P[0])}, ${N(P[1])}).`,a:lineStr(L),
+    s:[`Środek S = (${N(a)}, ${N(b)}); sprawdzamy: (${N(px)})² + (${N(py)})² = 25, więc P leży na okręgu.`,`Styczna jest prostopadła do promienia SP. Wektor SP = [${N(px)}, ${N(py)}] jest wektorem normalnym stycznej.`,`Styczna: ${N(px)}(x − ${pN(P[0])}) + ${pN(py)}(y − ${pN(P[1])}) = 0, czyli ${lineStr(L)}.`]}}
+  const[u,v,d]=pick([[6,8,10],[5,12,13],[8,6,10],[0,13,13],[12,9,15]]),r=pick(d===13?[5,12]:d===15?[9,12]:[6,8]),t=Math.sqrt(d*d-r*r);
+  return{q:`Z punktu P = (${N(a+u)}, ${N(b+v)}) poprowadzono styczne do okręgu ${circStr(a,b,r*r)}. Oblicz odległość punktu P od punktów styczności.`,a:`${t}`,
+  s:[`S = (${N(a)}, ${N(b)}), r = ${r}, |SP| = √(${u}² + ${v}²) = ${d}.`,`Promień do punktu styczności T jest prostopadły do stycznej, więc trójkąt STP jest prostokątny.`,`|PT| = √(|SP|² − r²) = √(${d*d} − ${r*r}) = ${t}.`]}}
+function gCircumcircle(){const a=ri(-4,4),b=ri(-4,4),ids=shuffle([...Array(12).keys()]).slice(0,3),P=ids.map(i=>[C25[i][0]+a,C25[i][1]+b]),s=P.map(p=>`(${N(p[0])}, ${N(p[1])})`);
+  const ex=`(x − ${pN(P[0][0])})² + (y − ${pN(P[0][1])})² = (x − ${pN(P[1][0])})² + (y − ${pN(P[1][1])})²`;
+  return{q:`Wyznacz równanie okręgu opisanego na trójkącie o wierzchołkach A = ${s[0]}, B = ${s[1]}, C = ${s[2]}.`,a:circStr(a,b,25),
+  s:[`Środek S = (x, y) jest równo odległy od A, B i C: |SA| = |SB| = |SC|.`,`|SA|² = |SB|²: ${ex} — po uproszczeniu kwadraty się redukują i zostaje równanie liniowe (symetralna AB).`,`Analogicznie |SA|² = |SC|² daje symetralną AC. Rozwiązanie układu tych dwóch równań: S = (${N(a)}, ${N(b)}).`,`r² = |SA|² = (${N(P[0][0])} − ${pN(a)})² + (${N(P[0][1])} − ${pN(b)})² = 25.`,`Równanie: ${circStr(a,b,25)}.`]}}
+function gParallelDist(){const[A,B,n]=pick([[3,4,5],[4,3,5],[5,12,13],[12,5,13],[3,-4,5],[8,6,10],[6,-8,10]]),c1=ri(-10,10),k=riNZ(-3,3),c2=c1+n*k;
+  return{q:`Oblicz odległość między prostymi równoległymi ${lineStr([A,B,c1])} i ${lineStr([A,B,c2])}.`,a:`${Math.abs(k)}`,
+  s:[`Proste mają ten sam wektor normalny [${A}, ${B}], więc są równoległe.`,`d = ${fr('|C<sub>1</sub> − C<sub>2</sub>|','√(A² + B²)')} = ${fr(`|${N(c1)} − ${pN(c2)}|`,`√(${A*A} + ${B*B})`)} = ${fr(Math.abs(c1-c2),n)} = ${Math.abs(k)}.`]}}
+function gTrigSum(){const[p,q,c]=pickTriple(30),[u,v,w]=pickTriple(30),plus=rnd()<.5,sa=F(p,c),ca=F(q,c),cb=F(-u,w),sb=F(v,w);
+  const r=plus?fadd(fmul(sa,cb),fmul(ca,sb)):fadd(fmul(sa,cb),fmul(F(-1),fmul(ca,sb)));
+  return{q:`Kąt α jest ostry i sin α = ${fH(sa)}, a β ∈ (90°, 180°) i cos β = ${fH(cb)}. Oblicz sin(α ${plus?'+':'−'} β).`,a:fH(r),
+  s:[`cos α = √(1 − sin²α) = ${fH(ca)} (α ostry, cos α > 0).`,`sin β = √(1 − cos²β) = ${fH(sb)} (β w II ćwiartce, sin β > 0).`,`sin(α ${plus?'+':'−'} β) = sin α cos β ${plus?'+':'−'} cos α sin β = ${fH(sa)} · ${pF(cb)} ${plus?'+':'−'} ${fH(ca)} · ${fH(sb)} = ${fH(r)}.`]}}
+const TRIG_ID=[
+ ['(sin α + cos α)² − 1 = 2sin α cos α',['L = sin²α + 2sin α cos α + cos²α − 1.','sin²α + cos²α = 1, więc L = 1 + 2sin α cos α − 1 = 2sin α cos α = P.']],
+ [`${fr('1','cos²α')} − tg²α = 1`,[`tg²α = ${fr('sin²α','cos²α')}, więc L = ${fr('1 − sin²α','cos²α')}.`,`1 − sin²α = cos²α, więc L = ${fr('cos²α','cos²α')} = 1 = P.`]],
+ [`${fr('sin α','1 − cos α')} = ${fr('1 + cos α','sin α')} (dla α, przy których obie strony mają sens)`,[`Mnożymy na krzyż: sin²α = (1 − cos α)(1 + cos α).`,`Prawa strona to 1 − cos²α = sin²α — równość prawdziwa.`,'Wszystkie przejścia były równoważne (mianowniki ≠ 0), więc tożsamość zachodzi.']],
+ ['sin⁴α − cos⁴α = sin²α − cos²α',['L = (sin²α − cos²α)(sin²α + cos²α) (różnica kwadratów).','sin²α + cos²α = 1, więc L = sin²α − cos²α = P.']],
+ [`tg α + ${fr('1','tg α')} = ${fr('1','sin α cos α')}`,[`L = ${fr('sin α','cos α')} + ${fr('cos α','sin α')} = ${fr('sin²α + cos²α','sin α cos α')}.`,`= ${fr(1,'sin α cos α')} = P.`]],
+ ['cos 2α = 1 − 2sin²α',['cos 2α = cos²α − sin²α.','cos²α = 1 − sin²α, więc cos 2α = 1 − sin²α − sin²α = 1 − 2sin²α.']],
+ [`${fr('sin 2α','1 + cos 2α')} = tg α`,['sin 2α = 2sin α cos α, 1 + cos 2α = 1 + 2cos²α − 1 = 2cos²α.',`L = ${fr('2sin α cos α','2cos²α')} = ${fr('sin α','cos α')} = tg α = P.`]],
+ ['sin 3α = 3sin α − 4sin³α',['sin 3α = sin(2α + α) = sin 2α cos α + cos 2α sin α.','= 2sin α cos²α + (1 − 2sin²α)sin α = 2sin α(1 − sin²α) + sin α − 2sin³α.','= 3sin α − 4sin³α.']]];
+function gTrigIdentity(){const[t,st]=pick(TRIG_ID);return{q:`Wykaż, że ${t}.`,a:'tożsamość zachodzi — dowód w rozwiązaniu',s:st}}
+function gTrigGraph(){const A=pick([1,2,3]),k=pick([1,2,3,F(1,2)]),fn=pick(['sin','cos']),D=ri(-2,2),kk=toF(k),T=fmul(F(2),F(kk.d,kk.n)),Ts=(T.d===1?(T.n===1?'':T.n):fH(T))+'π';
+  const kx=kk.d===1?(kk.n===1?'x':kk.n+'x'):`${fr(1,2)}x`,f=x=>A*Math[fn](kk.n/kk.d*x)+D,pts=[];for(let x=-6.3;x<=6.3;x+=0.05)pts.push([+x.toFixed(2),f(x)]);
+  return{q:`Funkcja f(x) = ${A===1?'':A}${fn} ${kx}${term(D,'')}. Wyznacz zbiór wartości funkcji f, jej okres podstawowy oraz największą wartość. Naszkicuj wykres.`,
+  a:`ZW = ⟨${N(D-A)}, ${N(D+A)}⟩, T = ${Ts}, f<sub>max</sub> = ${N(D+A)}${plot([{pts}],'Wykres funkcji f.')}`,
+  s:[`${fn} przyjmuje wartości z ⟨−1, 1⟩, więc ${A===1?'':A}${fn} ${kx} ∈ ⟨${N(-A)}, ${A}⟩.`,`Przesunięcie o ${N(D)} w pionie: ZW = ⟨${N(D-A)}, ${N(D+A)}⟩, f<sub>max</sub> = ${N(D+A)}.`,`Okres ${fn} x to 2π, a ${fn}(kx) ma okres ${fr('2π','|k|')} = ${Ts}.`]}}
+function gSecantTangent(){const a=ri(1,6),m=ri(2,4),PA=a,PB=a*m*m,PT=a*m;
+  return rnd()<.5?{q:`Z punktu P leżącego poza okręgiem poprowadzono styczną PT (T — punkt styczności) oraz sieczną przecinającą okrąg w punktach A i B (A między P i B). |PA| = ${PA}, |AB| = ${PB-PA}. Oblicz |PT|.`,a:`|PT| = ${PT}`,
+    s:[`Twierdzenie o stycznej i siecznej: |PT|² = |PA| · |PB|.`,`|PB| = |PA| + |AB| = ${PB}.`,`|PT|² = ${PA} · ${PB} = ${PT*PT}, więc |PT| = ${PT}.`,`(Dowód: trójkąty PTA i PBT są podobne — wspólny kąt P i ∢PTA = ∢PBT, kąt między styczną a cięciwą równa się kątowi wpisanemu.)`]}
+   :{q:`Z punktu P poprowadzono styczną PT do okręgu i sieczną przecinającą okrąg w punktach A i B (A między P i B). |PT| = ${PT}, |PA| = ${PA}. Oblicz długość cięciwy AB.`,a:`|AB| = ${PB-PA}`,
+    s:[`|PT|² = |PA| · |PB|.`,`${PT*PT} = ${PA} · |PB|, więc |PB| = ${PB}.`,`|AB| = |PB| − |PA| = ${PB-PA}.`]}}
+function gCyclicQuad(){if(rnd()<.5){const A=ri(50,130),B=ri(50,130);
+    return{q:`Czworokąt ABCD jest wpisany w okrąg. ∢DAB = ${A}°, ∢ABC = ${B}°. Oblicz miary pozostałych kątów czworokąta.${figCyc?figCyc():''}`,a:`∢BCD = ${180-A}°, ∢CDA = ${180-B}°`,
+    s:['W czworokącie wpisanym w okrąg sumy przeciwległych kątów są równe 180° (kąty wpisane oparte na łukach dopełniających się do pełnego okręgu).',`∢BCD = 180° − ${A}° = ${180-A}°.`,`∢CDA = 180° − ${B}° = ${180-B}°.`]}}
+  const a=ri(3,12),b=ri(3,12),c=ri(3,12),d=a+c-b;if(d<=0)return gCyclicQuad();
+  return{q:`W czworokąt ABCD można wpisać okrąg. |AB| = ${a}, |BC| = ${b}, |CD| = ${c}. Oblicz |DA| i obwód czworokąta.`,a:`|DA| = ${d}, obwód = ${2*(a+c)}`,
+  s:['Odcinki stycznych poprowadzonych z jednego punktu do okręgu są równe, więc w czworokącie opisanym na okręgu |AB| + |CD| = |BC| + |DA|.',`${a} + ${c} = ${b} + |DA|, więc |DA| = ${d}.`,`Obwód = 2(|AB| + |CD|) = ${2*(a+c)}.`]}}
+function gPyrSection(){const a=2*ri(1,6);if(rnd()<.5){const H=ri(2,10),P=fsq(F(a*H,2),2);
+    return{q:`Ostrosłup prawidłowy czworokątny ma krawędź podstawy ${a} i wysokość ${H}. Oblicz pole przekroju płaszczyzną przechodzącą przez wierzchołek ostrosłupa i przekątną podstawy.`,a:`P = ${P}`,
+    s:['Przekrój to trójkąt równoramienny: podstawą jest przekątna podstawy, a wysokością — wysokość ostrosłupa (spodek wysokości to środek przekątnej).',`d = a√2 = ${a}√2.`,`P = ½ · ${a}√2 · ${H} = ${P}.`]}}
+  const[k,n]=pick([[1,2],[1,3],[2,3],[1,4],[3,4]]),Pb=a*a,Ps=fmul(F(Pb),F(k*k,n*n));
+  return{q:`Ostrosłup o polu podstawy ${Pb} i wysokości H przecięto płaszczyzną równoległą do podstawy w odległości ${fr(k,n)}H od wierzchołka. Oblicz pole przekroju.`,a:`P = ${fH(Ps)}`,
+  s:['Przekrój równoległy do podstawy jest wielokątem podobnym do podstawy.',`Skala podobieństwa to stosunek odległości od wierzchołka: ${fr(k,n)}.`,`Pola mają się jak kwadrat skali: P = ${Pb} · (${fr(k,n)})² = ${fH(Ps)}.`]}}
+function gSphereInOut(){const a=2*ri(1,5),r=a/2,m=ri(0,2);
+  if(m===0)return{q:`Oblicz stosunek objętości kuli opisanej na sześcianie do objętości kuli wpisanej w ten sześcian.`,a:'3√3 (czyli (√3)³)',s:['Kula wpisana: r = a/2 (styka się ze ścianami).','Kula opisana: R = połowa przekątnej sześcianu = a√3/2.','R/r = √3, a objętości mają się jak sześcian skali: (√3)³ = 3√3.']};
+  if(m===1)return{q:`Sześcian ma krawędź ${a}. Oblicz pole powierzchni kuli opisanej na tym sześcianie i objętość kuli wpisanej.`,a:`P = ${3*a*a}π, V = ${fH(F(4*r**3,3))}π`,s:[`R = ${fr('a√3',2)} = ${r}√3, P = 4πR² = 4π · ${3*r*r} = ${3*a*a}π.`,`r = a/2 = ${r}, V = ${fr(4,3)}πr³ = ${fH(F(4*r**3,3))}π.`]};
+  const[R_,h,l]=pick([[3,4,5],[6,8,10],[5,12,13]]),ri_=F(R_*h,R_+l);
+  return{q:`Stożek ma promień podstawy ${R_} i wysokość ${h}. Oblicz promień kuli wpisanej w ten stożek.`,a:`r = ${fH(ri_)}`,
+  s:[`Przekrój osiowy to trójkąt równoramienny o podstawie ${2*R_}, wysokości ${h} i ramionach l = √(${R_}² + ${h}²) = ${l}.`,`Kula wpisana w stożek ↔ okrąg wpisany w ten trójkąt: r = ${fr('P','p')} (p — połowa obwodu).`,`P = ½ · ${2*R_} · ${h} = ${R_*h}, p = ${R_} + ${l} = ${R_+l}, r = ${fr(R_*h,R_+l)} = ${fH(ri_)}.`]}}
+function gEdgeAngle(){const a=ri(2,9),m=ri(0,2);
+  if(m===0)return{q:`Oblicz cosinus kąta nachylenia przekątnej sześcianu o krawędzi ${a} do płaszczyzny podstawy.`,a:`cos α = ${fr('√6',3)}`,s:[`Rzutem przekątnej sześcianu (${a}√3) na podstawę jest przekątna podstawy (${a}√2).`,`cos α = ${fr(`${a}√2`,`${a}√3`)} = ${fr('√2','√3')} = ${fr('√6',3)}.`,'(tg α = 1/√2 = √2/2, kąt ok. 35,3°).']};
+  if(m===1)return{q:`W sześcianie ABCDA'B'C'D' o krawędzi ${a} oblicz miarę kąta między przekątnymi AB' i AD' sąsiednich ścian.`,a:'60°',s:[`AB' = AD' = B'D' = ${a}√2 (przekątne ścian sześcianu).`,"Trójkąt AB'D' jest równoboczny, więc kąt ma miarę 60°."]};
+  return{q:`W sześcianie o krawędzi ${a} oblicz sinus kąta między przekątną sześcianu a przekątną ściany bocznej wychodzącą z tego samego wierzchołka.`,a:`sin α = ${fr('√3',3)}`,s:[`Trójkąt: przekątna sześcianu ${a}√3, przekątna ściany ${a}√2 i krawędź ${a} — prostokątny (krawędź ⟂ ścianie).`,`Przy kącie α krawędź ${a} jest przyprostokątną naprzeciw kąta: sin α = ${fr(a,`${a}√3`)} = ${fr('√3',3)}.`]}}
+function gDerivQuotient(){if(rnd()<.5){let a,b,c;do{a=riNZ(-4,4);b=ri(-6,6);c=riNZ(-5,5)}while(a*c===b);const num=a*c-b;
+    return{q:`Oblicz pochodną funkcji f(x) = ${fr(poly([a,b]),sh(-c))} i określ jej monotoniczność.`,a:`f'(x) = ${fr(N(num),`(${sh(-c)})²`)}; f ${num>0?'rosnąca':'malejąca'} w (−∞, ${N(-c)}) i w (${N(-c)}, +∞)`,
+    s:[`(${fr('u','v')})' = ${fr("u'v − uv'",'v²')}, x ≠ ${N(-c)}.`,`f'(x) = ${fr(`${N(a)}(${sh(-c)}) − (${poly([a,b])}) · 1`,`(${sh(-c)})²`)} = ${fr(N(num),`(${sh(-c)})²`)}.`,`Licznik ${num>0?'dodatni':'ujemny'}, mianownik dodatni, więc f jest ${num>0?'rosnąca':'malejąca'} w każdym z przedziałów dziedziny.`]}}
+  const p=riNZ(-4,4);return{q:`Wyznacz ekstrema funkcji f(x) = ${fr('x²',sh(p))}.`,a:p>0?`max w x = 0, f(0) = 0; min w x = ${N(2*p)}, f(${N(2*p)}) = ${N(4*p)}`:`max w x = ${N(2*p)}, f(${N(2*p)}) = ${N(4*p)}; min w x = 0, f(0) = 0`,
+  s:[`x ≠ ${N(p)}. f'(x) = ${fr(`2x(${sh(p)}) − x²`,`(${sh(p)})²`)} = ${fr(poly([1,-2*p,0]),`(${sh(p)})²`)} = ${fr(`x(${sh(2*p)})`,`(${sh(p)})²`)}.`,`f'(x) = 0 ⇔ x = 0 lub x = ${N(2*p)}. Znak pochodnej = znak x(${sh(2*p)}): + , −, − , + (z przerwą w x = ${N(p)}).`,`${p>0?`Maksimum w x = 0: f(0) = 0; minimum w x = ${N(2*p)}: f(${N(2*p)}) = ${N(4*p)}.`:`Maksimum w x = ${N(2*p)}: f(${N(2*p)}) = ${N(4*p)}; minimum w x = 0: f(0) = 0.`}`]}}
+function gMinMaxInterval(){let r1,r2;do[r1,r2]=distinct(2,-3,4).sort((x,y)=>x-y);while((r1+r2)%2);const b=-3*(r1+r2)/2,c=3*r1*r2,d=ri(-5,5),cs=[1,b,c,d],l=r1-ri(1,2),u=r2+ri(-1,2),cand=[l,u,...[r1,r2].filter(x=>x>l&&x<u)],vals=cand.map(x=>ev(cs,x)),mx=Math.max(...vals),mn=Math.min(...vals);
+  return{q:`Wyznacz najmniejszą i największą wartość funkcji f(x) = ${poly(cs)} w przedziale ⟨${N(l)}, ${N(u)}⟩.`,a:`f<sub>min</sub> = ${N(mn)}, f<sub>max</sub> = ${N(mx)}`,
+  s:[`f'(x) = ${poly([3,2*b,c])} = 3(${sh(r1)})(${sh(r2)}).`,`Punkty krytyczne: x = ${N(r1)}, x = ${N(r2)}; do przedziału należą: ${cand.slice(2).map(N).join(', ')||'żaden'}.`,`Wartości: ${cand.map((x,i)=>`f(${N(x)}) = ${N(vals[i])}`).join(', ')}.`,`Najmniejsza: ${N(mn)}, największa: ${N(mx)}.`]}}
+function gTangentCond(){let x1,x2;do[x1,x2]=distinct(2,-3,3);while((x1+x2)%2);const a=-3*(x1+x2)/2,m=-3*x1*x2,k=ri(-5,5),f=x=>x**3+a*x*x,tg=x=>poly([m,f(x)-m*x]);
+  return{q:`Wyznacz równania stycznych do wykresu funkcji f(x) = ${poly([1,a,0,0])}, które są równoległe do prostej y = ${poly([m,k])}.`,a:[x1,x2].sort((u,v)=>u-v).map(x=>`y = ${tg(x)}`).join(' oraz '),
+  s:[`Styczna równoległa ma współczynnik kierunkowy ${N(m)}, więc f'(x<sub>0</sub>) = ${N(m)}.`,`f'(x) = ${poly([3,2*a,0])}; ${poly([3,2*a,-m])} = 0 ⇒ x<sub>0</sub> = ${N(x1)} lub x<sub>0</sub> = ${N(x2)}.`,...[x1,x2].map(x=>`x<sub>0</sub> = ${N(x)}: f(${N(x)}) = ${N(f(x))}, y = ${N(m)}(${sh(x)}) ${f(x)<0?'−':'+'} ${Math.abs(f(x))} ⇒ y = ${tg(x)}.`)]}}
+function gSeriesEq(){if(rnd()<.5){const k=ri(2,9),x=F(k,k+1);
+    return{q:`Rozwiąż równanie x + x² + x³ + … = ${k}, gdzie lewa strona jest sumą nieskończonego szeregu geometrycznego.`,a:`x = ${fH(x)}`,
+    s:['Szereg jest zbieżny, gdy |q| = |x| < 1. Wtedy suma = a₁/(1 − q) = x/(1 − x).',`${fr('x','1 − x')} = ${k} ⇒ x = ${k} − ${k}x ⇒ ${k+1}x = ${k} ⇒ x = ${fH(x)}.`,`|${fH(x)}| < 1 ✓.`]}}
+  const S=pick([2,3,4,6]);
+  return{q:`Rozwiąż równanie 1 − x + x² − x³ + … = ${S}.`,a:`x = ${fH(F(1-S,S))}`,
+  s:['To szereg geometryczny: a₁ = 1, q = −x; zbieżny dla |x| < 1. Suma = 1/(1 + x).',`${fr(1,'1 + x')} = ${S} ⇒ 1 + x = ${fr(1,S)} ⇒ x = ${fH(F(1-S,S))}.`,`|${fH(F(1-S,S))}| < 1 ✓.`]}}
+function gVariation(){const m=ri(0,2);
+  if(m===0){const n=ri(5,9),k=ri(3,4);let v=1;for(let i=0;i<k;i++)v*=n-i;return{q:`Na ile sposobów można z ${n} zawodników wybrać kolejno zwycięzcę, wicemistrza${k>3?', zdobywcę trzeciego i czwartego miejsca':' i zdobywcę trzeciego miejsca'}?`,a:''+v,s:['Kolejność ma znaczenie i nikt nie zajmuje dwóch miejsc — to wariacja bez powtórzeń.',`${Array.from({length:k},(_,i)=>n-i).join(' · ')} = ${v}.`]}}
+  if(m===1){const k=ri(4,6);return{q:`Ile jest kodów PIN złożonych z ${k} cyfr (cyfry mogą się powtarzać)? Ile z nich ma wszystkie cyfry różne?`,a:`${10**k}; wszystkie różne: ${Array.from({length:k},(_,i)=>10-i).reduce((a,b)=>a*b)}`,s:[`Wariacje z powtórzeniami: 10<sup>${k}</sup> = ${10**k}.`,`Bez powtórzeń: ${Array.from({length:k},(_,i)=>10-i).join(' · ')} = ${Array.from({length:k},(_,i)=>10-i).reduce((a,b)=>a*b)}.`]}}
+  const k=ri(3,5);return{q:`Ile jest liczb ${k}-cyfrowych o różnych cyfrach? Ile z nich jest parzystych?`,a:(()=>{let t=9;for(let i=1;i<k;i++)t*=10-i;let e0=1;for(let i=1;i<k;i++)e0*=10-i;let e2=8;for(let i=2;i<k;i++)e2*=10-i;return `${t}; parzystych: ${e0+4*e2}`})(),
+  s:[`Pierwsza cyfra: 9 możliwości (bez zera), następne: 9, 8, … — razem ${(()=>{let t=9;for(let i=1;i<k;i++)t*=10-i;return t})()}.`,`Parzyste, ostatnia cyfra 0: pozostałe ${k-1} miejsca to 9 · 8 · … = ${(()=>{let e=1;for(let i=1;i<k;i++)e*=10-i;return e})()}.`,`Ostatnia cyfra 2, 4, 6 lub 8 (4 sposoby): pierwsza ≠ 0 i ≠ ostatnia — 8 sposobów, pozostałe ${k-2} miejsca: ${Array.from({length:k-2},(_,i)=>8-i).join(' · ')||'1'}. Razem 4 · 8 · … = ${(()=>{let e=8;for(let i=2;i<k;i++)e*=10-i;return 4*e})()}.`,'Dodajemy oba przypadki (rozłączne).']}}
+function gBalls(){const n=ri(3,5),k=ri(2,Math.min(4,n)),tot=n**k;let diff=1;for(let i=0;i<k;i++)diff*=n-i;const pE=F((n-1)**k,tot),pD=F(diff,tot);
+  return{q:`${k} rozróżnialnych kul rozmieszczamy losowo w ${n} szufladach (każda kula niezależnie, do dowolnej szuflady). Oblicz prawdopodobieństwo, że (a) pierwsza szuflada będzie pusta, (b) każda kula trafi do innej szuflady.`,a:`(a) ${fH(pE)}, (b) ${fH(pD)}`,
+  s:[`|Ω| = ${n}<sup>${k}</sup> = ${tot} (każda kula ma ${n} możliwości).`,`(a) Każda kula omija pierwszą szufladę: ${n-1}<sup>${k}</sup> = ${(n-1)**k}, P = ${fr((n-1)**k,tot)} = ${fH(pE)}.`,`(b) Kule w różnych szufladach: ${Array.from({length:k},(_,i)=>n-i).join(' · ')} = ${diff}, P = ${fr(diff,tot)} = ${fH(pD)}.`]}}
+
 /* ---------- działy ---------- */
 const BASIC=[
- {name:'Potęgi, pierwiastki, procenty',g:[gPow,gProc,gLokata,gPensja,gCbrt,gAbsRoot,gSciNot]},
- {name:'Wyrażenia algebraiczne',g:[gShortMult,gShortMult,gIrrDen,gSciNot]},
+ {name:'Potęgi, pierwiastki, procenty',g:[gPow,gProc,gLokata,gPensja,gCbrt,gAbsRoot,gSciNot,gPctPoints,gApproxErr,gRatPow]},
+ {name:'Zbiory i przedziały',g:[gSets]},
+ {name:'Wyrażenia algebraiczne',g:[gShortMult,gShortMult,gIrrDen,gRatExpr,gRatExpr,gFactorGroup,gSolveFor]},
  {name:'Proporcjonalność odwrotna',g:[gInverse]},
- {name:'Logarytmy',g:[gLog,gLogVal,gLogDiff]},
+ {name:'Logarytmy',g:[gLog,gLogVal,gLogDiff,gLogPowA,gLogOrder,gLogContext,gLogFn]},
  {name:'Wartość bezwzględna',g:[gAbsB,gAbsB2]},
- {name:'Równania i nierówności',g:[gQuadIneq,gSystem,gRatEq,gLinIneqFrac,gQuadIneq2]},
- {name:'Funkcja liniowa',g:[gLine2,gPerp,gLineProps,gLineParamB]},
+ {name:'Równania i nierówności',g:[gQuadIneq,gSystem,gRatEq,gLinIneqFrac,gQuadIneq2,gSysLinQuad,gSystemType,gPolyEqP,gFactorGroup]},
+ {name:'Funkcja liniowa',g:[gLine2,gPerp,gLineProps,gLineParamB,gTableFn]},
  {name:'Funkcja kwadratowa',g:[gVertex,gQuadInt,gQuadFromAxis,gFence]},
  {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof,gSeqMono]},
  {name:'Trygonometria',g:[gTrigB,gTrigObt,cRedukcja]},
- {name:'Planimetria',g:[gTales,gEquil,gInscribed,gMedian,gSinSmall,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist,gPolygon,gSimilarArea]},
- {name:'Geometria analityczna',g:[gSeg,gIsoOx,gDiagInter,gSymPoint,gVector]},
- {name:'Stereometria',g:[gCube,gPrism,gSimilarSolids,gPyrAngle,gCylinder,gCuboidSec]},
- {name:'Kombinatoryka i prawdopodobieństwo',g:[gDiceB,()=>gDigits(3),gChoose,gProbDigits,gBraille,gReplace]},
+ {name:'Planimetria',g:[gTales,gEquil,gInscribed,gMedian,gSinSmall,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist,gPolygon,gSimilarArea,gCircleArc,gQuadArea]},
+ {name:'Geometria analityczna',g:[gSeg,gIsoOx,gDiagInter,gSymPoint,gVector,gCircleP,gTriArea]},
+ {name:'Stereometria',g:[gCube,gPrism,gSimilarSolids,gPyrAngle,gCylinder,gCuboidSec,gSphere,gConeNet,gCone,gCuboidDiag]},
+ {name:'Kombinatoryka i prawdopodobieństwo',g:[gDiceB,()=>gDigits(3),gChoose,gProbDigits,gBraille,gReplace,gNoReplace]},
  {name:'Statystyka',g:[gStats,gStatTable,gStatBars]},
  {name:'Dowody',g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen,gProofGen,staticProof(PROOF_B2),staticProof(PROOF_B2)]},
- {name:'Funkcje: wykresy i przekształcenia',g:[gGraphRead,gTransform,gQuadGraph,gPiecewise,gExpFn]},
+ {name:'Funkcje: wykresy i przekształcenia',g:[gGraphRead,gTransform,gQuadGraph,gPiecewise,gExpFn,gLogFn,gTableFn]},
  {name:'Zadania zamknięte (ABCD, P/F)',g:[cLog,cPow,cProc,cArith,cTrig,cVertex,cParallel,cCircle,cDice,cCubeMC,cStat,cPFLinear,cPFQuad,cDelta]},
  {name:'Zadania z treścią',g:[gField,gAmphi,gBacteria,gTravel,gLokata,gFence,gInverse]},
  {name:'Zadania wieloczęściowe',g:[gMultiQuad,gMultiTri]}];
 const EXT=[
  {id:'zbiory',name:'Liczby rzeczywiste i zbiory',g:[gSets,gSetsR,gSetsR]},
- {id:'log',name:'Logarytmy',g:[gLogExpr,gLogExpr,gLogEq,gLogEq,gLogExpr2]},
+ {id:'log',name:'Logarytmy',g:[gLogExpr,gLogEq,gLogExpr2,gLogEqSub,gLogEqBoth,gLogIneq,gLogIneq,gLogBase,gLogParam,gLogFn]},
  {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq,gAbsParam,gAbsQuad,gAbsQuad,gAbsNested,gAbsNested,gAbsNested]},
  {id:'lin',name:'Funkcja liniowa',g:[gLinParam2,gLinParam2,gParamLines,gLinParam]},
  {id:'kw',name:'Funkcja kwadratowa',g:[gViete,gParamDelta,gParamDelta,gRootsDiff,gSumSqParam]},
- {id:'wiel',name:'Wielomiany',g:[gPolyIneq,gBezout,gRemainder2,gPolyOneRoot,gDarboux]},
+ {id:'wiel',name:'Wielomiany',g:[gPolyIneq,gBezout,gRemainder2,gPolyOneRoot,gDarboux,gCubeFormulas,gPolyDiv]},
  {id:'dow',name:'Dowody algebraiczne',g:[staticGen(PROOF_A),gProofGen,gModProof,gPowProof,staticProof(PROOF_A2),staticProof(PROOF_A2)]},
- {id:'wym',name:'Funkcje wymierne',g:[gRatIneq,gLattice,gMonoProof]},
+ {id:'wym',name:'Funkcje wymierne',g:[gRatIneq,gLattice,gMonoProof,gRatEqR,gRatEqR]},
  {id:'wyk',name:'Funkcja wykładnicza',g:[gExpEq,gExpIneq]},
- {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom,gSeqMono]},
+ {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom,gSeqMono,gSeriesEq]},
  {id:'gran',name:'Granice',g:[gLimSeq,gLimFn,gLimSqrt,gLimRoot,gLimParam]},
- {id:'poch',name:'Pochodne i optymalizacja',g:[gDeriv,gTangent,gOptBox,gOptProd,gProfit,gMotion,gQuarticMin]},
- {id:'tryg',name:'Trygonometria',g:[gTrigEqGen,gTrigEqGen,gTrigEq,gTrigIneq,gTrigId,gTrigTg]},
- {id:'plan',name:'Planimetria i dowody geometryczne',g:[gCosLaw,gSinLaw,staticGen(PROOF_G),staticGen(PROOF_G2),staticProof(PROOF_G3),gMedian,gSinSmall,gMedianPara,gTrapPerp]},
- {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gDistPL,gTangentLines,gTriArea,gParaVec]},
+ {id:'poch',name:'Pochodne i optymalizacja',g:[gDeriv,gTangent,gOptBox,gOptProd,gProfit,gMotion,gQuarticMin,gDerivQuotient,gMinMaxInterval,gTangentCond]},
+ {id:'tryg',name:'Trygonometria',g:[gTrigEqGen,gTrigEqGen,gTrigEq,gTrigIneq,gTrigId,gTrigTg,gTrigSum,gTrigIdentity,gTrigGraph]},
+ {id:'plan',name:'Planimetria i dowody geometryczne',g:[gCosLaw,gSinLaw,staticGen(PROOF_G),staticGen(PROOF_G2),staticProof(PROOF_G3),gMedian,gSinSmall,gMedianPara,gTrapPerp,gSecantTangent,gCyclicQuad]},
+ {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gTangentLines,gTriArea,gParaVec,gSysCircleLine,gTwoCircles,gTangentFromPoint,gCircumcircle,gParallelDist]},
  {id:'dorys',name:'Geometria z dorysowaniem (tricky)',g:[staticGen(PROOF_T),staticGen(PROOF_G2),gTrapPerp,gCommonTangent,gTrapRight,gEquiDist,gMedianPara]},
  {id:'graf',name:'Wykresy funkcji i przekształcenia',g:[gTransformR,gTransformR,gAbsParam,gQuadGraph]},
  {id:'model',name:'Modelowanie i optymalizacja z treścią',g:[gTravel,gBoxMin,gCanMin,gBounce,gProfit,gMotion,gOptBox]},
  {id:'multi',name:'Zadania wieloetapowe',g:[gMultiPoly,gMultiTri,gMultiQuad]},
- {id:'stereo',name:'Stereometria',g:[gPyramid,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral]},
- {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths,gWordPerm]}];
+ {id:'stereo',name:'Stereometria',g:[gPyramid,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral,gPyrSection,gSphereInOut,gEdgeAngle]},
+ {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths,gWordPerm,gVariation,gBalls]}];
 const DEF=['zbiory','abs','lin','kw','wiel','dow'];
 globalThis.__T={BASIC,EXT,seed:f=>{rnd=f}};
 
@@ -1152,11 +1393,11 @@ function cMeanW(){const c=[ri(1,5),ri(1,5),ri(1,5),ri(1,5)],n=c.reduce((a,b)=>a+
 /* ---------- arkusze ---------- */
 const CLOSED=[[cLog,1],[cPow,1],[cProc,1],[cRootMC,1],[cLokataMC,1],[cAbs,2],[cQuadSet,2],[cSystemMC,2],[cDomain,3],[cSlope,3],[cParallel,3],[cPerpMC,3],[cVertex,3],[cDelta,3],[cPFLinear,3],[cPFQuad,3],
  [cArith,4],[cGeomMC,4],[cSumArith,4],[cTrig,5],[cRedukcja,5],[cInscribedMC,6],[cTalesMC,6],[cCircle,7],[cMidMC,7],[cCubeMC,8],[cCylMC,8],[cDice,9],[cChooseMC,9],[cStat,9],[cMeanW,9]];
-const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
- {p:4,r:3.5,g:[gFence,gField,gTravel]},{p:2,r:4,g:[gArith,gGeom,gRecur]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight]},{p:3,r:7,g:[gIsoOx,gDiagInter]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
-const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogDiff]},{p:2,g:[gAbsR,gAbsEq,gAbsNested,gAbsQuad]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot]},{p:3,g:[staticGen(PROOF_A),gProofGen]},{p:3,g:[gTrigEqGen,gTrigEq,gTrigIneq]},
- {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2)]},
- {p:4,g:[gTangentLines,gTriArea,gMultiTri]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths]}];
+const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac,gPolyEqP,gFactorGroup]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
+ {p:4,r:3.5,g:[gFence,gField,gTravel,gSysLinQuad]},{p:2,r:4,g:[gArith,gGeom,gRecur]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight,gQuadArea,gCircleArc]},{p:3,r:7,g:[gIsoOx,gDiagInter,gCircleP]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder,gSphere,gConeNet]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
+const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogEqSub,gLogEqBoth,gLogIneq,gLogBase]},{p:2,g:[gAbsR,gAbsEq,gAbsNested,gAbsQuad]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot,gCubeFormulas,gRatEqR]},{p:3,g:[staticGen(PROOF_A),gProofGen]},{p:3,g:[gTrigEqGen,gTrigEq,gTrigIneq,gTrigSum,gTrigIdentity]},
+ {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof,gDerivQuotient,gTangentCond]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2),gSecantTangent,gCyclicQuad]},
+ {p:4,g:[gTangentLines,gTriArea,gMultiTri,gSysCircleLine,gCircumcircle,gTangentFromPoint]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge,gPyrSection,gSphereInOut]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths,gVariation,gBalls]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
 function gen(gs){for(let k=0;k<8;k++){try{const r=pick(gs)();if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
 function buildExam(type,seed){rnd=mulberry(seed);const out=[];
