@@ -59,6 +59,9 @@ details[open] summary::before{transform:rotate(90deg)}
 .chk[aria-pressed=true]{background:var(--ok);color:var(--card);border-color:transparent}
 .ans{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--soft);line-height:2.05}
 .ans b{color:var(--blue)}
+.chkbox{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--card)}.chkbox summary{cursor:pointer;font-weight:600}.chsc{font-weight:400;opacity:.8;margin-left:6px}
+.mynote{width:100%;box-sizing:border-box;margin-top:10px;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:16px;resize:vertical}
+.crow{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer;line-height:1.6}.crow input{margin-top:5px;width:20px;height:20px;flex:none}.csum{margin:8px 0;font-size:17px}.cmt{margin-top:8px;padding:8px 12px;border-radius:8px;background:var(--soft);font-size:15px}.cmt ul{margin:6px 0 0;padding-left:20px}
 .sol{margin:12px 0 0;padding:10px 14px 10px 36px;border-radius:10px;border:1px dashed var(--line);background:var(--card);line-height:2.05}
 .sol li{margin:2px 0;padding-left:2px}.sol li::marker{color:var(--red);font-weight:700}
 .soldet{margin-top:10px}.soldet summary{font-weight:600;color:var(--blue)}
@@ -1411,6 +1414,53 @@ const HARDX={tryg:[gTrigQuadEq,gSumAngle,gTrigIneq],wiel:[gPolyOneRoot,gRatRoots
 const hardPool=id=>[...(HARD[id]||[]),...(HARD[id]||[]),...(HARDX[id]||[])];
 const EXAM_R_IDS=['gran','log','abs','wiel','dow','tryg','ciagi','kw','poch','model','plan','anal','stereo','komb','komb'];
 
+/* ---------- wzorcowe dowody + sprawdzanie (kryteria CKE) ---------- */
+const plainT=h=>(h||'').replace(/<figure[\s\S]*?<\/figure>/g,'').replace(/<svg[\s\S]*?<\/svg>/g,'');
+const isProof=q=>/(^|>|\s)(Wykaż|Udowodnij|Uzasadnij|Pokaż, że)/.test(plainT(q).replace(/<[^>]+>/g,' '));
+const proofKind=q=>{const t=plainT(q).replace(/<[^>]+>/g,' ');if(/trójkąt|czworoką|okręg|kąt|trapez|równoległob|prostokąt|romb|wielokąt|cięciw|styczn|środkow|dwusieczn|przekątn|ostrosłup|sześcian|graniastosłup/i.test(t))return'geo';
+  if(/podziel|reszt|parzyst|nieparzyst|całkowit|naturaln|liczba [0-9]/i.test(t))return'div';if(/nierówność|≥|≤|>|</.test(t))return'ineq';if(/rozwiązanie w przedziale|pierwiast/i.test(t))return'root';return'alg'};
+const hintTxt=a=>{const m=plainT(a).match(/Wskazówka:<\/b>\s*([\s\S]*)$/);return m?m[1].replace(/<br>\s*$/,'').trim():''};
+function proofModel(q,a){const k=proofKind(q),h=hintTxt(a),th=plainT(q).replace(/<[^>]+>/g,' ').replace(/^[\s\S]*?(Wykaż|Udowodnij|Uzasadnij|Pokaż), że\s*/,'').replace(/\s+/g,' ').trim();
+  const T=`<b>Teza:</b> ${th}`;
+  if(k==='ineq')return[T,'<b>Plan:</b> przekształcamy nierówność równoważnie — przenosimy wszystko na jedną stronę; mnożyć/dzielić wolno tylko przez wyrażenie o znanym znaku (dodatnie — znak zostaje).',`<b>Kluczowy krok:</b> ${h}`,'<b>Uzasadnienie:</b> kwadrat liczby rzeczywistej jest nieujemny, suma liczb nieujemnych jest nieujemna, a iloczyn liczb nieujemnych jest nieujemny.','<b>Wniosek:</b> otrzymaliśmy nierówność prawdziwą, równoważną wyjściowej — więc nierówność wyjściowa jest prawdziwa dla wszystkich rozważanych liczb. ∎'];
+  if(k==='div')return[T,'<b>Oznaczenia:</b> niech n będzie dowolną liczbą całkowitą (dla „kolejnych liczb” zapisujemy je jako n, n + 1, … albo symetrycznie wokół n).',`<b>Kluczowy krok:</b> ${h}`,'<b>Uzasadnienie:</b> wyrażenie w nawiasie (lub czynnik) jest liczbą całkowitą, więc otrzymana liczba jest wielokrotnością dzielnika (ewentualnie powiększoną o podaną resztę).','<b>Wniosek:</b> teza zachodzi dla każdej liczby całkowitej n. ∎'];
+  if(k==='geo')return[T,'<b>Rysunek i oznaczenia:</b> wykonaj rysunek, oznacz wierzchołki, dane kąty/odcinki i to, co trzeba wykazać (pomocniczy rysunek jest w odpowiedzi).',`<b>Kluczowy krok:</b> ${h}`,'<b>Uzasadnienie:</b> każdą równość kątów lub odcinków uzasadnij nazwą twierdzenia (kąty wpisane, naprzemianległe, cecha bkb/kbk/kkk, twierdzenie Talesa, Pitagorasa, cosinusów…).','<b>Wniosek:</b> z otrzymanych równości wynika teza. ∎'];
+  if(k==='root')return[T,`<b>Kluczowy krok:</b> ${h}`,'<b>Uzasadnienie:</b> wielomian jest funkcją ciągłą; skoro na końcach przedziału ma wartości przeciwnych znaków, to z własności Darboux przyjmuje w tym przedziale wartość 0.','<b>Wniosek:</b> równanie ma rozwiązanie w podanym przedziale. ∎'];
+  return[T,`<b>Kluczowy krok:</b> ${h}`,'<b>Wniosek:</b> z powyższego przekształcenia wynika teza. ∎']}
+function enrich(r){if(!r||!r.q)return r;if(isProof(r.q)&&!(r.s&&r.s.length)&&hintTxt(r.a))r={...r,s:proofModel(r.q,r.a)};return r}
+function criteria(t,pts){const q=t.q,s=t.s||[],P=pts||(isProof(q)?3:Math.min(4,Math.max(2,s.length)));
+  if(isProof(q)){const k=proofKind(q),h=hintTxt(t.a);
+    const L={ineq:['Przekształcenie nierówności do postaci równoważnej (wszystko na jedną stronę, mnożenie tylko przez wyrażenie dodatnie — z uzasadnieniem znaku).',`Zapisanie wyrażenia w postaci, z której widać znak (kwadrat, suma kwadratów, iloczyn): ${h}`,'Uzasadnienie nieujemności i zapisanie wniosku (że nierówność wyjściowa jest prawdziwa).'],
+      div:['Zapisanie liczby/liczb w postaci ogólnej (n — dowolna liczba całkowita) i poprawne przekształcenia.',`Doprowadzenie do postaci k · (wyrażenie całkowite)${/reszt/.test(plainT(q))?' + reszta':''}: ${h}`,'Uzasadnienie, że wyrażenie jest całkowite, i wniosek.'],
+      geo:['Rysunek z oznaczeniami (i dorysowanie potrzebnych odcinków).',`Wskazanie i uzasadnienie kluczowych równości (kąty, odcinki, podobieństwo/przystawanie): ${h}`,'Poprawny wniosek kończący dowód.'],
+      root:['Obliczenie wartości na końcach przedziału.','Stwierdzenie, że mają przeciwne znaki.','Powołanie się na ciągłość i własność Darboux + wniosek.'],
+      alg:[`Poprawne przekształcenia prowadzące do kluczowej zależności: ${h}`,'Uzasadnienie każdego kroku.','Wniosek.']}[k];
+    const c=P>=L.length?[...L]:[...L.slice(0,P-1),L.slice(P-1).join(' ')];while(c.length<P)c.push('Pełne, poprawne zakończenie dowodu.');return c}
+  const st=s.map(x=>plainT(x).replace(/<ol[\s\S]*?<\/ol>/g,'')).filter(x=>x.replace(/<[^>]+>/g,'').trim());if(!st.length)return['Poprawna metoda rozwiązania.','Poprawny wynik: '+plainT(t.a)].slice(0,P);
+  const fin='Poprawny wynik końcowy: '+plainT(t.a).replace(/<br>\s*<b>Wskazówka[\s\S]*$/,'');if(P===1)return[fin];
+  const groups=Array.from({length:P-1},()=>[]);st.forEach((x,i)=>groups[Math.min(P-2,Math.floor(i*(P-1)/st.length))].push(x));
+  return[...groups.map(g=>g.length?g.join(' '):'Poprawna kontynuacja metody (obliczenia pośrednie bez błędu).'),fin]}
+function comments(t){const q=plainT(t.q).replace(/<[^>]+>/g,' '),s=(t.s||[]).join(' '),all=q+' '+s,c=[];
+  if(isProof(t.q)){c.push('Sprawdzenie tezy na kilku przykładach nie jest dowodem — dostaniesz 0 pkt.','Nie zaczynaj od tezy, kończąc na „0 = 0” bez zaznaczenia równoważności przekształceń — zapisuj ⇔ albo przekształcaj od jednej strony do drugiej.','Na końcu musi być wniosek (np. „co kończy dowód”).');
+    if(proofKind(t.q)==='ineq')c.push('Dzielenie lub mnożenie przez wyrażenie o nieznanym znaku to błąd zasadniczy.');if(proofKind(t.q)==='geo')c.push('Każda równość kątów/odcinków musi mieć uzasadnienie (nazwa twierdzenia lub cechy).')}
+  if(/[Dd]ziedzin|≠/.test(all))c.push('Brak wyznaczenia dziedziny (lub założeń) zwykle kosztuje punkt — a odrzucenie złego rozwiązania bez dziedziny jest niemożliwe.');
+  if(/parametr/.test(q))c.push('Przy parametrze zapisz wszystkie warunki osobno i na końcu wyznacz ich część wspólną — brak części wspólnej to częsta strata 1–2 pkt.');
+  if(/sin|cos|tg/.test(q)&&/Rozwiąż/.test(q))c.push('Nie dziel przez sin x / cos x bez rozważenia przypadku, gdy są równe 0 — gubisz rozwiązania. Pamiętaj o „+ 2kπ” (albo „+ kπ”) i o przedziale.');
+  if(/największ|najmniejsz|optymal|maksym|minim/.test(q))c.push('W optymalizacji podaj dziedzinę funkcji i uzasadnij, że to maksimum/minimum (znak pochodnej przed i po punkcie).');
+  if(/nierówność/.test(q)&&/fr|\//.test(t.q))c.push('W nierównościach wymiernych nie mnóż przez mianownik o nieznanym znaku — przenieś na jedną stronę i zbadaj znak iloczynu.');
+  if(/prawdopodob/.test(q))c.push('Zapisz model: Ω, |Ω| i zdarzenie sprzyjające — sam wynik bez opisu zwykle daje 0–1 pkt.');
+  if(!isProof(t.q))c.push('Błąd rachunkowy przy poprawnej metodzie zwykle kosztuje tylko ostatni punkt — warto pisać czytelnie każde przekształcenie.');
+  return[...new Set(c)]}
+const needCheck=(t,pts)=>!t.closed&&!!t.s&&(isProof(t.q)||t.lvl==='Rozszerzenie'||(pts||0)>=3||(!pts&&t.s.length>=3));
+function checkBox(key,t,pts,saved){const cr=criteria(t,pts),sv=saved||{},ch=sv.c||[],sc=ch.filter(Boolean).length;
+  return`<details class="chkbox" data-key="${key}" data-pts="${cr.length}"><summary>✍️ ${isProof(t.q)?'Mój dowód':'Moje rozwiązanie'} — sprawdź się <span class="chsc">${sv.open?`${sc} / ${cr.length} pkt`:''}</span></summary>
+  <textarea class="mynote" rows="5" placeholder="Zapisz tu swój ${isProof(t.q)?'dowód':'tok rozwiązania'} (zapisuje się automatycznie)…">${(sv.t||'').replace(/</g,'&lt;')}</textarea>
+  <div class="acts"><button data-act="check">${sv.open?'Ukryj kryteria':'Sprawdź według kryteriów CKE'}</button></div>
+  <div class="crit"${sv.open?'':' hidden'}><p class="note">Odhacz, co masz w swoim rozwiązaniu — każdy punkt jak u egzaminatora:</p>
+  ${cr.map((c,i)=>`<label class="crow"><input type="checkbox" data-ci="${i}" ${ch[i]?'checked':''}><span><b>${i+1} pkt.</b> ${c}</span></label>`).join('')}
+  <div class="csum">Wynik: <b class="chsc2">${sc} / ${cr.length}</b> pkt</div>
+  <div class="cmt"><b>Komentarz egzaminatora — za co najczęściej odejmuje się punkty:</b><ul>${comments(t).map(x=>`<li>${x}</li>`).join('')}</ul></div></div></details>`}
+
 /* ---------- działy ---------- */
 /* ---------- UZUPEŁNIENIE WYMAGAŃ CKE (podstawa programowa 2019, matura od 2023) ---------- */
 const pl=(n,one,few,many)=>{n=Math.abs(n);return n===1?one:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?few:many};
@@ -1918,7 +1968,7 @@ globalThis.__T={BASIC,EXT,seed:f=>{rnd=f}};
 const qKey=q=>hashStr(q.replace(/<div class="mc"[\s\S]*$/,'').replace(/<[^>]+>/g,'')).toString(36);
 const gKey=(t,g)=>t.name+'#'+t.g.indexOf(g);
 function make(t,lvl,av){let best=null;
-  for(let k=0;k<14;k++){const g=pick(t.g);try{const r=g();if(!r||!r.q)continue;const o={...r,lvl,topic:t.name,qk:qKey(r.q),gk:gKey(t,g)};
+  for(let k=0;k<14;k++){const g=pick(t.g);try{const r=enrich(g());if(!r||!r.q)continue;const o={...r,lvl,topic:t.name,qk:qKey(r.q),gk:gKey(t,g)};
     if(!best)best=o;if(!av)return o;const newQ=!av.q.has(o.qk),newG=!av.g.has(o.gk);
     if(newQ&&(newG||k>=7))return o;if(newQ&&av.q.has(best.qk))best=o}catch(e){console.error(e)}}
   return best||{q:'Nie udało się wylosować zadania — wylosuj inny zestaw.',a:'',lvl,topic:t.name}}
@@ -1953,7 +2003,7 @@ const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogE
  {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof,gDerivQuotient,gTangentCond,gDerivPow]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2),gSecantTangent,gCyclicQuad]},
  {p:4,g:[gTangentLines,gTriArea,gMultiTri,gSysCircleLine,gCircumcircle,gTangentFromPoint]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge,gPyrSection,gSphereInOut,gShortestPath]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths,gVariation,gBalls,gNewtonEq]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
-function gen(gs){for(let k=0;k<8;k++){try{const r=pick(gs)();if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
+function gen(gs){for(let k=0;k<8;k++){try{const r=enrich(pick(gs)());if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
 function buildExam(type,seed,hard){rnd=mulberry(seed);const out=[];
   if(type==='p'){shuffle(CLOSED).slice(0,25).forEach(([g,r])=>out.push({...gen([g]),pts:1,closed:true,r}));OPEN_P.forEach(o=>out.push({...gen(o.g),pts:o.p,r:o.r}));out.sort((a,b)=>a.r-b.r)}
   else OPEN_R.forEach((o,i)=>{const h=hard?hardPool(EXAM_R_IDS[i]):[];out.push({...gen(h.length?(i===4||i===10?[...o.g,...h]:h):o.g),pts:o.p})});
@@ -2000,7 +2050,7 @@ function renderDaily(){
     <div class="meta"><span class="lvl ${t.lvl==='Podstawa'?'b':'r'}">${t.lvl}</span><span>${t.topic}</span></div>
     <h3>Zadanie ${i+1}</h3><div class="q">${t.q}</div>
     <div class="acts"><button data-act="ans" aria-expanded="false">Pokaż odpowiedź</button>${t.s?'<button data-act="sol" aria-expanded="false">Pokaż rozwiązanie</button>':''}<button class="chk" data-act="done" aria-pressed="${d}">${d?'✓ Zrobione':'Oznacz jako zrobione'}</button></div>
-    <div class="ans" hidden>${t.a}</div>${t.s?`<ol class="sol" hidden>${t.s.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}</article>`}).join('');
+    <div class="ans" hidden>${t.a}</div>${t.s?`<ol class="sol" hidden>${t.s.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}${needCheck(t)?checkBox('d'+(t.qk||qKey(t.q)),t,0,notes['d'+(t.qk||qKey(t.q))]):''}</article>`}).join('');
   if(cnt.b>0&&BASIC.every(t=>offB.has(t.name)))html+='<div class="empty">Zaznacz działy z podstawy, a pojawią się tu zadania z podstawy.</div>';
   if(cnt.r>0&&!done.size)html+='<div class="empty">Zaznacz przerobione działy z rozszerzenia, a pojawią się tu zadania z rozszerzenia.</div>';
   if(!tasks.length&&!cnt.b&&!cnt.r)html='<div class="empty">Ustaw liczbę zadań przyciskiem +.</div>';
@@ -2016,11 +2066,11 @@ function score(){const e=EX[mode];let s=0,g=0,max=0;tasks.forEach((t,i)=>{max+=t
 function renderExam(){const e=EX[mode];if(!e.seed){Object.assign(e,{seed:Math.floor(Math.random()*1e9),acc:0,running:false,done:false,pts:{},sel:{}});save()}
   /* arkusz zapisujemy, żeby aktualizacja generatorów nie zmieniła rozpoczętego arkusza */
   if(!Array.isArray(e.tasks)){e.tasks=buildExam(mode,e.seed,hard);save()}
-  tasks=e.tasks;const max=tasks.reduce((a,t)=>a+t.pts,0),nc=tasks.filter(t=>t.closed).length;
+  tasks=e.tasks=e.tasks.map(enrich);const max=tasks.reduce((a,t)=>a+t.pts,0),nc=tasks.filter(t=>t.closed).length;
   $('#einfo').innerHTML=`<b>${EXAMS[mode].name}</b> · 180 minut · ${max} punktów · ${tasks.length} zadań${nc?` (${nc} zamkniętych za 1 pkt, ${tasks.length-nc} otwartych)`:', wszystkie otwarte'}. Rozwiązuj na kartce; odpowiedzi zobaczysz po kliknięciu „Zakończ i sprawdź”.`;
   $('#list').innerHTML=tasks.map((t,i)=>`<article class="task" data-i="${i}"><div class="meta"><span class="lvl ${mode==='p'?'b':'r'}">${t.closed?'Zamknięte':'Otwarte'}</span></div>
     <h3>Zadanie ${i+1}. <span class="pts">(0–${t.pts})</span></h3><div class="q">${t.q}</div>
-    ${e.done?`<div class="ans">${t.a}</div>${t.s?`<details class="soldet"><summary>Rozwiązanie krok po kroku</summary><ol class="sol">${t.s.map(x=>`<li>${x}</li>`).join('')}</ol></details>`:''}<label class="score">Punkty: <select data-pts="${i}"><option value="">–</option>${Array.from({length:t.pts+1},(_,k)=>`<option ${String(e.pts[i])===String(k)?'selected':''}>${k}</option>`).join('')}</select> / ${t.pts}</label>`:''}</article>`).join('');
+    ${e.done?`<div class="ans">${t.a}</div>${t.s?`<details class="soldet"><summary>Rozwiązanie krok po kroku</summary><ol class="sol">${t.s.map(x=>`<li>${x}</li>`).join('')}</ol></details>`:''}<label class="score">Punkty: <select data-pts="${i}"><option value="">–</option>${Array.from({length:t.pts+1},(_,k)=>`<option ${String(e.pts[i])===String(k)?'selected':''}>${k}</option>`).join('')}</select> / ${t.pts}</label>${needCheck(t,t.pts)?checkBox('e'+mode+e.seed+'_'+i,t,t.pts,notes['e'+mode+e.seed+'_'+i]):''}`:''}</article>`).join('');
   document.querySelectorAll('#list .task').forEach(a=>{const i=+a.dataset.i;a.querySelectorAll('.mc,.pf').forEach((g,gi)=>{const k=e.sel[`${i}-${gi}`];if(e.done){g.dataset.done=1;const c=g.querySelector(`[data-k="${g.dataset.ok}"]`);c.classList.add('good');if(k&&k!==g.dataset.ok)g.querySelector(`[data-k="${k}"]`).classList.add('bad')}else if(k)g.querySelector(`[data-k="${k}"]`).classList.add('sel')})});
   $('#efinish').disabled=!!e.done;score();tick()}
 function finish(){const e=EX[mode];if(e.running){e.acc=elapsed(e);e.running=false}
@@ -2031,6 +2081,14 @@ function render(){document.querySelectorAll('.tabs button').forEach(b=>b.setAttr
   $('footer').textContent=mode==='d'?'Zestaw zmienia się codziennie o północy. Zadania i odpowiedzi są generowane automatycznie; przy wielu typach zadań jest też rozwiązanie krok po kroku, a w dowodach wskazówka lub pełny dowód. Zaznaczone działy i postęp zapisują się w tej przeglądarce.':'Arkusz jest generowany losowo według układu matury (formuła 2023): czas 180 minut, 50 punktów. Zadania otwarte oceniasz sam, porównując swoje rozwiązanie z odpowiedzią; za częściowo poprawne rozwiązanie przyznaj część punktów.';
   mode==='d'?renderDaily():renderExam()}
 const reset=()=>{st.done=[];save();render()};
+const notes=(n=>n&&typeof n==='object'?n:{})(store.get('mm_notes',{}));
+const saveNotes=()=>{const k=Object.keys(notes);if(k.length>400)k.slice(0,k.length-400).forEach(x=>delete notes[x]);store.set('mm_notes',notes)};
+const noteOf=box=>notes[box.dataset.key]||(notes[box.dataset.key]={t:'',c:[],open:false});
+const updScore=box=>{const n=noteOf(box),sc=n.c.filter(Boolean).length,P=+box.dataset.pts;box.querySelector('.chsc').textContent=n.open?`${sc} / ${P} pkt`:'';box.querySelector('.chsc2').textContent=`${sc} / ${P}`;
+  if(mode!=='d'){const a=box.closest('.task'),i=+a.dataset.i,e=EX[mode];if(e.done){e.pts[i]=Math.min(sc,tasks[i].pts);const sel=a.querySelector('select[data-pts]');if(sel)sel.value=String(e.pts[i]);save();if(typeof score==='function')score()}}};
+document.addEventListener('input',e=>{const ta=e.target.closest('.mynote');if(!ta)return;const n=noteOf(ta.closest('.chkbox'));n.t=ta.value;saveNotes()});
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-act="check"]');if(!b)return;e.stopPropagation();const box=b.closest('.chkbox'),n=noteOf(box);n.open=!n.open;box.querySelector('.crit').hidden=!n.open;b.textContent=n.open?'Ukryj kryteria':'Sprawdź według kryteriów CKE';updScore(box);saveNotes()},true);
+document.addEventListener('change',e=>{const c=e.target.closest('.crow input');if(!c)return;e.stopPropagation();const box=c.closest('.chkbox'),n=noteOf(box);n.c[+c.dataset.ci]=c.checked;updScore(box);saveNotes()},true);
 let confirmNew=0;
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.classList.contains('opt')){const g=b.closest('.mc,.pf');if(!g||g.dataset.done)return;
