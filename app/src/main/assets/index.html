@@ -62,6 +62,7 @@ details[open] summary::before{transform:rotate(90deg)}
 .chkbox{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--card)}.chkbox summary{cursor:pointer;font-weight:600}.chsc{font-weight:400;opacity:.8;margin-left:6px}
 .mynote{width:100%;box-sizing:border-box;margin-top:10px;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:16px;resize:vertical}
 .crow{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer;line-height:1.6}.crow input{margin-top:5px;width:20px;height:20px;flex:none}.csum{margin:8px 0;font-size:17px}.cmt{margin-top:8px;padding:8px 12px;border-radius:8px;background:var(--soft);font-size:15px}.cmt ul{margin:6px 0 0;padding-left:20px}
+.sys{display:inline-block;border-left:2px solid currentColor;border-radius:6px 0 0 6px;padding:2px 0 2px 8px;vertical-align:middle;line-height:1.9}
 .sol{margin:12px 0 0;padding:10px 14px 10px 36px;border-radius:10px;border:1px dashed var(--line);background:var(--card);line-height:2.05}
 .sol li{margin:2px 0;padding-left:2px}.sol li::marker{color:var(--red);font-weight:700}
 .soldet{margin-top:10px}.soldet summary{font-weight:600;color:var(--blue)}
@@ -944,7 +945,7 @@ function gExpFn(){const b=pick([2,3,F(1,2),F(1,3)]),p=ri(-3,3),q=ri(-4,4),B=toF(
 function gAbsParam(){const k=ri(1,8),t=ri(0,2),Q=['dokładnie cztery rozwiązania','dokładnie trzy rozwiązania','dokładnie dwa rozwiązania'][t],A=[`m ∈ (0, ${k*k})`,`m = ${k*k}`,`m ∈ {0} ∪ (${k*k}, +∞)`][t];
   return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie |x² − ${k*k}| = m ma ${Q}.`,a:`${A}<br>${hint(`narysuj wykres y = |x² − ${k*k}| (parabola odbita w górę między ${M}${k} a ${k}, lokalne maksimum ${k*k} w x = 0) i przecinaj go prostymi y = m`)}`}}
 function gWordPerm(){const w=pick(['MATURA','KAJAK','ANANAS','PAPUGA','BANAN','LALKA','KAKAO','TATAR','POTOP','KALINA']),perm=new Set(),go=(s,r)=>{if(!r.length){perm.add(s);return}for(let i=0;i<r.length;i++)go(s+r[i],r.slice(0,i)+r.slice(i+1))};go('',w);
-  const all=[...perm],cnt={};[...w].forEach(c=>cnt[c]=(cnt[c]||0)+1),rep=Object.entries(cnt).filter(e=>e[1]>1),L=rep[0][0];
+  const all=[...perm],cnt={};[...w].forEach(c=>cnt[c]=(cnt[c]||0)+1);const rep=Object.entries(cnt).filter(e=>e[1]>1),L=rep[0][0];
   const m=ri(0,2);let q,k;if(m===0){q=`Ile różnych „słów” (niekoniecznie mających sens) można ułożyć, przestawiając wszystkie litery wyrazu ${w}?`;k=all.length}
   else if(m===1){q=`Ile różnych „słów” można ułożyć z liter wyrazu ${w} (używając wszystkich liter), w których litery ${L} stoją obok siebie?`;k=all.filter(s=>new RegExp(L+'{'+cnt[L]+'}').test(s)).length}
   else{q=`Ile różnych „słów” można ułożyć z liter wyrazu ${w} (używając wszystkich liter), które zaczynają się od litery ${w[0]}?`;k=all.filter(s=>s[0]===w[0]).length}
@@ -1405,8 +1406,8 @@ function hRatIneq(){for(;;){const a=ri(-5,5),b=ri(-5,5),p=ri(-4,4),q=ri(-4,4);if
     const ans=`x ∈ ${iv.join(' ∪ ')}`;
     return{q:`Rozwiąż nierówność ${fr(sh(-a),sh(p))} ≥ ${fr(sh(-b),sh(q))}.`,a:ans,
     s:[`Dziedzina: x ≠ ${N(p)} i x ≠ ${N(q)}. Nie mnożymy przez mianowniki (nie znamy ich znaku) — przenosimy wszystko na jedną stronę.`,`${fr(`(${sh(-a)})(${sh(q)}) − (${sh(-b)})(${sh(p)})`,`(${sh(p)})(${sh(q)})`)} ≥ 0 ⇔ ${fr(poly([A,B]),`(${sh(p)})(${sh(q)})`)} ≥ 0.`,`Równoważnie: (${poly([A,B])})(${sh(p)})(${sh(q)}) ≥ 0, x ≠ ${N(p)}, x ≠ ${N(q)}. Miejsca zerowe: ${cr.map(c=>fH(c.f)).join(', ')}.`,`Znak iloczynu (współczynnik ${A>0?'dodatni':'ujemny'}, krzywa znaków od prawej ${A>0?'nad':'pod'} osią): ${ans}.`]}}}
-const HARD={tryg:[hTrigQuad,hTrigQuad,hTrigHard,hTrigHard,hTrigHard,hTrigParam],wiel:[hPolyParam,hPolyParam],anal:[hTangentsPoint,hLineCircleParam,hTriAnalytic],poch:[hOptHard,hOptHard,hTangentThrough,hMonoParam],model:[hOptHard],
-  ciagi:[hArithGeom,hArithGeom],komb:[hDiceN,hCountDigits,hCountDigits],stereo:[hDihedral],abs:[hAbsCount],graf:[hAbsCount],log:[hLogHard,hLogHard],wym:[hRatIneq,hRatIneq]};
+const HARD={tryg:[hTrigQuad,hTrigQuad,hTrigHard,hTrigHard,hTrigHard,hTrigParam],wiel:[hPolyParam,hPolyParam],anal:[hTangentsPoint,hLineCircleParam,hTriAnalytic],poch:[hOptHard,hOptHard,hTangentThrough,hMonoParam],model:[hOptHard,gWordRatR,gWordRatR],
+  ciagi:[hArithGeom,hArithGeom,gSeqWordR],kw:[gSysNonlin,gWordRatR],wym:[hRatIneq,hRatIneq,gWordRatR],komb:[hDiceN,hCountDigits,hCountDigits],stereo:[hDihedral],abs:[hAbsCount],graf:[hAbsCount],log:[hLogHard,hLogHard]};
 const HARDX={tryg:[gTrigQuadEq,gSumAngle,gTrigIneq],wiel:[gPolyOneRoot,gRatRoots,gDarboux,gPolyIneq],kw:[gParamDelta,gSumSqParam,gRootsDiff],abs:[gAbsNested,gAbsParam,gAbsQuad],lin:[gLinParam2,gParamLines],
  log:[gLogParam,gLogEqBoth,gLogIneq],poch:[gMinMaxInterval,gTangentCond,gOptBox,gCanMin,gBoxMin],stereo:[gCubeSec,gPyrSection,gShortestPath,gSphereInOut,gDihedral],komb:[gBayes,gBernoulliN,gUrns],
  ciagi:[gArithGeom,gSeriesX,gSeriesEq,gGeomOddEven],gran:[gLimParam,gContinuity,gLimRoot],wym:[gRatEqR,gAsymptote,gRatIneq],anal:[gTangentLines,gCircumcircle,gTwoCircles,gCommonTangent],graf:[gCompose,gAbsParam],model:[gBoxMin,gCanMin,gOptBox],
@@ -1460,6 +1461,102 @@ function checkBox(key,t,pts,saved){const cr=criteria(t,pts),sv=saved||{},ch=sv.c
   ${cr.map((c,i)=>`<label class="crow"><input type="checkbox" data-ci="${i}" ${ch[i]?'checked':''}><span><b>${i+1} pkt.</b> ${c}</span></label>`).join('')}
   <div class="csum">Wynik: <b class="chsc2">${sc} / ${cr.length}</b> pkt</div>
   <div class="cmt"><b>Komentarz egzaminatora — za co najczęściej odejmuje się punkty:</b><ul>${comments(t).map(x=>`<li>${x}</li>`).join('')}</ul></div></div></details>`}
+
+/* ---------- zadania z treścią: samodzielne układanie równań i układów ---------- */
+const eqS=(a,b,c,xv='x',yv='y')=>`${a?lead(a,xv):''}${a?term(b,yv):lead(b,yv)} = ${N(c)}`;
+const sysH=(e1,e2)=>`<span class="sys">${e1}<br>${e2}</span>`;
+function sysSteps(a1,b1,c1,a2,b2,c2,x,y){const D=a1*b2-a2*b1;
+  return[`Eliminujemy y: mnożymy pierwsze równanie przez ${pN(b2)}, drugie przez ${pN(b1)} i odejmujemy stronami: (${N(a1*b2)} − ${pN(a2*b1)})x = ${N(c1*b2)} − ${pN(c2*b1)}, czyli ${N(D)}x = ${N(c1*b2-c2*b1)}, więc x = ${N(x)}.`,
+    `Podstawiamy do pierwszego równania: ${N(a1)} · ${pN(x)}${term(b1,'y')} = ${N(c1)} ⇒ y = ${N(y)}.`,`Sprawdzenie w drugim równaniu: ${N(a2)} · ${pN(x)} + ${pN(b2)} · ${pN(y)} = ${N(a2*x+b2*y)} ✓.`]}
+const WSYS=[
+ ()=>{const s=ri(4,14),k=pick([3,4,5]),t=(k-2)*s,f=k*s;return{q:`Ojciec jest ${k} razy starszy od syna. Za ${t} ${pl(t,'rok','lata','lat')} ojciec będzie dwa razy starszy od syna. Ile lat ma obecnie każdy z nich?`,v:['wiek ojca (w latach)','wiek syna'],e:[[1,-k,0],[1,-2,t]],sol:[f,s],
+   tr:[`x = ${k}y (ojciec jest ${k} razy starszy)`,`x + ${t} = 2(y + ${t}) ⇔ x − 2y = ${t}`],ans:`ojciec ma ${f} ${pl(f,'rok','lata','lat')}, syn ${s} ${pl(s,'rok','lata','lat')}`}},
+ ()=>{let a,b;do{a=ri(1,9);b=ri(1,9)}while(a===b);const S=a+b,D=9*(b-a);return{q:`Suma cyfr liczby dwucyfrowej jest równa ${S}. Jeśli przestawimy jej cyfry, otrzymamy liczbę ${D>0?'większą':'mniejszą'} o ${Math.abs(D)}. Wyznacz tę liczbę.`,v:['cyfra dziesiątek','cyfra jedności'],e:[[1,1,S],[-1,1,D/9]],sol:[a,b],
+   tr:[`x + y = ${S}`,`(10y + x) − (10x + y) = ${N(D)} ⇔ 9y − 9x = ${N(D)} ⇔ −x + y = ${N(D/9)}`],ans:`${10*a+b}`}},
+ ()=>{for(;;){const[p,q]=pick([[10,30],[5,20],[8,20],[10,40],[4,16],[12,30]]),x=ri(2,12)*5,y=ri(2,12)*5,M=x+y,num=p*x+q*y;if(num%M)continue;const r=num/M;if(r===p||r===q)continue;
+   return{q:`Zmieszano roztwór soli o stężeniu ${p}% z roztworem o stężeniu ${q}% i otrzymano ${M} kg roztworu o stężeniu ${r}%. Ile kilogramów każdego roztworu zmieszano?`,v:[`masa roztworu ${p}% (kg)`,`masa roztworu ${q}% (kg)`],e:[[1,1,M],[p,q,r*M]],sol:[x,y],
+   tr:[`x + y = ${M} (masa mieszaniny)`,`${dec(p/100)}x + ${dec(q/100)}y = ${dec(r/100)} · ${M} (masa soli); po pomnożeniu przez 100: ${p}x + ${q}y = ${r*M}`],ans:`${x} kg roztworu ${p}% i ${y} kg roztworu ${q}%`}}},
+ ()=>{const Nn=pick([24,28,30,36,40]),U=Nn/2,x=ri(5,30),y=ri(5,30),n=x+y,K=Nn*x+U*y;return{q:`Do kina sprzedano ${n} biletów: normalne po ${Nn} zł i ulgowe po ${U} zł. Za wszystkie bilety zapłacono ${K} zł. Ile sprzedano biletów każdego rodzaju?`,v:['liczba biletów normalnych','liczba biletów ulgowych'],e:[[1,1,n],[Nn,U,K]],sol:[x,y],
+   tr:[`x + y = ${n}`,`${Nn}x + ${U}y = ${K}`],ans:`${x} normalnych i ${y} ulgowych`}},
+ ()=>{const vp=ri(1,4),vl=vp+ri(2,10),t1=ri(1,4),t2=ri(2,6),d1=(vl+vp)*t1,d2=(vl-vp)*t2;return{q:`Motorówka płynąc z prądem rzeki przepłynęła ${d1} km w ciągu ${t1} h, a płynąc pod prąd przepłynęła ${d2} km w ciągu ${t2} h. Oblicz prędkość motorówki na wodzie stojącej i prędkość prądu rzeki.`,v:['prędkość motorówki na stojącej wodzie (km/h)','prędkość prądu (km/h)'],e:[[t1,t1,d1],[t2,-t2,d2]],sol:[vl,vp],
+   tr:[`z prądem prędkość wynosi x + y: ${t1}(x + y) = ${d1}`,`pod prąd x − y: ${t2}(x − y) = ${d2}`],ans:`motorówka ${vl} km/h, prąd ${vp} km/h`}},
+ ()=>{const b=ri(2,15),e=ri(-3,8),a=2*b+e;if(a<=b)return WSYS[5]();const O=2*(a+b);return{q:`Obwód prostokąta jest równy ${O} cm. Dłuższy bok jest ${e===0?'równy':e>0?'o '+e+' cm dłuższy od':'o '+(-e)+' cm krótszy od'} dwukrotności krótszego boku. Oblicz długości boków i pole prostokąta.`,v:['dłuższy bok (cm)','krótszy bok (cm)'],e:[[2,2,O],[1,-2,e]],sol:[a,b],
+   tr:[`2x + 2y = ${O}`,`x = 2y${e?` ${e<0?'−':'+'} ${Math.abs(e)}`:''} ⇔ x − 2y = ${N(e)}`],ans:`boki ${a} cm i ${b} cm, pole ${a*b} cm²`}},
+ ()=>{const[p,q]=pick([[20,30],[15,25],[40,10],[30,45],[12,8],[25,75]]),g=gcd(p,q),k=ri(1,6)*5,x=q/g*k,y=p/g*k,S=x+y;return{q:`Suma dwóch liczb jest równa ${S}. ${p}% pierwszej liczby jest równe ${q}% drugiej liczby. Wyznacz te liczby.`,v:['pierwsza liczba','druga liczba'],e:[[1,1,S],[p,-q,0]],sol:[x,y],
+   tr:[`x + y = ${S}`,`${dec(p/100)}x = ${dec(q/100)}y ⇔ ${p}x − ${q}y = 0`],ans:`${x} i ${y}`}},
+ ()=>{const x=ri(3,20),y=ri(3,20),n=x+y,K=2*x+5*y;return{q:`W skarbonce jest ${n} monet: dwuzłotowe i pięciozłotowe, o łącznej wartości ${K} zł. Ile jest monet każdego rodzaju?`,v:['liczba monet 2 zł','liczba monet 5 zł'],e:[[1,1,n],[2,5,K]],sol:[x,y],tr:[`x + y = ${n}`,`2x + 5y = ${K}`],ans:`${x} monet 2 zł i ${y} monet 5 zł`}},
+ ()=>{const x=ri(5,30),y=ri(5,30),pa=pick([2,3,4]),pb=pa+ri(1,3),A=ri(2,5),B=ri(2,5);const c1=A*x+B*y,c2=pa*x+pb*y;if(A*pb===B*pa)return WSYS[8]();return{q:`Na wycieczkę szkoła wynajęła ${A} duże i ${B} małe autokary — pojechało nimi ${c1} uczniów (wszystkie miejsca były zajęte). Gdyby wynajęła ${pa} duże i ${pb} małe autokary, zmieściłoby się ${c2} uczniów. Ile miejsc ma duży, a ile mały autokar?`.replace(/ (\d) duże i (\d) małe/g,(m,a,b)=>` ${a} ${+a>4?'dużych':'duże'} i ${b} ${+b>4?'małych':'małe'}`),v:['liczba miejsc w dużym autokarze','liczba miejsc w małym'],e:[[A,B,c1],[pa,pb,c2]],sol:[x,y],tr:[`${A}x + ${B}y = ${c1}`,`${pa}x + ${pb}y = ${c2}`],ans:`duży ${x} miejsc, mały ${y} miejsc`}}];
+function gWordSys(){const t=pick(WSYS)(),[[a1,b1,c1],[a2,b2,c2]]=t.e,[x,y]=t.sol;
+  return{q:t.q+' <i>Ułóż odpowiedni układ równań.</i>',a:`${sysH(eqS(a1,b1,c1),eqS(a2,b2,c2))}<br>Odpowiedź: ${t.ans}`,
+  s:[`<b>Oznaczenia:</b> x — ${t.v[0]}, y — ${t.v[1]}.`,`<b>Tłumaczymy treść na równania:</b> ${t.tr[0]}; ${t.tr[1]}.`,`<b>Układ równań:</b> ${sysH(eqS(a1,b1,c1),eqS(a2,b2,c2))}`,...sysSteps(a1,b1,c1,a2,b2,c2,x,y),`<b>Odpowiedź:</b> ${t.ans}.`]}}
+function gWordEq(){const m=ri(0,4);
+  if(m===0){const x=ri(3,15),d=ri(1,8),P=x*(x+d);return{q:`Jeden bok prostokąta jest o ${d} cm dłuższy od drugiego, a pole prostokąta jest równe ${P} cm². Oblicz długości boków i obwód prostokąta. <i>Ułóż odpowiednie równanie.</i>`,a:`x(x + ${d}) = ${P}; boki ${x} cm i ${x+d} cm, obwód ${2*(2*x+d)} cm`,
+    s:[`Oznaczenia: x — krótszy bok (cm), x > 0; dłuższy x + ${d}.`,`Równanie: x(x + ${d}) = ${P} ⇔ x² + ${d}x − ${P} = 0.`,...deltaSteps(1,d,-P),`x = ${N(-x-d)} < 0 odrzucamy — bok musi być dodatni. Boki: ${x} cm i ${x+d} cm, obwód ${2*(2*x+d)} cm.`]}}
+  if(m===1){const p=pick([10,20,25,50]),A=pick([400,800,1000,1600,2000,3200]),B=A*(100-p)**2/10000;if(B%1)return gWordEq();return{q:`Cenę roweru dwukrotnie obniżono o ten sam procent. Pierwotnie rower kosztował ${A} zł, a po obu obniżkach ${dec(B)} zł. O ile procent za każdym razem obniżano cenę? <i>Ułóż odpowiednie równanie.</i>`,a:`${A}(1 − p)² = ${dec(B)}; obniżka o ${p}%`,
+    s:['Oznaczenia: p — obniżka zapisana jako ułamek (np. 20% = 0,2), 0 < p < 1.',`Po jednej obniżce cena to ${A}(1 − p), po drugiej ${A}(1 − p)². Równanie: ${A}(1 − p)² = ${dec(B)}.`,`(1 − p)² = ${fH(F(Math.round(B*100),A*100))} ⇒ 1 − p = ${fH(F(100-p,100))} (1 − p > 0).`,`p = ${fH(F(p,100))} = ${p}%.`]}}
+  if(m===2){const n=ri(5,20),k=n*(n-3)/2;return{q:`Wielokąt wypukły ma ${k} ${pl(k,'przekątną','przekątne','przekątnych')}. Ile boków ma ten wielokąt? <i>Ułóż odpowiednie równanie.</i>`,a:`${fr('n(n − 3)',2)} = ${k}; n = ${n}`,
+    s:['Z każdego z n wierzchołków wychodzi n − 3 przekątnych, a każdą liczymy dwa razy: liczba przekątnych = n(n − 3)/2.',`${fr('n(n − 3)',2)} = ${k} ⇔ n² − 3n − ${2*k} = 0.`,...deltaSteps(1,-3,-2*k).map(z=>z.replace(/x/g,'n')),`n musi być liczbą naturalną ≥ 3, więc n = ${n}.`]}}
+  if(m===3){const n=ri(4,30),P=n*(n+1);return{q:`Iloczyn dwóch kolejnych liczb naturalnych jest równy ${P}. Wyznacz te liczby. <i>Ułóż odpowiednie równanie.</i>`,a:`n(n + 1) = ${P}; ${n} i ${n+1}`,
+    s:['Oznaczenia: n i n + 1 — szukane liczby, n ∈ ℕ.',`n(n + 1) = ${P} ⇔ n² + n − ${P} = 0.`,...deltaSteps(1,1,-P).map(z=>z.replace(/x/g,'n')),`n = ${N(-n-1)} nie jest naturalne. Liczby: ${n} i ${n+1}.`]}}
+  const t=ri(1,4),v=ri(2,6)*5,c=ri(1,4)*2,D=t*(2*v+c);return{q:`Dwaj kolarze wyjechali jednocześnie naprzeciw siebie z miejscowości odległych o ${D} km i spotkali się po ${t} h. Pierwszy jechał o ${c} km/h szybciej od drugiego. Oblicz prędkości kolarzy. <i>Ułóż odpowiednie równanie.</i>`,
+   a:`${t}(x + x + ${c}) = ${D}; prędkości ${v} km/h i ${v+c} km/h`,
+   s:[`Oznaczenia: x — prędkość wolniejszego kolarza (km/h), x + ${c} — szybszego.`,`Jadąc naprzeciw siebie, razem pokonują całą odległość: ${t}(x + x + ${c}) = ${D}.`,`${2*t}x + ${t*c} = ${D} ⇒ ${2*t}x = ${D-t*c} ⇒ x = ${v}.`,`Prędkości: ${v} km/h i ${v+c} km/h.`]}}
+function gWordIneq(){const A=ri(1,4)*10,a=pick([30,40,50,60]),B=A+ri(2,8)*10,b=a-pick([10,20]),t=(B-A)*100/(a-b),tm=Math.floor(t)+1;
+  return{q:`Operator oferuje dwie taryfy: I — abonament ${A} zł miesięcznie i ${a} gr za minutę rozmowy, II — abonament ${B} zł i ${b} gr za minutę. Od ilu pełnych minut rozmów miesięcznie taryfa II jest tańsza? <i>Ułóż odpowiednią nierówność.</i>`,a:`${B} + ${dec(b/100)}t < ${A} + ${dec(a/100)}t; od ${tm} minut`,
+  s:['Oznaczenia: t — liczba minut rozmów w miesiącu.',`Koszt I: ${A} + ${dec(a/100)}t, koszt II: ${B} + ${dec(b/100)}t.`,`Taryfa II tańsza: ${B} + ${dec(b/100)}t < ${A} + ${dec(a/100)}t ⇔ ${dec((a-b)/100)}t > ${B-A} ⇔ t > ${dec(t)}.`,`Najmniejsza liczba całkowita: ${tm} minut${Number.isInteger(t)?` (przy ${t} min koszty są równe)`:''}.`]}}
+function gSeqWord(){if(rnd()<.6){const a1=ri(1,10)*10,r=ri(1,5)*10,n=ri(5,16),S=n*(2*a1+(n-1)*r)/2;
+    return{q:`Ania oszczędza: w pierwszym miesiącu odłożyła ${a1} zł, a w każdym kolejnym o ${r} zł więcej niż w poprzednim. Po ilu miesiącach uzbiera łącznie ${S} zł?`,a:`po ${n} miesiącach`,
+    s:[`Kwoty tworzą ciąg arytmetyczny: a<sub>1</sub> = ${a1}, r = ${r}.`,`S<sub>n</sub> = ${fr('2a<sub>1</sub> + (n − 1)r',2)} · n = ${S} ⇔ ${fr(`${2*a1} + ${r}(n − 1)`,2)} · n = ${S}.`,`${r/2}n²${term(a1-r/2,'n')} − ${S} = 0.`,`Rozwiązanie naturalne: n = ${n} (drugi pierwiastek jest ujemny).`]}}
+  const a1=pick([2,3,5]),q=pick([2,3]),n=ri(4,7),an=a1*q**(n-1),S=a1*(q**n-1)/(q-1);
+  return{q:`Wiadomość wysłano do ${a1} osób. Każda osoba, która ją dostała, następnego dnia przesyła ją do ${q} nowych osób (i tylko wtedy). Ile osób dostanie wiadomość ${n}. dnia i ile osób łącznie dostanie ją w ciągu ${n} dni?`,a:`${n}. dnia: ${an}; łącznie ${S}`,
+  s:[`Liczby osób w kolejnych dniach tworzą ciąg geometryczny: a<sub>1</sub> = ${a1}, q = ${q}.`,`a<sub>${n}</sub> = a<sub>1</sub>q<sup>${n-1}</sup> = ${a1} · ${q**(n-1)} = ${an}.`,`S<sub>${n}</sub> = a<sub>1</sub>${fr(`q<sup>${n}</sup> − 1`,'q − 1')} = ${a1} · ${fr(q**n-1,q-1)} = ${S}.`]}}
+function gMeanMissing(){for(;;){const n=ri(4,7),g=Array.from({length:n},()=>ri(2,6)),s=g.reduce((a,b)=>a+b,0),tg=pick([4,4.5,5]),need=tg*(n+1)-s;if(need<1||need>6)continue;const x=Math.ceil(need-1e-9);
+  return{q:`Uczeń ma oceny: ${g.join(', ')}. Jaką najniższą ocenę (od 1 do 6) musi dostać z następnego sprawdzianu, aby średnia wszystkich ocen wynosiła co najmniej ${dec(tg)}? <i>Ułóż odpowiednią nierówność.</i>`,a:`${fr(`${s} + x`,n+1)} ≥ ${dec(tg)}; co najmniej ${x}`,
+  s:[`Suma obecnych ocen: ${s}, po sprawdzianie będzie ${n+1} ocen.`,`${fr(`${s} + x`,n+1)} ≥ ${dec(tg)} ⇔ ${s} + x ≥ ${dec(tg*(n+1))} ⇔ x ≥ ${dec(need)}.`,`Najniższa ocena całkowita: ${x}.`]}}}
+function gAbsGeom(){const a=ri(-6,6),b=ri(1,6);if(rnd()<.5){const p=a-b,q=a+b,cl=rnd()<.5;
+    return{q:`Zapisz zbiór ${cl?`⟨${N(p)}, ${N(q)}⟩`:`(−∞, ${N(p)}) ∪ (${N(q)}, +∞)`} za pomocą nierówności z wartością bezwzględną.`,a:cl?`|${sh(a)}| ≤ ${b}`:`|${sh(a)}| > ${b}`,
+    s:[`|x − a| to odległość x od a na osi liczbowej.`,`Środek ${cl?'przedziału':'luki między przedziałami'}: a = ${fr(`${N(p)} + ${pN(q)}`,2)} = ${N(a)}, połowa długości: ${b}.`,cl?`Zbiór to liczby odległe od ${N(a)} o co najwyżej ${b}: |${sh(a)}| ≤ ${b}.`:`Zbiór to liczby odległe od ${N(a)} o więcej niż ${b}: |${sh(a)}| > ${b}.`]}}
+  return{q:`Wyznacz zbiór liczb rzeczywistych, których odległość od liczby ${N(a)} na osi liczbowej jest mniejsza od ${b}. Zapisz go za pomocą wartości bezwzględnej i jako przedział.`,a:`|${sh(a)}| < ${b}, czyli x ∈ (${N(a-b)}, ${N(a+b)})`,
+  s:[`Odległość x od ${N(a)} to |${sh(a)}|.`,`|${sh(a)}| < ${b} ⇔ −${b} < ${sh(a)} < ${b}.`,`x ∈ (${N(a-b)}, ${N(a+b)}).`]}}
+function gTrigWord(){const al=pick([30,45,60]),V={30:['1/2','√3/2','√3/3'],45:['√2/2','√2/2','1'],60:['√3/2','1/2','√3']}[al],m=ri(0,1);
+  if(m===0){const L=2*ri(2,8),hs={30:''+L/2,45:`${L/2}√2`,60:`${L/2}√3`}[al],ds={30:`${L/2}√3`,45:`${L/2}√2`,60:''+L/2}[al];
+    return{q:`Drabina o długości ${L} m jest oparta o pionową ścianę i tworzy z poziomym podłożem kąt ${al}°. Na jakiej wysokości drabina dotyka ściany i w jakiej odległości od ściany stoi jej dolny koniec?`,a:`h = ${hs} m, d = ${ds} m`,
+    s:['Drabina, ściana i podłoże tworzą trójkąt prostokątny; drabina jest przeciwprostokątną.',`h = ${L} · sin ${al}° = ${L} · ${V[0]} = ${hs} m.`,`d = ${L} · cos ${al}° = ${L} · ${V[1]} = ${ds} m.`]}}
+  const d=3*ri(2,10),h={30:`${d/3}√3`,45:''+d,60:`${d}√3`}[al];
+  return{q:`Z punktu położonego na poziomym terenie w odległości ${d} m od podstawy pionowej wieży widać jej szczyt pod kątem ${al}°. Oblicz wysokość wieży.`,a:`h = ${h} m`,s:['Wysokość wieży, odległość od wieży i linia wzroku tworzą trójkąt prostokątny.',`tg ${al}° = ${fr('h',d)}, więc h = ${d} · tg ${al}° = ${d} · ${V[2]} = ${h} m.`]}}
+const TRIGSIMP=[['(1 − cos²α) / sin α','sin α',['1 − cos²α = sin²α (jedynka trygonometryczna).','sin²α / sin α = sin α.']],['tg α · cos α','sin α',['tg α = sin α / cos α.','(sin α / cos α) · cos α = sin α.']],
+ ['(sin α + cos α)² + (sin α − cos α)²','2',['Rozwijamy: sin²α + 2sin α cos α + cos²α + sin²α − 2sin α cos α + cos²α.','= 2(sin²α + cos²α) = 2.']],['(1 − sin α)(1 + sin α) / cos²α','1',['(1 − sin α)(1 + sin α) = 1 − sin²α = cos²α.','cos²α / cos²α = 1.']],
+ ['sin α / tg α','cos α',['sin α : (sin α / cos α) = sin α · cos α / sin α = cos α.']],['sin³α + sin α cos²α','sin α',['Wyłączamy sin α: sin α(sin²α + cos²α).','= sin α · 1 = sin α.']]];
+function gTrigSimp(){const[e,r,st]=pick(TRIGSIMP);return{q:`Uprość wyrażenie ${e} (dla kąta ostrego α).`,a:r,s:st}}
+function gAngleRatio(){for(;;){const r=[ri(1,7),ri(1,7),ri(1,7)].sort((a,b)=>a-b),s=r[0]+r[1]+r[2];if(180%s)continue;const k=180/s,A=r.map(x=>x*k),typ=A[2]>90?'rozwartokątny':A[2]===90?'prostokątny':'ostrokątny';
+  return{q:`Miary kątów trójkąta są w stosunku ${r.join(' : ')}. Oblicz miary tych kątów i określ rodzaj trójkąta. <i>Ułóż odpowiednie równanie.</i>`,a:`${r[0]}x + ${r[1]}x + ${r[2]}x = 180°; kąty ${A.join('°, ')}°, trójkąt ${typ}`,
+  s:[`Oznaczmy kąty: ${r[0]}x, ${r[1]}x, ${r[2]}x.`,`Suma kątów trójkąta: ${s}x = 180°, więc x = ${k}°.`,`Kąty: ${A.join('°, ')}°. Największy kąt ${A[2]}° — trójkąt ${typ}.`]}}}
+function gAltHyp(){const k=ri(1,3),[m,n]=distinct(2,1,4),p=k*m*m,q=k*n*n,h=k*m*n,c=p+q;
+  return{q:`W trójkącie prostokątnym wysokość poprowadzona z wierzchołka kąta prostego dzieli przeciwprostokątną na odcinki długości ${p} i ${q}. Oblicz długość tej wysokości, długości przyprostokątnych i pole trójkąta.`,a:`h = ${h}, przyprostokątne ${sq(k*k*m*m*(m*m+n*n))} i ${sq(k*k*n*n*(m*m+n*n))}, P = ${fH(F(c*h,2))}`,
+  s:['Wysokość dzieli trójkąt na dwa trójkąty podobne do niego (cecha kkk), stąd h² = p · q.',`h² = ${p} · ${q} = ${h*h}, h = ${h}.`,`Przyprostokątne z twierdzenia Pitagorasa: √(${p}² + ${h}²) = ${sq(k*k*m*m*(m*m+n*n))} oraz √(${q}² + ${h}²) = ${sq(k*k*n*n*(m*m+n*n))}.`,`P = ½ · ${c} · ${h} = ${fH(F(c*h,2))}.`]}}
+/* rozszerzenie */
+function gWordRatR(){const m=ri(0,2);
+  if(m===0){for(;;){const v=ri(4,10)*10,dv=pick([10,20]),dt=pick([F(1),F(1,2)]),dd=fmul(dt,F(v*(v+dv),dv));if(dd.d!==1)continue;const d=dd.n,Cc=fmul(F(d*dv),F(dt.d,dt.n)).n;
+    return{q:`Pociąg pokonuje trasę długości ${d} km. Gdyby jechał ze średnią prędkością większą o ${dv} km/h, przejechałby tę trasę w czasie o ${dt.d===1?dt.n+' h':'30 minut'} krótszym. Oblicz średnią prędkość pociągu i czas przejazdu. <i>Ułóż odpowiednie równanie.</i>`,
+    a:`${fr(d,'v')} − ${fr(d,`v + ${dv}`)} = ${fH(dt)}; v = ${v} km/h, czas ${fH(F(d,v))} h`,
+    s:[`Oznaczenia: v — prędkość (km/h), v > 0; czas t = ${fr(d,'v')}.`,`Przy prędkości v + ${dv} czas wynosi ${fr(d,`v + ${dv}`)}, więc ${fr(d,'v')} − ${fr(d,`v + ${dv}`)} = ${fH(dt)}.`,`Mnożymy przez v(v + ${dv}) > 0: ${d}(v + ${dv}) − ${d}v = ${fH(dt)}v(v + ${dv}) ⇔ ${d*dv} = ${fH(dt)}(v² + ${dv}v) ⇔ v² + ${dv}v − ${Cc} = 0.`,...deltaSteps(1,dv,-Cc).map(z=>z.replace(/x/g,'v')),`v = ${N(-v-dv)} < 0 odrzucamy. v = ${v} km/h, czas ${fr(d,v)} = ${fH(F(d,v))} h.`]}}}
+  if(m===1){for(;;){const x=ri(2,15),k=ri(1,12),T=F(x*(x+k),2*x+k);if(T.d!==1)continue;const t=T.n;
+    return{q:`Dwie koparki pracując razem wykonują wykop w ciągu ${t} h. Pierwsza koparka pracując sama wykonałaby go o ${k} h szybciej niż druga pracująca sama. W ciągu ilu godzin każda z koparek wykonałaby wykop sama? <i>Ułóż odpowiednie równanie.</i>`,
+    a:`${fr(1,'x')} + ${fr(1,`x + ${k}`)} = ${fr(1,t)}; pierwsza ${x} h, druga ${x+k} h`,
+    s:[`Oznaczenia: x — czas pierwszej koparki (h), x > 0; druga: x + ${k}. W ciągu godziny wykonują odpowiednio ${fr(1,'x')} i ${fr(1,`x + ${k}`)} pracy.`,`Razem w godzinę: ${fr(1,t)} pracy, więc ${fr(1,'x')} + ${fr(1,`x + ${k}`)} = ${fr(1,t)}.`,`Mnożymy przez ${t}x(x + ${k}) > 0: ${t}(x + ${k}) + ${t}x = x(x + ${k}) ⇔ x² ${term(k-2*t,'x')} − ${k*t} = 0.`.replace('x²  − ','x² − '),...deltaSteps(1,k-2*t,-k*t),`Ujemny pierwiastek odrzucamy: pierwsza koparka ${x} h, druga ${x+k} h.`]}}}
+  for(;;){const n=ri(10,30),p=pick([2,4,5]),c=pick([10,20,25,30,40,50]),K=c*n*(n+p)/p;if(K%1)continue;
+    return{q:`Koszt wynajęcia autokaru (${K} zł) uczestnicy wycieczki podzielili po równo. Gdyby pojechało o ${p} ${pl(p,'osobę','osoby','osób')} więcej, każdy zapłaciłby o ${c} zł mniej. Ile osób pojechało na wycieczkę? <i>Ułóż odpowiednie równanie.</i>`,
+    a:`${fr(K,'n')} − ${fr(K,`n + ${p}`)} = ${c}; ${n} ${pl(n,'osoba','osoby','osób')}`,
+    s:['Oznaczenia: n — liczba uczestników, n ∈ ℕ.',`Każdy płaci ${fr(K,'n')} zł; przy n + ${p} osobach: ${fr(K,`n + ${p}`)} zł. Równanie: ${fr(K,'n')} − ${fr(K,`n + ${p}`)} = ${c}.`,`Mnożymy przez n(n + ${p}): ${K*p} = ${c}n(n + ${p}) ⇔ n² + ${p}n − ${K*p/c} = 0.`,...deltaSteps(1,p,-K*p/c).map(z=>z.replace(/x/g,'n')),`Rozwiązanie naturalne: n = ${n}.`]}}}
+function gSysNonlin(){const[u,v]=distinct(2,1,12).sort((a,b)=>b-a),s=u+v,q=u*u+v*v,p=u*v;
+  return{q:`Obwód prostokąta jest równy ${2*s}, a jego przekątna ma długość √${q}. Oblicz długości boków prostokąta. <i>Ułóż odpowiedni układ równań.</i>`.replace(`√${q}`,sq(q)),a:`${sysH('x + y = '+s,'x² + y² = '+q)}<br>boki ${u} i ${v}`,
+  s:['Oznaczenia: x, y — boki prostokąta, x, y > 0.',`Układ: ${sysH('2x + 2y = '+2*s+' ⇔ x + y = '+s,'x² + y² = '+q+' (twierdzenie Pitagorasa)')}`,`(x + y)² = x² + 2xy + y², więc ${s*s} = ${q} + 2xy ⇒ xy = ${p}.`,`x i y są pierwiastkami równania t² − ${s}t + ${p} = 0 (wzory Viète'a).`,...deltaSteps(1,-s,p).map(z=>z.replace(/x/g,'t')),`Boki: ${u} i ${v}.`]}}
+function gSeqWordR(){if(rnd()<.5){const k=ri(1,8),m=rnd()<.5;
+    return{q:`Długości boków trójkąta prostokątnego tworzą ciąg arytmetyczny. ${m?`Obwód trójkąta jest równy ${12*k}`:`Pole trójkąta jest równe ${6*k*k}`}. Oblicz długości boków.`,a:`${3*k}, ${4*k}, ${5*k}`,
+    s:["Boki: a − r, a, a + r (r > 0); najdłuższy a + r to przeciwprostokątna.","Pitagoras: (a − r)² + a² = (a + r)² ⇔ a² − 4ar = 0 ⇔ a = 4r (a > 0).",'Boki: 3r, 4r, 5r.',m?`Obwód 12r = ${12*k} ⇒ r = ${k}.`:`Pole ½ · 3r · 4r = 6r² = ${6*k*k} ⇒ r = ${k}.`,`Boki: ${3*k}, ${4*k}, ${5*k}.`]}}
+  const mm=ri(1,4),q=pick([2,3]),e=[mm,mm*q,mm*q*q],b=e[1],V=b**3,S=e[0]+e[1]+e[2];
+  return{q:`Długości trzech krawędzi prostopadłościanu wychodzących z jednego wierzchołka tworzą ciąg geometryczny. Suma tych długości jest równa ${S}, a objętość prostopadłościanu jest równa ${V}. Oblicz długości krawędzi.`,a:e.join(', '),
+  s:['Krawędzi: b/q, b, bq (q > 0).',`V = (b/q) · b · bq = b³ = ${V} ⇒ b = ${b}.`,`Suma: ${b}/q + ${b} + ${b}q = ${S} ⇔ ${b}q² ${term(b-S,'q')} + ${b} = 0 (po pomnożeniu przez q > 0).`,...deltaSteps(b,b-S,b).map(z=>z.replace(/x/g,'q')),`q = ${q} lub q = ${fH(F(1,q))} — oba dają te same krawędzie: ${e.join(', ')}.`]}}
 
 /* ---------- działy ---------- */
 /* ---------- UZUPEŁNIENIE WYMAGAŃ CKE (podstawa programowa 2019, matura od 2023) ---------- */
@@ -1921,35 +2018,35 @@ const BASIC=[
  {name:'Wielomiany i wyrażenia wymierne',g:[gGroupFactor,gGroupFactor,gPolyDivB,gIntRootsB,gPolyOps,gRatSimp,gRatSimp,gRatAddB,gRatEqB,gRatEqB,gFactorGroup,gPolyEqP,gRatExpr]},
  {name:'Proporcjonalność odwrotna',g:[gInverse]},
  {name:'Logarytmy',g:[gLog,gLogVal,gLogDiff,gLogFn,gLogPowA,gLogOrder,gLogContext]},
- {name:'Wartość bezwzględna',g:[gAbsB,gAbsB2]},
- {name:'Równania i nierówności',g:[gQuadIneq,gRatEq,gLinIneqFrac,gQuadIneq2,gFormula,cIdentity]},
- {name:'Układy równań',g:[gSystem,gSysType,gSysType,gSysLineCircle,gSysLinePara,gSysWord,gSysWord,gSysLinQuad,gSystemType]},
+ {name:'Wartość bezwzględna',g:[gAbsB,gAbsB2,gAbsGeom,gAbsGeom]},
+ {name:'Równania i nierówności',g:[gQuadIneq,gRatEq,gLinIneqFrac,gQuadIneq2,gFormula,cIdentity,gWordEq,gWordEq,gWordIneq]},
+ {name:'Układy równań',g:[gSystem,gSysType,gSysType,gSysLineCircle,gSysLinePara,gSysWord,gSysWord,gSysLinQuad,gSystemType,gWordSys,gWordSys,gWordSys,gWordSys]},
  {name:'Funkcja liniowa',g:[gLine2,gPerp,gLineProps,gLineParamB,gTableFn]},
  {name:'Funkcja kwadratowa',g:[gVertex,gQuadInt,gQuadFromAxis,gFence,gQuadForms,gQuadForms,gQuadFromVertex,gQuadOptPrice]},
- {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof,gSeqMono,gSeqCount,gSeqCount,gSeqCheck,gThreeTerms,gThreeTerms,gSeqSign]},
- {name:'Trygonometria',g:[gTrigB,gTrigObt,cRedukcja,gTrigTable]},
+ {name:'Ciągi',g:[gArith,gGeom,gRecur,gArithProof,gSeqMono,gSeqCount,gSeqCount,gSeqCheck,gThreeTerms,gThreeTerms,gSeqSign,gSeqWord,gSeqWord]},
+ {name:'Trygonometria',g:[gTrigB,gTrigObt,cRedukcja,gTrigTable,gTrigWord,gTrigWord,gTrigSimp]},
  {name:'Twierdzenie sinusów i cosinusów',g:[gCosLawB,gCosLawB,gSinLawB,gTriAreaSin,gTriType,gTriType,gSinSmall,gMedian]},
- {name:'Planimetria',g:[gTales,gEquil,gInscribed,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist,gPolygon,gSimilarArea,gSector,gSector,gBisector,gTangentLen,gQuadAngles,gRhombus,gChord,gSimilarTri,gTriType,gCircleArc,gQuadArea]},
+ {name:'Planimetria',g:[gTales,gEquil,gInscribed,gIncircleRight,gCentroid,gTangentChord,gTrapRight,gEquiDist,gPolygon,gSimilarArea,gSector,gSector,gBisector,gTangentLen,gQuadAngles,gRhombus,gChord,gSimilarTri,gTriType,gCircleArc,gQuadArea,gAngleRatio,gAltHyp]},
  {name:'Geometria analityczna',g:[gSeg,gIsoOx,gDiagInter,gSymPoint,gVector,gSymFigure,gSymFigure,gCircleB,gCircleB,gLinesPos,gLinesPos,gTangentB,gCircleP,gSymCircle]},
  {name:'Stereometria',g:[gCube,gPrism,gSimilarSolids,gPyrAngle,gCylinder,gCuboidSec,gCone,gConeB,gSphere,gSphere,gSkewLines,gCuboidDiag,gPyrTri,gCylSection,gConeNet]},
  {name:'Kombinatoryka i prawdopodobieństwo',g:[gDiceB,()=>gDigits(3),gChoose,gProbDigits,gBraille,gReplace,gProbUnion,gCoins,gNoReplace]},
- {name:'Statystyka',g:[gStats,gStatTable,gStatBars,gWeightedMean]},
- {name:'Dowody',g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen,gProofGen,staticProof(PROOF_B2),staticProof(PROOF_B2)]},
+ {name:'Statystyka',g:[gStats,gStatTable,gStatBars,gWeightedMean,gMeanMissing]},
+ {name:'Dowody',g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen,gProofGen,staticProof(PROOF_B2),staticProof(PROOF_B2),staticGen(PROOF_G2),staticGen(PROOF_G2)]},
  {name:'Funkcje: wykresy i przekształcenia',g:[gGraphRead,gTransform,gQuadGraph,gPiecewise,gExpFn,gLogFn,gTableFn]},
  {name:'Zadania zamknięte (ABCD, P/F)',g:[cLog,cPow,cProc,cArith,cTrig,cVertex,cParallel,cCircle,cDice,cCubeMC,cStat,cPFLinear,cPFQuad,cDelta,cMonoPow,cPctPoints,cIdentity,gSkewLines]},
- {name:'Zadania z treścią',g:[gField,gAmphi,gBacteria,gTravel,gLokata,gFence,gInverse,gQuadOptPrice,gSysWord]},
+ {name:'Zadania z treścią',g:[gField,gAmphi,gBacteria,gTravel,gLokata,gFence,gInverse,gQuadOptPrice,gSysWord,gWordSys,gWordSys,gWordSys,gWordEq,gWordEq,gWordIneq,gSeqWord,gTrigWord,gMeanMissing]},
  {name:'Zadania wieloczęściowe',g:[gMultiQuad,gMultiTri]}];
 const EXT=[
  {id:'zbiory',name:'Liczby rzeczywiste i zbiory',g:[gSets,gSetsR,gSetsR]},
  {id:'log',name:'Logarytmy',g:[gLogExpr,gLogExpr,gLogEq,gLogEq,gLogExpr2,gLogIneq,gLogIneq,gLogEqSub,gLogEqBoth,gLogBase,gLogParam,gLogFn]},
  {id:'abs',name:'Wartość bezwzględna',g:[gAbsR,gAbsEq,gAbsParam,gAbsQuad,gAbsQuad,gAbsNested,gAbsNested,gAbsNested]},
  {id:'lin',name:'Funkcja liniowa',g:[gLinParam2,gLinParam2,gParamLines,gLinParam]},
- {id:'kw',name:'Funkcja kwadratowa',g:[gViete,gParamDelta,gParamDelta,gRootsDiff,gSumSqParam]},
+ {id:'kw',name:'Funkcja kwadratowa',g:[gViete,gParamDelta,gParamDelta,gRootsDiff,gSumSqParam,gSysNonlin]},
  {id:'wiel',name:'Wielomiany i symbol Newtona',g:[gPolyIneq,gBezout,gRemainder2,gPolyOneRoot,gDarboux,gRatRoots,gRatRoots,gNewtonEq,gBinomCoef,gCubeFormulas,gPolyDiv]},
  {id:'dow',name:'Dowody algebraiczne',g:[staticGen(PROOF_A),gProofGen,gModProof,gPowProof,staticProof(PROOF_A2),staticProof(PROOF_A2)]},
- {id:'wym',name:'Funkcje wymierne',g:[gRatIneq,gLattice,gMonoProof,gRatEqR,gRatEqR,gAsymptote]},
+ {id:'wym',name:'Funkcje wymierne',g:[gRatIneq,gLattice,gMonoProof,gRatEqR,gRatEqR,gAsymptote,gWordRatR]},
  {id:'wyk',name:'Funkcja wykładnicza',g:[gExpEq,gExpIneq]},
- {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom,gSeqMono,gSeriesEq]},
+ {id:'ciagi',name:'Ciągi i szeregi',g:[gSeriesInf,gSeriesX,gArithS,gGeomOddEven,gArithGeom,gSeqMono,gSeriesEq,gSeqWordR]},
  {id:'gran',name:'Granice i ciągłość',g:[gLimSeq,gLimFn,gLimSqrt,gLimRoot,gLimParam,gContinuity,gContinuity,gAsymptote]},
  {id:'poch',name:'Pochodne i optymalizacja',g:[gDeriv,gTangent,gOptBox,gOptProd,gProfit,gMotion,gQuarticMin,gDerivPow,gDerivPow,gTangentPar,gDerivDef,gDerivQuotient,gMinMaxInterval,gTangentCond]},
  {id:'tryg',name:'Trygonometria',g:[gTrigEqGen,gTrigEqGen,gTrigEq,gTrigIneq,gTrigId,gTrigTg,gRadian,gRadian,gReduceAny,gSumAngle,gSumAngle,gPeriod,gTrigQuadEq,gTrigQuadEq,gTrigSum,gTrigIdentity,gTrigGraph]},
@@ -1957,7 +2054,7 @@ const EXT=[
  {id:'anal',name:'Geometria analityczna',g:[gCircle,gDistPL,gDistPL,gTangentLines,gTriArea,gParaVec,gTwoCircles,gTwoCircles,gHomothety,gReflectLine,gSysCircleLine,gTangentFromPoint,gCircumcircle,gParallelDist]},
  {id:'dorys',name:'Geometria z dorysowaniem (tricky)',g:[staticGen(PROOF_T),staticGen(PROOF_G2),gTrapPerp,gCommonTangent,gTrapRight,gEquiDist,gMedianPara,gPowerPoint,gCyclicQuad]},
  {id:'graf',name:'Wykresy funkcji i przekształcenia',g:[gTransformR,gTransformR,gAbsParam,gQuadGraph,gCompose,gCompose]},
- {id:'model',name:'Modelowanie i optymalizacja z treścią',g:[gTravel,gBoxMin,gCanMin,gBounce,gProfit,gMotion,gOptBox]},
+ {id:'model',name:'Modelowanie i optymalizacja z treścią',g:[gTravel,gBoxMin,gCanMin,gBounce,gProfit,gMotion,gOptBox,gWordRatR,gWordRatR,gSysNonlin]},
  {id:'multi',name:'Zadania wieloetapowe',g:[gMultiPoly,gMultiTri,gMultiQuad]},
  {id:'stereo',name:'Stereometria',g:[gPyramid,gCuboidDiag,gPyrAngle,gCubeSec,gCuboidSec,gPyrEdge,gDihedral,gShortestPath,gShortestPath,gSphereSolids,gCone,gPyrSection,gSphereInOut,gEdgeAngle]},
  {id:'komb',name:'Kombinatoryka i prawdopodobieństwo',g:[gBernoulli,gCond,()=>gDigits(pick([4,5])),gBernoulliN,gBayes,gUrns,gNoReplace,gGridPaths,gWordPerm,gNewtonEq,gNewtonProps,gExpected,gVariation,gBalls,gNewton]}];
@@ -1997,10 +2094,10 @@ function cMeanW(){const c=[ri(1,5),ri(1,5),ri(1,5),ri(1,5)],n=c.reduce((a,b)=>a+
 /* ---------- arkusze ---------- */
 const CLOSED=[[cLog,1],[cPow,1],[cProc,1],[cRootMC,1],[cLokataMC,1],[cAbs,2],[cQuadSet,2],[cSystemMC,2],[cDomain,3],[cSlope,3],[cParallel,3],[cPerpMC,3],[cVertex,3],[cDelta,3],[cPFLinear,3],[cPFQuad,3],
  [cArith,4],[cGeomMC,4],[cSumArith,4],[cTrig,5],[cRedukcja,5],[cInscribedMC,6],[cTalesMC,6],[cCircle,7],[cMidMC,7],[cCubeMC,8],[cCylMC,8],[cDice,9],[cChooseMC,9],[cStat,9],[cMeanW,9]];
-const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac,gPolyEqP,gFactorGroup]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
- {p:4,r:3.5,g:[gFence,gField,gTravel,gSysLinQuad]},{p:2,r:4,g:[gArith,gGeom,gRecur,gSeqSign]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight,gQuadArea,gCircleArc,gCosLawB,gTriType]},{p:3,r:7,g:[gIsoOx,gDiagInter,gCircleP,gSymCircle]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder,gSphere,gConeNet]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
+const OPEN_P=[{p:2,r:1,g:[staticGen(PROOF_B),gModProof,gPowProof,gProofGen]},{p:2,r:2,g:[gQuadIneq,gQuadIneq2]},{p:2,r:2,g:[gRatEq,gLinIneqFrac,gPolyEqP,gFactorGroup,gWordIneq,gAbsGeom]},{p:2,r:3,g:[gGraphRead,gQuadFromAxis,gTransform]},
+ {p:4,r:3.5,g:[gFence,gField,gTravel,gSysLinQuad,gWordSys,gWordSys,gWordEq]},{p:2,r:4,g:[gArith,gGeom,gRecur,gSeqSign]},{p:3,r:6,g:[gMedian,gSinSmall,gTrapRight,gQuadArea,gCircleArc,gCosLawB,gTriType]},{p:3,r:7,g:[gIsoOx,gDiagInter,gCircleP,gSymCircle]},{p:3,r:8,g:[gPyrAngle,gCuboidSec,gCylinder,gSphere,gConeNet]},{p:2,r:9,g:[gDiceB,gProbDigits,gReplace]}];
 const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogExpr,gLogEqSub,gLogEqBoth,gLogIneq,gLogBase]},{p:2,g:[gAbsR,gAbsEq,gAbsNested,gAbsQuad]},{p:3,g:[gPolyIneq,gBezout,gPolyOneRoot,gCubeFormulas,gRatEqR]},{p:3,g:[staticGen(PROOF_A),gProofGen]},{p:3,g:[gTrigEqGen,gTrigEq,gTrigIneq,gTrigSum,gTrigIdentity]},
- {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam]},{p:3,g:[gTangent,gDeriv,gMonoProof,gDerivQuotient,gTangentCond,gDerivPow]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2),gSecantTangent,gCyclicQuad]},
+ {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX,gSeqWordR]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam,gWordRatR,gWordRatR]},{p:3,g:[gTangent,gDeriv,gMonoProof,gDerivQuotient,gTangentCond,gDerivPow]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2),gSecantTangent,gCyclicQuad]},
  {p:4,g:[gTangentLines,gTriArea,gMultiTri,gSysCircleLine,gCircumcircle,gTangentFromPoint]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge,gPyrSection,gSphereInOut,gShortestPath]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths,gVariation,gBalls,gNewtonEq]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
 function gen(gs){for(let k=0;k<8;k++){try{const r=enrich(pick(gs)());if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
