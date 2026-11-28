@@ -2076,11 +2076,12 @@ globalThis.__T={BASIC,EXT,seed:f=>{rnd=f}};
 
 /* antypowtórki: av = {q: Set skrótów treści z ostatnich dni, g: Set typów zadań z ostatnich dni} */
 const qKey=q=>hashStr(q.replace(/<div class="mc"[\s\S]*$/,'').replace(/<[^>]+>/g,'')).toString(36);
-const gKey=(t,g)=>t.name+'#'+t.g.indexOf(g);
-function make(t,lvl,av){let best=null;
-  for(let k=0;k<14;k++){const g=pick(t.g);try{const r=enrich(g());if(!r||!r.q)continue;const o={...r,lvl,topic:t.name,qk:qKey(r.q),gk:gKey(t,g)};
-    if(!best)best=o;if(!av)return o;const newQ=!av.q.has(o.qk),newG=!av.g.has(o.gk);
-    if(newQ&&(newG||k>=7))return o;if(newQ&&av.q.has(best.qk))best=o}catch(e){console.error(e)}}
+const gKey=(t,g)=>t.name.replace(' · trudne','')+'#'+(g.name||t.g.indexOf(g));
+function make(t,lvl,av){let best=null;const U=[...new Set(t.g)],ag=g=>{if(!av)return 0;const v=av.g.get(gKey(t,g));return v===undefined?1e9:v};
+  /* rotacja typów: najpierw typy z tego działu, których najdłużej nie było (nieużyte w ogóle — najpierw) */
+  const sorted=shuffle(U).sort((a,b)=>ag(b)-ag(a)),top=sorted.filter(g=>ag(g)>=ag(sorted[0])),pool=top.length>=2||U.length<3?top:sorted.slice(0,Math.max(2,Math.ceil(U.length/3)));
+  for(let k=0;k<16;k++){const g=k<10?pick(pool):pick(sorted.slice(0,Math.max(2,Math.ceil(U.length/2))));try{const r=enrich(g());if(!r||!r.q)continue;const o={...r,lvl,topic:t.name,qk:qKey(r.q),gk:gKey(t,g)};
+    if(!best)best=o;if(!av)return o;if(!av.q.has(o.qk))return o}catch(e){console.error(e)}}
   return best||{q:'Nie udało się wylosować zadania — wylosuj inny zestaw.',a:'',lvl,topic:t.name}}
 
 /* ---------- więcej zadań zamkniętych (do arkuszy) ---------- */
@@ -2113,11 +2114,12 @@ const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogE
  {p:4,g:[gArithGeom,gGeomOddEven,gSeriesX,gSeqWordR]},{p:5,g:[gParamDelta,gRootsDiff,gSumSqParam,gWordRatR,gWordRatR]},{p:3,g:[gTangent,gDeriv,gMonoProof,gDerivQuotient,gTangentCond,gDerivPow]},{p:6,g:[gOptBox,gBoxMin,gCanMin,gProfit]},{p:3,g:[staticGen(PROOF_G),staticGen(PROOF_T),staticGen(PROOF_G2),gSecantTangent,gCyclicQuad]},
  {p:4,g:[gTangentLines,gTriArea,gMultiTri,gSysCircleLine,gCircumcircle,gTangentFromPoint]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge,gPyrSection,gSphereInOut,gShortestPath]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths,gVariation,gBalls,gNewtonEq]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
-function gen(gs){for(let k=0;k<8;k++){try{const r=enrich(pick(gs)());if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
-function buildExam(type,seed,hard){rnd=mulberry(seed);const out=[];
-  if(type==='p'){shuffle(CLOSED).slice(0,25).forEach(([g,r])=>out.push({...gen([g]),pts:1,closed:true,r}));OPEN_P.forEach(o=>out.push({...gen(o.g),pts:o.p,r:o.r}));out.sort((a,b)=>a.r-b.r)}
-  else OPEN_R.forEach((o,i)=>{const h=hard?hardPool(EXAM_R_IDS[i]):[];out.push({...gen(h.length?(i===4||i===10?[...o.g,...h]:h):o.g),pts:o.p})});
-  return out}
+function gen(gs){for(let k=0;k<8;k++){try{const g=pick(gs),r=enrich(g());if(r&&r.q){Object.defineProperty(r,'_g',{value:g,enumerable:false});return r}}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
+function buildExam(type,seed,hard,recent){rnd=mulberry(seed);const out=[],used=[],rec=recent||new Set();
+  const pickFresh=(gs,i)=>{const ks=gs.map((g,j)=>type+i+'#'+(g.name||j)),fr=gs.filter((g,j)=>!rec.has(ks[j])),use=fr.length?fr:gs;const r=gen(use);used.push(...ks.filter((k,j)=>use.includes(gs[j])&&r._g===gs[j]));return r};
+  if(type==='p'){shuffle(CLOSED).slice(0,25).forEach(([g,r])=>out.push({...gen([g]),pts:1,closed:true,r}));OPEN_P.forEach((o,i)=>out.push({...pickFresh(o.g,i),pts:o.p,r:o.r}));out.sort((a,b)=>a.r-b.r)}
+  else OPEN_R.forEach((o,i)=>{const h=hard?hardPool(EXAM_R_IDS[i]):[];out.push({...pickFresh(h.length?(i===4||i===10?[...o.g,...h]:h):o.g,i),pts:o.p})});
+  Object.defineProperty(out,'used',{value:used,enumerable:false});return out}
 globalThis.__T.CLOSED=CLOSED;globalThis.__T.buildExam=buildExam;globalThis.__T.make=make;globalThis.__T.shuffle=shuffle;globalThis.__T.mulberry=mulberry;
 
 /* ---------- aplikacja ---------- */
@@ -2141,12 +2143,13 @@ function build(){
   rnd=mulberry(hashStr([day,st.roll,cnt.b,cnt.r,[...done].sort().join('.')].join('|')+(hard?'|H':'')+(offB.size?'|b:'+[...offB].sort().join('.'):'')));
   const out=[],bt=shuffle(BASIC.filter(t=>!offB.has(t.name))),et=shuffle(EXT.filter(t=>done.has(t.id)));
   /* historia z poprzednich dni (bez dzisiejszego), więc zestaw na dziś jest stały przez cały dzień */
-  const av={q:new Set(),g:new Set()};Object.entries(hist).forEach(([d,h])=>{if(d===day)return;(h.q||[]).forEach(x=>av.q.add(x));if(d>=recentCut)(h.g||[]).forEach(x=>av.g.add(x))});
-  const add=o=>{out.push(o);if(o.qk)av.q.add(o.qk);if(o.gk)av.g.add(o.gk)};
+  const ck=day+'#'+(st.roll||0),dms=d=>Date.parse(d.slice(0,10)),av={q:new Set(),g:new Map()};
+  Object.entries(hist).forEach(([k,h])=>{if(k===ck)return;const age=Math.max(0,Math.round((dms(day)-dms(k))/864e5));(h.q||[]).forEach(x=>av.q.add(x));(h.g||[]).forEach(x=>{const o=av.g.get(x);if(o===undefined||age<o)av.g.set(x,age)})});
+  const add=o=>{out.push(o);if(o.qk)av.q.add(o.qk);if(o.gk)av.g.set(o.gk,-1)};
   if(bt.length)for(let i=0;i<cnt.b;i++)add(make(bt[i%bt.length],'Podstawa',av));
   if(et.length)for(let i=0;i<cnt.r;i++){const t=et[i%et.length],hp=hard?hardPool(t.id):[];add(make(hp.length?{...t,g:hp,name:t.name+' · trudne'}:t,'Rozszerzenie',av))}
-  hist[day]={q:out.map(o=>o.qk).filter(Boolean),g:out.map(o=>o.gk).filter(Boolean)};
-  Object.keys(hist).sort().slice(0,-30).forEach(d=>delete hist[d]);store.set('mm_hist',hist);
+  hist[ck]={q:out.map(o=>o.qk).filter(Boolean),g:out.map(o=>o.gk).filter(Boolean)};
+  Object.keys(hist).sort().slice(0,-90).forEach(d=>delete hist[d]);Object.keys(hist).forEach(k=>{if(dms(day)-dms(k)>60*864e5)delete hist[k]});store.set('mm_hist',hist);
   return out}
 function progress(){if(mode!=='d')return;const n=tasks.length,d=st.done.filter(i=>i<n).length;$('#pn').textContent=`${d} / ${n}`;$('#pl').textContent='zrobione';$('#pb').style.width=n?d/n*100+'%':'0'}
 function renderDaily(){
@@ -2175,7 +2178,7 @@ function score(){const e=EX[mode];let s=0,g=0,max=0;tasks.forEach((t,i)=>{max+=t
   $('#escore').innerHTML=e.done?`<b>Wynik: ${s} / ${max} pkt (${Math.round(s/max*100)}%)</b>${g<tasks.length?` · oceń jeszcze ${tasks.length-g} ${tasks.length-g===1?'zadanie':'zadań'} otwartych, porównując rozwiązanie z odpowiedzią`:''}`:''}
 function renderExam(){const e=EX[mode];if(!e.seed){Object.assign(e,{seed:Math.floor(Math.random()*1e9),acc:0,running:false,done:false,pts:{},sel:{}});save()}
   /* arkusz zapisujemy, żeby aktualizacja generatorów nie zmieniła rozpoczętego arkusza */
-  if(!Array.isArray(e.tasks)){e.tasks=buildExam(mode,e.seed,hard);save()}
+  if(!Array.isArray(e.tasks)){const rl=store.get('mm_exrec_'+mode,[]),t=buildExam(mode,e.seed,hard,new Set(rl.flat()));e.tasks=[...t];rl.push(t.used);store.set('mm_exrec_'+mode,rl.slice(-3));save()}
   tasks=e.tasks=e.tasks.map(enrich);const max=tasks.reduce((a,t)=>a+t.pts,0),nc=tasks.filter(t=>t.closed).length;
   $('#einfo').innerHTML=`<b>${EXAMS[mode].name}</b> · 180 minut · ${max} punktów · ${tasks.length} zadań${nc?` (${nc} zamkniętych za 1 pkt, ${tasks.length-nc} otwartych)`:', wszystkie otwarte'}. Rozwiązuj na kartce; odpowiedzi zobaczysz po kliknięciu „Zakończ i sprawdź”.`;
   $('#list').innerHTML=tasks.map((t,i)=>`<article class="task" data-i="${i}"><div class="meta"><span class="lvl ${mode==='p'?'b':'r'}">${t.closed?'Zamknięte':'Otwarte'}</span></div>
