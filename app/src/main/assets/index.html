@@ -40,6 +40,7 @@ details summary::before{content:"▸";color:var(--red);transition:transform .2s}
 details[open] summary::before{transform:rotate(90deg)}
 .cnt{color:var(--mut);font-weight:400}
 .topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:4px 16px;margin-top:10px}
+.hardt{display:flex;gap:10px;align-items:flex-start;padding:10px 0 12px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--line,#8884);margin-bottom:8px}.hardt input{margin-top:4px;width:20px;height:20px;flex:none}
 .topics label{display:flex;gap:10px;align-items:center;min-height:40px;font-size:16px;cursor:pointer}
 .topics input{width:20px;height:20px;accent-color:var(--blue);flex:none}
 .quick{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
@@ -113,6 +114,7 @@ footer{margin-top:22px;color:var(--mut);font-size:14px}
 
   <details class="panel" id="det">
     <summary>Przerobione działy z rozszerzenia <span class="cnt" id="tc"></span></summary>
+    <label class="hardt"><input type="checkbox" id="hard"><span><b>Trudne zadania</b> — w rozszerzeniu losuj tylko najtrudniejsze typy (parametry, równania trygonometryczne na sumach, optymalizacja, zadania na 4–6 pkt). Dotyczy też arkusza rozszerzonego.</span></label>
     <div class="topics" id="topics"></div>
     <div class="quick"><button id="all">Zaznacz wszystkie</button><button id="none">Odznacz wszystkie</button></div>
     <p class="note">Zadania z rozszerzenia są losowane tylko z zaznaczonych działów.</p>
@@ -1299,6 +1301,116 @@ function gNewton(){const m=ri(0,2);
   if(m===1){const n=ri(8,20),k=n-ri(1,3);return{q:`Oblicz (<sup>${n}</sup><sub>${k}</sub>).`,a:`${C(n,k)}`,s:[`Z własności symbolu Newtona (<sup>n</sup><sub>k</sub>) = (<sup>n</sup><sub>n − k</sub>): (<sup>${n}</sup><sub>${k}</sub>) = (<sup>${n}</sup><sub>${n-k}</sub>).`,`(<sup>${n}</sup><sub>${n-k}</sub>) = ${fr(Array.from({length:n-k},(_,i)=>n-i).join(' · '),`${n-k}!`)} = ${C(n,k)}.`]}}
   const n=ri(5,12),k=ri(2,4);return{q:`Oblicz (<sup>${n}</sup><sub>${k}</sub>) + (<sup>${n}</sup><sub>${k+1}</sub>) i zapisz wynik w postaci jednego symbolu Newtona.`,a:`(<sup>${n+1}</sup><sub>${k+1}</sub>) = ${C(n+1,k+1)}`,
   s:[`Własność: (<sup>n</sup><sub>k</sub>) + (<sup>n</sup><sub>k + 1</sub>) = (<sup>n + 1</sup><sub>k + 1</sub>) (trójkąt Pascala).`,`(<sup>${n}</sup><sub>${k}</sub>) + (<sup>${n}</sup><sub>${k+1}</sub>) = ${C(n,k)} + ${C(n,k+1)} = ${C(n+1,k+1)} = (<sup>${n+1}</sup><sub>${k+1}</sub>).`]}}
+/* ---------- TRUDNE zadania z rozszerzenia ---------- */
+const SINX={'1':['π/2'],'-1':['3π/2'],'1/2':['π/6','5π/6'],'-1/2':['7π/6','11π/6'],'0':['0','π','2π']};
+const fKey=f=>f.d===1?''+f.n:f.n+'/'+f.d;
+const tF=f=>{f=toF(f);return(f.n<0?'− ':'+ ')+fH(F(Math.abs(f.n),f.d))};
+const xPi=s=>s.replace(/(\d*)π\/(\d+)/g,(m,a,b)=>fr((a||'')+'π',b));
+function hTrigQuad(){let t1,t2;const P=[F(1),F(-1),F(1,2),F(-1,2),F(0)],OUT=[F(2),F(-2),F(3,2),F(-3,2),F(3)];
+  do{t1=pick(P);t2=rnd()<.4?pick(OUT):pick(P)}while(fKey(t1)===fKey(t2));
+  const S=fadd(t1,t2),Pr=fmul(t1,t2),B=fmul(F(2),S),Cc=fadd(fmul(F(-2),Pr),F(-1)),k=Cc.d,bi=B.n*k/B.d,ci=Cc.n,ai=k;
+  const eq=`${ai===1?'':ai}cos 2x${term(bi,'sin x')}${term(ci,'')} = 0`,sols=[t1,t2].flatMap(t=>SINX[fKey(t)]||[]);
+  const order=s=>{const m=s.match(/^(\d*)π(?:\/(\d+))?$/);return s==='0'?0:m?(+(m[1]||1))/(+(m[2]||1)):0};
+  const xs=[...new Set(sols)].sort((a,b)=>order(a)-order(b));
+  return{q:`Rozwiąż równanie ${eq} w przedziale ⟨0, 2π⟩.`,a:xs.length?`x ∈ {${xs.map(xPi).join(', ')}}`:'brak rozwiązań',
+  s:[`cos 2x = 1 − 2sin²x.${k>1?` Dzielimy równanie przez ${k}: cos 2x ${tF(B)}sin x ${tF(Cc)} = 0.`:''}`,`Podstawiamy t = sin x, t ∈ ⟨−1, 1⟩: 1 − 2t² ${tF(B)}t ${tF(Cc)} = 0 ⇔ ${poly([1,fmul(F(-1),S),Pr],'t')} = 0.`,
+    `${poly([1,fmul(F(-1),S),Pr],'t')} = ${[t1,t2].map(t=>t.n===0?'t':`(t ${tF(fmul(F(-1),t))})`).join('')}, więc t = ${fH(t1)} lub t = ${fH(t2)}.`,
+    ...[t1,t2].map(t=>Math.abs(t.n/t.d)>1?`sin x = ${fH(t)} — brak rozwiązań, bo |sin x| ≤ 1.`:`sin x = ${fH(t)} ⇒ x ∈ {${(SINX[fKey(t)]).map(xPi).join(', ')}} w ⟨0, 2π⟩.`),
+    `Odpowiedź: ${xs.length?`x ∈ {${xs.map(xPi).join(', ')}}`:'brak rozwiązań'}.`]}}
+const HTRIG=[
+ ['sin x + sin 3x = sin 2x','x = kπ/2 lub x = ±π/3 + 2kπ, k ∈ ℤ',['Wzór na sumę sinusów: sin x + sin 3x = 2sin 2x cos x.','2sin 2x cos x = sin 2x ⇔ sin 2x(2cos x − 1) = 0.','sin 2x = 0 ⇒ 2x = kπ ⇒ x = kπ/2.','cos x = 1/2 ⇒ x = ±π/3 + 2kπ.','Uwaga: nie wolno dzielić przez sin 2x — zgubilibyśmy rozwiązania.']],
+ ['cos x + cos 3x = cos 2x','x = π/4 + kπ/2 lub x = ±π/3 + 2kπ, k ∈ ℤ',['cos x + cos 3x = 2cos 2x cos x.','2cos 2x cos x − cos 2x = 0 ⇔ cos 2x(2cos x − 1) = 0.','cos 2x = 0 ⇒ 2x = π/2 + kπ ⇒ x = π/4 + kπ/2.','cos x = 1/2 ⇒ x = ±π/3 + 2kπ.']],
+ ['sin x + cos x = 1','x = 2kπ lub x = π/2 + 2kπ, k ∈ ℤ',['sin x + cos x = √2 sin(x + π/4) (bo sin(x + π/4) = (sin x + cos x)/√2).','sin(x + π/4) = √2/2 ⇒ x + π/4 = π/4 + 2kπ lub x + π/4 = 3π/4 + 2kπ.','x = 2kπ lub x = π/2 + 2kπ.','(Podnoszenie do kwadratu też działa, ale wtedy trzeba sprawdzić rozwiązania — pojawiają się obce.)']],
+ ['sin⁴x + cos⁴x = 5/8','x = ±π/6 + kπ/2, k ∈ ℤ',['sin⁴x + cos⁴x = (sin²x + cos²x)² − 2sin²x cos²x = 1 − ½ sin²2x.','1 − ½ sin²2x = 5/8 ⇒ sin²2x = 3/4 ⇒ sin 2x = ±√3/2.','2x = ±π/3 + kπ ⇒ x = ±π/6 + kπ/2.']],
+ ['tg x + ctg x = 4','x = π/12 + kπ lub x = 5π/12 + kπ, k ∈ ℤ',['Dziedzina: sin x ≠ 0 i cos x ≠ 0, czyli x ≠ kπ/2.','tg x + ctg x = (sin²x + cos²x)/(sin x cos x) = 2/sin 2x.','2/sin 2x = 4 ⇒ sin 2x = 1/2 ⇒ 2x = π/6 + 2kπ lub 2x = 5π/6 + 2kπ.','x = π/12 + kπ lub x = 5π/12 + kπ — należą do dziedziny.']],
+ ['sin 2x = √3 cos x','x = π/2 + kπ lub x = π/3 + 2kπ lub x = 2π/3 + 2kπ, k ∈ ℤ',['2sin x cos x − √3 cos x = 0 ⇔ cos x(2sin x − √3) = 0.','cos x = 0 ⇒ x = π/2 + kπ.','sin x = √3/2 ⇒ x = π/3 + 2kπ lub x = 2π/3 + 2kπ.']],
+ ['cos 2x + cos x = 0','x = ±π/3 + 2kπ lub x = π + 2kπ, k ∈ ℤ',['cos 2x = 2cos²x − 1, więc 2cos²x + cos x − 1 = 0.','t = cos x: 2t² + t − 1 = 0 ⇒ t = 1/2 lub t = −1.','cos x = 1/2 ⇒ x = ±π/3 + 2kπ; cos x = −1 ⇒ x = π + 2kπ.']],
+ ['sin 3x = sin x','x = kπ lub x = π/4 + kπ/2, k ∈ ℤ',['sin 3x − sin x = 2cos 2x sin x (różnica sinusów).','2cos 2x sin x = 0 ⇔ sin x = 0 lub cos 2x = 0.','x = kπ lub 2x = π/2 + kπ ⇒ x = π/4 + kπ/2.']],
+ ['2sin²x < sin x w przedziale ⟨0, 2π⟩ (nierówność)','x ∈ (0, π/6) ∪ (5π/6, π)',['sin x(2sin x − 1) < 0 ⇔ 0 < sin x < 1/2.','sin x > 0 dla x ∈ (0, π); sin x < 1/2 dla x ∈ ⟨0, π/6) ∪ (5π/6, 2π⟩.','Część wspólna: x ∈ (0, π/6) ∪ (5π/6, π).']],
+ ['cos²x − sin²x ≥ sin 2x w przedziale ⟨0, π⟩ (nierówność)','x ∈ ⟨0, π/8⟩ ∪ ⟨5π/8, π⟩',['cos 2x − sin 2x ≥ 0 ⇔ √2 cos(2x + π/4) ≥ 0.','cos(2x + π/4) ≥ 0 dla 2x + π/4 ∈ ⟨π/4, π/2⟩ ∪ ⟨3π/2, 9π/4⟩ (bo 2x + π/4 ∈ ⟨π/4, 9π/4⟩).','x ∈ ⟨0, π/8⟩ ∪ ⟨5π/8, π⟩.']]];
+function hTrigHard(){const[e,a,st]=pick(HTRIG);return{q:/nierówność/.test(e)?`Rozwiąż nierówność ${e.replace(' (nierówność)','')}.`:`Rozwiąż równanie ${e}.`,a:a.replace(/(\d*)π\/(\d+)/g,(m,x,y)=>fr((x||'')+'π',y)),s:st}}
+function hTrigParam(){const t=pick([1,-1]);
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie sin²x ${t>0?'−':'+'} (m ${t>0?'+':'−'} 1)sin x ${t>0?'+':'−'} m = 0 ma w przedziale (0, 2π) dokładnie trzy rozwiązania.`,a:'m ∈ (−1, 0) ∪ (0, 1)',
+  s:[`Rozkład: (sin x ${t>0?'−':'+'} 1)(sin x − m) = 0 (sprawdź mnożąc).`,`sin x = ${t>0?'1':'−1'} daje w (0, 2π) dokładnie jedno rozwiązanie: x = ${t>0?fr('π',2):fr('3π',2)}.`,'Potrzebujemy, by sin x = m dawało dokładnie dwa nowe rozwiązania.',`Dla m ∈ (−1, 1), m ≠ 0: dwa rozwiązania w (0, 2π), różne od ${t>0?fr('π',2):fr('3π',2)}. Dla m = 0: tylko x = π (bo 0 i 2π nie należą do przedziału). Dla m = ±1: jedno rozwiązanie lub to samo co wcześniej.`,'Odpowiedź: m ∈ (−1, 0) ∪ (0, 1).']}}
+function hPolyParam(){let a,r1,r2,p,b,m0;
+  for(;;){a=pick([1,2,-1]);r1=2*ri(-4,4);r2=4*a-r1;if(r1===r2||(r1*r2)%4)continue;b=-r1*r2/4;p=riNZ(-3,3);if(p+a===0)continue;m0=F(-p*p-b,p+a);break}
+  const lo=Math.min(r1,r2),hi=Math.max(r1,r2),m0v=m0.n/m0.d,inSet=m0v<lo||m0v>hi,cQ=`x² + mx ${a===1?'+ m':a===-1?'− m':'+ '+a+'m'} ${b<0?'−':'+'} ${Math.abs(b)}`.replace(/ \+ 0$/,'');
+  const ans=`m ∈ (−∞, ${N(lo)}) ∪ (${N(hi)}, +∞)`+(inSet?`, m ≠ ${fH(m0)}`:'');
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których równanie (${sh(p)})(${cQ}) = 0 ma trzy różne rozwiązania.`,a:ans,
+  s:[`x = ${N(p)} jest jednym rozwiązaniem. Trójmian ${cQ} musi mieć dwa różne pierwiastki, różne od ${N(p)}.`,`Δ = m² − 4(${a===1?'m':a===-1?'−m':a+'m'}${term(b,'')}) = m²${term(-4*a,'m')}${term(-4*b,'')} = (${sh(r1,'m')})(${sh(r2,'m')}) > 0 ⇔ m < ${N(lo)} lub m > ${N(hi)}.`,
+    `${N(p)} nie może być pierwiastkiem trójmianu: ${N(p*p)}${term(p,'m')}${term(a,'m')}${term(b,'')} ≠ 0 ⇔ m ≠ ${fH(m0)}.`,`${inSet?`${fH(m0)} należy do wyznaczonego zbioru, więc go wykluczamy.`:`${fH(m0)} i tak nie spełnia warunku Δ > 0.`}`,`Odpowiedź: ${ans}.`]}}
+function hTangentsPoint(){let u,v,r2,D;for(;;){u=ri(-6,6);v=ri(-6,6);r2=ri(1,20);if(u*u+v*v<=r2||u*u===r2)continue;D=r2*(u*u+v*v-r2);const sD=Math.round(Math.sqrt(D));if(sD*sD===D){D=sD;break}}
+  const a=ri(-3,3),b=ri(-3,3),px=a-u,py=b-v,A=u*u-r2,ms=[F(u*v+D,A),F(u*v-D,A)],ln=m=>`y = ${poly([m,fadd(F(py),fmul(F(-1),fmul(m,F(px))))])}`;
+  return{q:`Wyznacz równania stycznych do okręgu ${circStr(a,b,r2)} przechodzących przez punkt P = (${N(px)}, ${N(py)}).`,a:ms.map(ln).join(' oraz '),
+  s:[`S = (${N(a)}, ${N(b)}), r² = ${r2}. |SP|² = ${u*u+v*v} > ${r2}, więc P leży na zewnątrz — są dwie styczne.`,`Prosta przez P: y = m(x − ${pN(px)}) + ${pN(py)}. Prosta x = ${N(px)} nie jest styczna (${u*u}≠${r2}).`,
+    `Warunek styczności: odległość S od prostej = r: ${fr(`|m · ${pN(a)} − ${pN(b)} − ${pN(px)}m ${py<0?'−':'+'} ${Math.abs(py)}|`,'√(m² + 1)')} = √${r2}, czyli (${N(u)}m − ${pN(v)})² = ${r2}(m² + 1).`,
+    `${N(A)}m²${term(-2*u*v,'m')}${term(v*v-r2,'')} = 0 ⇒ m = ${fH(ms[0])} lub m = ${fH(ms[1])}.`,`Styczne: ${ms.map(ln).join(', ')}.`]}}
+function hLineCircleParam(){const[r,c,k]=pick([[3,5,F(4,3)],[5,13,F(12,5)],[4,5,F(3,4)],[3,6,null]]);if(!k)return hLineCircleParam();const a=ri(-4,4),b=ri(-4,4),y0=b+c;
+  const ln=`y = m${a===0?'x':`(${sh(a)})`}${y0?` ${y0<0?'−':'+'} ${Math.abs(y0)}`:''}`;
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których prosta o równaniu ${ln} ma dwa punkty wspólne z okręgiem ${circStr(a,b,r*r)}.`,a:`m ∈ (−∞, −${fH(k)}) ∪ (${fH(k)}, +∞)`,
+  s:[`Środek S = (${N(a)}, ${N(b)}), r = ${r}. Każda z tych prostych przechodzi przez punkt P = (${N(a)}, ${N(y0)}), leżący ${c} jednostek nad S.`,`Prosta w postaci ogólnej: mx − y ${m0(a,y0)}= 0; odległość od S: d = ${fr(`|m · ${pN(a)} − ${pN(b)} − ${pN(a)}m ${y0<0?'−':'+'} ${Math.abs(y0)}|`,'√(m² + 1)')} = ${fr(c,'√(m² + 1)')}.`,
+    `Dwa punkty wspólne ⇔ d < r: ${fr(c,'√(m² + 1)')} < ${r} ⇔ ${c*c} < ${r*r}(m² + 1) ⇔ m² > ${fH(F(c*c-r*r,r*r))}.`,`|m| > ${fH(k)}, czyli m ∈ (−∞, −${fH(k)}) ∪ (${fH(k)}, +∞). (Dla |m| = ${fH(k)} prosta jest styczna.)`]}}
+const m0=(a,y0)=>{const t=(a?`− ${a<0?'('+N(a)+')':a}m `:'');return t+(y0?`${y0<0?'−':'+'} ${Math.abs(y0)} `:'')};
+function hOptHard(){const m=ri(0,2);
+  if(m===0){const R=ri(2,10);return{q:`W półkole o promieniu ${R} wpisano trapez, którego dłuższą podstawą jest średnica półkola. Wyznacz długość krótszej podstawy tego trapezu, dla której jego pole jest największe, i oblicz to pole.`,a:`krótsza podstawa = ${R}, P<sub>max</sub> = ${fsq(F(3*R*R,4),3)}`,
+    s:[`Niech krótsza podstawa ma długość 2x, x ∈ (0, ${R}). Wierzchołki leżą na okręgu, więc wysokość h = √(${R*R} − x²).`,`P(x) = ½(${2*R} + 2x)√(${R*R} − x²) = (${R} + x)√(${R*R} − x²).`,`P'(x) = √(${R*R} − x²) − ${fr(`x(${R} + x)`,`√(${R*R} − x²)`)} = ${fr(`${R*R} − ${R}x − 2x²`,`√(${R*R} − x²)`)}.`,`P'(x) = 0 ⇔ 2x² + ${R}x − ${R*R} = 0 ⇔ x = ${fH(F(R,2))} (drugi pierwiastek ujemny). Przed nim P' > 0, po nim P' < 0 — maksimum.`,`Krótsza podstawa: 2x = ${R}; h = ${fsq(F(R,2),3)}; P = ${fH(F(3*R,2))} · ${fsq(F(R,2),3)} = ${fsq(F(3*R*R,4),3)}.`]}}
+  if(m===1){const R=ri(1,6)*3,H=ri(1,6)*3,r=2*R/3,h=H/3;return{q:`W stożek o promieniu podstawy ${R} i wysokości ${H} wpisano walec (jego dolna podstawa leży na podstawie stożka). Wyznacz promień walca o największej objętości i oblicz tę objętość.`,a:`r = ${r}, h = ${h}, V<sub>max</sub> = ${r*r*h}π`,
+    s:[`Niech walec ma promień r ∈ (0, ${R}) i wysokość h. Z podobieństwa trójkątów (przekrój osiowy): ${fr('h',H)} = ${fr(`${R} − r`,R)}, więc h = ${fH(F(H,R))}(${R} − r).`,`V(r) = πr²h = ${fH(F(H,R))}π(${R}r² − r³).`,`V'(r) = ${fH(F(H,R))}π(${2*R}r − 3r²) = ${fH(F(H,R))}πr(${2*R} − 3r) = 0 ⇔ r = ${r}. Dla r < ${r} V' > 0, dla r > ${r} V' < 0 — maksimum.`,`h = ${fH(F(H,R))} · ${R-r} = ${h}, V = π · ${r*r} · ${h} = ${r*r*h}π.`]}}
+  const a=ri(1,9);return{q:`Na wykresie funkcji f(x) = √x wyznacz punkt P położony najbliżej punktu A = (${a}, 0) i oblicz odległość |AP|.`,a:`P = (${fH(F(2*a-1,2))}, ${fsq(F(1,2),2*(2*a-1))}), |AP| = ${fsq(F(1,2),4*a-1)}`,
+  s:[`P = (x, √x), x ≥ 0. d²(x) = (x − ${a})² + x — minimalizujemy d², bo d ≥ 0.`,`(d²)' = 2(x − ${a}) + 1 = 0 ⇔ x = ${fH(F(2*a-1,2))}. Pochodna zmienia znak z − na + — minimum.`,`d² = ${fH(F(1,4))} + ${fH(F(2*a-1,2))} = ${fH(F(4*a-1,4))}, d = ${fsq(F(1,2),4*a-1)}.`]}}
+function hTangentThrough(){const p=ri(-3,3),d=ri(1,4),q=p*p-d*d,xs=[p-d,p+d],ln=x=>`y = ${poly([2*x,-x*x])}`;
+  return{q:`Wyznacz równania stycznych do wykresu funkcji f(x) = x², które przechodzą przez punkt P = (${N(p)}, ${N(q)}).`,a:xs.map(ln).join(' oraz '),
+  s:['P nie leży na wykresie, więc szukamy punktu styczności (x<sub>0</sub>, x<sub>0</sub>²).','Styczna: y = 2x<sub>0</sub>(x − x<sub>0</sub>) + x<sub>0</sub>² = 2x<sub>0</sub>x − x<sub>0</sub>².',`Przechodzi przez P: ${N(q)} = 2x<sub>0</sub> · ${pN(p)} − x<sub>0</sub>² ⇔ x<sub>0</sub>²${term(-2*p,'x<sub>0</sub>')}${term(q,'')} = 0.`,`x<sub>0</sub> = ${N(xs[0])} lub x<sub>0</sub> = ${N(xs[1])}.`,`Styczne: ${xs.map(ln).join(', ')}.`]}}
+function hMonoParam(){const k=ri(1,5);
+  return{q:`Wyznacz wszystkie wartości parametru m, dla których funkcja f(x) = x³ + 3mx² + ${3*k*k}x − 7 jest rosnąca w całym zbiorze ℝ.`,a:`m ∈ ⟨−${k}, ${k}⟩`,
+  s:[`f'(x) = 3x² + 6mx + ${3*k*k}. Funkcja jest rosnąca w ℝ ⇔ f'(x) ≥ 0 dla każdego x (zera pojedyncze nie psują monotoniczności).`,`Parabola ramionami do góry ⇒ potrzeba Δ ≤ 0: 36m² − 4 · 3 · ${3*k*k} ≤ 0 ⇔ 36m² ≤ ${36*k*k} ⇔ m² ≤ ${k*k}.`,`m ∈ ⟨−${k}, ${k}⟩ (dla m = ±${k} f' ma podwójne zero, ale f nadal jest rosnąca).`]}}
+function hArithGeom(){for(let it=0;it<200;it++){const b=ri(2,9),d=riNZ(-6,6),G1=ri(1,8),qq=pick([2,3,F(1,2)]),qf=toF(qq);if(qf.d!==1&&G1%4)continue;const G2=G1*qf.n/qf.d,G3=G2*qf.n/qf.d;if(G3%1)continue;
+    const p=G1-(b-d),q=G2-b,r=G3-(b+d),d2=(p-r)-d,trip=dd=>[b-dd,b,b+dd],ok=dd=>{const g=[b-dd+p,b+q,b+dd+r];return g.every(x=>x!==0)};
+    const sols=[d,d2].filter((x,i,A)=>A.indexOf(x)===i&&ok(x));
+        return{q:`Trzy liczby, których suma jest równa ${3*b}, tworzą ciąg arytmetyczny. Jeśli do pierwszej dodamy ${N(p)}, do drugiej ${N(q)}, a do trzeciej ${N(r)}, otrzymamy ciąg geometryczny. Wyznacz te liczby.`,
+    a:sols.map(x=>`(${trip(x).map(N).join(', ')})`).join(' lub '),
+    s:[`Ciąg arytmetyczny: b − r', b, b + r' (r' — różnica). Suma 3b = ${3*b}, więc b = ${b}.`,`Ciąg geometryczny: ${N(b+p)} − r', ${N(b+q)}, ${N(b+r)} + r'. Warunek: (${N(b+q)})² = (${N(b+p)} − r')(${N(b+r)} + r').`,
+      `${(b+q)**2} = ${(b+p)*(b+r)}${term(b+p-(b+r),"r'")} − r'² ⇔ r'²${term(r-p,"r'")}${term((b+q)**2-(b+p)*(b+r),'')} = 0 ⇒ r' = ${N(d)} lub r' = ${N(d2)}.`,
+      ...[d,d2].filter((x,i,A)=>A.indexOf(x)===i).map(x=>ok(x)?`r' = ${N(x)}: liczby ${trip(x).map(N).join(', ')}; ciąg geometryczny ${[b-x+p,b+q,b+x+r].map(N).join(', ')} ✓.`:`r' = ${N(x)} daje wyraz 0 w ciągu geometrycznym — odrzucamy.`)]}}
+  return hMonoParam()}
+function hDiceN(){const[pp,lab,cl]=pick([[.5,'0,5','0,5'],[.9,'0,9','0,1'],[.95,'0,95','0,05'],[.99,'0,99','0,01']]),n=Math.ceil(Math.log(1-pp)/Math.log(5/6));
+  return{q:`Ile co najmniej razy trzeba rzucić symetryczną kostką, aby prawdopodobieństwo otrzymania co najmniej jednej szóstki było większe od ${lab}?`,a:`n = ${n}`,
+  s:['Zdarzenie przeciwne: w żadnym z n rzutów nie wypadnie szóstka: P = (5/6)<sup>n</sup>.',`1 − (5/6)<sup>n</sup> > ${lab} ⇔ (5/6)<sup>n</sup> < ${cl}.`,`Logarytmujemy (log(5/6) < 0, więc zmienia się znak): n > ${fr(`log ${cl}`,'log(5/6)')} ≈ ${dec(Math.log(1-pp)/Math.log(5/6))}.`,`Najmniejsza liczba naturalna: n = ${n}.`]}}
+function hCountDigits(){const n=ri(5,8),[A,B]=distinct(2,1,9),a=ri(2,3),b=ri(1,2),tot=C(n,a)*C(n-a,b)*8**(n-a-b),z=C(n-1,a)*C(n-1-a,b)*8**(n-1-a-b);
+  return{q:`Ile jest liczb ${n}-cyfrowych, w których zapisie cyfra ${A} występuje dokładnie ${a} razy, a cyfra ${B} dokładnie ${b===1?'raz':'dwa razy'}?`,a:`${tot-z}`,
+  s:[`Najpierw liczymy ciągi ${n} cyfr (także zaczynające się od 0): miejsca dla cyfry ${A}: (<sup>${n}</sup><sub>${a}</sub>) = ${C(n,a)}, dla ${B}: (<sup>${n-a}</sup><sub>${b}</sub>) = ${C(n-a,b)}, pozostałe ${n-a-b} miejsca — dowolna z 8 innych cyfr: 8<sup>${n-a-b}</sup>.`,`Razem ${C(n,a)} · ${C(n-a,b)} · ${8**(n-a-b)} = ${tot}.`,`Odejmujemy ciągi zaczynające się od 0: ${C(n-1,a)} · ${C(n-1-a,b)} · ${8**(n-1-a-b)} = ${z}.`,`Odpowiedź: ${tot} − ${z} = ${tot-z}.`]}}
+function hDihedral(){const s=ri(1,5),a=2*s,H=ri(1,6),cf=F(-s*s,H*H+s*s);
+  return{q:`W ostrosłupie prawidłowym czworokątnym krawędź podstawy ma długość ${a}, a wysokość ${H}. Oblicz cosinus kąta między sąsiednimi ścianami bocznymi.`,a:`cos φ = ${fH(cf)}`,
+  s:[`Krawędź boczna: b² = H² + (a√2/2)² = ${H*H} + ${2*s*s} = ${H*H+2*s*s}.`,`Kąt dwuścienny mierzymy między wysokościami BE i DE opuszczonymi z wierzchołków B i D na wspólną krawędź SC: |BE| = |DE| = h.`,`W ścianie SBC: h · b = a · √(b² − a²/4), więc h² = ${fr(`a²(b² − a²/4)`,'b²')} = ${fH(F(a*a*(H*H+s*s),H*H+2*s*s))}.`,`Tw. cosinusów w trójkącie BED (|BD| = a√2): cos φ = ${fr('2h² − 2a²','2h²')} = 1 − ${fr('a²','h²')} = ${fH(cf)}.`,'Kąt jest rozwarty (cos < 0) — tak jest zawsze dla sąsiednich ścian ostrosłupa prawidłowego czworokątnego.']}}
+function hTriAnalytic(){for(;;){const A=[ri(-5,2),ri(-5,2)],B=[A[0]+ri(2,7),A[1]+ri(-3,4)],k=riNZ(-2,2),m=ri(-4,4),ux=B[0]-A[0],uy=B[1]-A[1],
+    cf=ux*k-uy,c0=ux*(m-A[1])+uy*A[0];if(cf===0)continue;const S=ri(3,15),xs=[F(2*S-c0,cf),F(-2*S-c0,cf)];if(xs.some(x=>x.d>3))continue;
+    const pt=x=>`(${fH(x)}, ${fH(fadd(fmul(F(k),x),F(m)))})`;
+    return{q:`Punkty A = (${N(A[0])}, ${N(A[1])}) i B = (${N(B[0])}, ${N(B[1])}) są wierzchołkami trójkąta ABC o polu ${S}. Wierzchołek C leży na prostej y = ${poly([k,m])}. Wyznacz współrzędne punktu C.`,a:xs.map(pt).join(' lub '),
+    s:[`C = (x, ${poly([k,m])}). Pole: P = ½|det(AB→, AC→)|, AB→ = [${ux}, ${uy}], AC→ = [x − ${pN(A[0])}, ${poly([k,m-A[1]])}].`,`det = ${ux}(${poly([k,m-A[1]])}) − ${pN(uy)}(x − ${pN(A[0])}) = ${poly([cf,c0])}.`,`½|${poly([cf,c0])}| = ${S} ⇔ ${poly([cf,c0])} = ${2*S} lub ${poly([cf,c0])} = ${N(-2*S)}.`,`x = ${fH(xs[0])} lub x = ${fH(xs[1])}, czyli C = ${xs.map(pt).join(' lub C = ')}.`]}}}
+function hAbsCount(){const p=ri(1,4),P=p*p,f=x=>Math.abs(x*x-2*p*x),pts=[];for(let x=-1.5;x<=2*p+1.5;x+=0.05)pts.push([+x.toFixed(2),f(x)]);
+  return{q:`Określ liczbę rozwiązań równania |x² − ${2*p}x| = m w zależności od wartości parametru m.`,a:`brak dla m < 0; 2 dla m = 0; 4 dla 0 < m < ${P}; 3 dla m = ${P}; 2 dla m > ${P}`,
+  s:[`Szkicujemy y = x² − ${2*p}x: miejsca zerowe 0 i ${2*p}, wierzchołek (${p}, −${P}).`,`Wartość bezwzględna odbija część pod osią Ox do góry — powstaje „garb” z maksimum lokalnym (${p}, ${P}).${plot([{pts}],`y = |x² − ${2*p}x|`)}`,`Prosta y = m przecina wykres: m < 0 — 0 razy; m = 0 — 2 razy (x = 0, x = ${2*p}); 0 < m < ${P} — 4 razy; m = ${P} — 3 razy; m > ${P} — 2 razy.`]}}
+function hLogHard(){if(rnd()<.5){const b=pick([2,3,10]),T=(()=>{let u;do u=distinct(2,-2,3);while(!u[0]||!u[1]);return u})(),t1=T[0],t2=T[1],k=t1+t2,c=-t1*t2,bs=b===10?'':b,lg=b===10?'log x':`log<sub>${b}</sub>x`,xx=t=>fH(t>=0?F(b**t):F(1,b**(-t)));
+    return{q:`Rozwiąż równanie x<sup>${lg}</sup> = ${c===0?'':`${b}<sup>${N(c)}</sup> · `}x<sup>${N(k)}</sup>.`.replace('x<sup>1</sup>','x').replace(' · x<sup>0</sup>',''),a:`x ∈ {${xx(t1)}, ${xx(t2)}}`,
+    s:['Dziedzina: x > 0.',`Logarytmujemy obie strony przy podstawie ${b}: ${lg} · ${lg} = ${N(c)} + ${N(k)} · ${lg}.`,`t = ${lg}: t²${term(-k,'t')}${term(-c,'')} = 0 ⇒ t = ${N(t1)} lub t = ${N(t2)}.`,`x = ${b}<sup>${N(t1)}</sup> = ${xx(t1)} lub x = ${b}<sup>${N(t2)}</sup> = ${xx(t2)}.`]}}
+  const b=pick([2,3]),L=pick([4,8,-4]),x=b**L>1e6?null:(L>0?F(b**L):F(1,b**(-L)));if(!x)return hLogHard();
+  return{q:`Rozwiąż równanie log<sub>${b}</sub>x + log<sub>${b*b}</sub>x + log<sub>${b**4}</sub>x = ${fH(F(7*L,4))}.`,a:`x = ${fH(x)}`,
+  s:[`Zamiana podstawy: log<sub>${b*b}</sub>x = ${fr(`log<sub>${b}</sub>x`,2)}, log<sub>${b**4}</sub>x = ${fr(`log<sub>${b}</sub>x`,4)}.`,`(1 + ½ + ¼) log<sub>${b}</sub>x = ${fH(F(7*L,4))} ⇔ ${fr(7,4)} log<sub>${b}</sub>x = ${fH(F(7*L,4))} ⇔ log<sub>${b}</sub>x = ${L}.`,`x = ${b}<sup>${L}</sup> = ${fH(x)} (> 0 ✓).`]}}
+function hRatIneq(){for(;;){const a=ri(-5,5),b=ri(-5,5),p=ri(-4,4),q=ri(-4,4);if(p===q)continue;const A=a-q-b+p,B=-a*q+b*p;if(A===0)continue;const r=F(-B,A),rv=r.n/r.d;if(Math.abs(rv-p)<1e-9||Math.abs(rv-q)<1e-9)continue;
+    const g=x=>A*(x-rv)/((x-p)*(x-q)),cr=[{v:rv,f:r,inc:true},{v:p,f:F(p),inc:false},{v:q,f:F(q),inc:false}].sort((u,w)=>u.v-w.v),pts=[-1e6,...cr.map(c=>c.v),1e6],iv=[];
+    for(let i=0;i<4;i++){const mid=i===0?cr[0].v-1:i===3?cr[2].v+1:(cr[i-1].v+cr[i].v)/2;if(g(mid)>0){const L=i===0?'(−∞':(cr[i-1].inc?'⟨':'(')+fH(cr[i-1].f),R=i===3?'+∞)':fH(cr[i].f)+(cr[i].inc?'⟩':')');iv.push(`${L}, ${R}`)}}
+    const ans=`x ∈ ${iv.join(' ∪ ')}`;
+    return{q:`Rozwiąż nierówność ${fr(sh(-a),sh(p))} ≥ ${fr(sh(-b),sh(q))}.`,a:ans,
+    s:[`Dziedzina: x ≠ ${N(p)} i x ≠ ${N(q)}. Nie mnożymy przez mianowniki (nie znamy ich znaku) — przenosimy wszystko na jedną stronę.`,`${fr(`(${sh(-a)})(${sh(q)}) − (${sh(-b)})(${sh(p)})`,`(${sh(p)})(${sh(q)})`)} ≥ 0 ⇔ ${fr(poly([A,B]),`(${sh(p)})(${sh(q)})`)} ≥ 0.`,`Równoważnie: (${poly([A,B])})(${sh(p)})(${sh(q)}) ≥ 0, x ≠ ${N(p)}, x ≠ ${N(q)}. Miejsca zerowe: ${cr.map(c=>fH(c.f)).join(', ')}.`,`Znak iloczynu (współczynnik ${A>0?'dodatni':'ujemny'}, krzywa znaków od prawej ${A>0?'nad':'pod'} osią): ${ans}.`]}}}
+const HARD={tryg:[hTrigQuad,hTrigQuad,hTrigHard,hTrigHard,hTrigHard,hTrigParam],wiel:[hPolyParam,hPolyParam],anal:[hTangentsPoint,hLineCircleParam,hTriAnalytic],poch:[hOptHard,hOptHard,hTangentThrough,hMonoParam],model:[hOptHard],
+  ciagi:[hArithGeom,hArithGeom],komb:[hDiceN,hCountDigits,hCountDigits],stereo:[hDihedral],abs:[hAbsCount],graf:[hAbsCount],log:[hLogHard,hLogHard],wym:[hRatIneq,hRatIneq]};
+const HARDX={tryg:[gTrigQuadEq,gSumAngle,gTrigIneq],wiel:[gPolyOneRoot,gRatRoots,gDarboux,gPolyIneq],kw:[gParamDelta,gSumSqParam,gRootsDiff],abs:[gAbsNested,gAbsParam,gAbsQuad],lin:[gLinParam2,gParamLines],
+ log:[gLogParam,gLogEqBoth,gLogIneq],poch:[gMinMaxInterval,gTangentCond,gOptBox,gCanMin,gBoxMin],stereo:[gCubeSec,gPyrSection,gShortestPath,gSphereInOut,gDihedral],komb:[gBayes,gBernoulliN,gUrns],
+ ciagi:[gArithGeom,gSeriesX,gSeriesEq,gGeomOddEven],gran:[gLimParam,gContinuity,gLimRoot],wym:[gRatEqR,gAsymptote,gRatIneq],anal:[gTangentLines,gCircumcircle,gTwoCircles,gCommonTangent],graf:[gCompose,gAbsParam],model:[gBoxMin,gCanMin,gOptBox],
+ zbiory:[gSetsR],plan:[gPowerPoint,gCyclicQuad,gSecantTangent,gBisector,gTrapPerp],dorys:[gTrapPerp,gCommonTangent,gPowerPoint,gMedianPara]};
+const hardPool=id=>[...(HARD[id]||[]),...(HARD[id]||[]),...(HARDX[id]||[])];
+const EXAM_R_IDS=['gran','log','abs','wiel','dow','tryg','ciagi','kw','poch','model','plan','anal','stereo','komb','komb'];
+
 /* ---------- działy ---------- */
 /* ---------- UZUPEŁNIENIE WYMAGAŃ CKE (podstawa programowa 2019, matura od 2023) ---------- */
 const pl=(n,one,few,many)=>{n=Math.abs(n);return n===1?one:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?few:many};
@@ -1842,9 +1954,9 @@ const OPEN_R=[{p:2,g:[gLimSeq,gLimRoot,gLimFn,gLimSqrt]},{p:2,g:[gLogExpr2,gLogE
  {p:4,g:[gTangentLines,gTriArea,gMultiTri,gSysCircleLine,gCircumcircle,gTangentFromPoint]},{p:4,g:[gCubeSec,gDihedral,gPyrEdge,gPyrSection,gSphereInOut,gShortestPath]},{p:4,g:[gBayes,gUrns,gCond,gBernoulliN]},{p:2,g:[()=>gDigits(pick([4,5])),gGridPaths,gVariation,gBalls,gNewtonEq]}];
 const EXAMS={p:{name:'Arkusz: poziom podstawowy',short:'podstawa'},r:{name:'Arkusz: poziom rozszerzony',short:'rozszerzenie'}};
 function gen(gs){for(let k=0;k<8;k++){try{const r=pick(gs)();if(r&&r.q)return r}catch(e){console.error(e)}}return{q:'Nie udało się wylosować zadania.',a:''}}
-function buildExam(type,seed){rnd=mulberry(seed);const out=[];
+function buildExam(type,seed,hard){rnd=mulberry(seed);const out=[];
   if(type==='p'){shuffle(CLOSED).slice(0,25).forEach(([g,r])=>out.push({...gen([g]),pts:1,closed:true,r}));OPEN_P.forEach(o=>out.push({...gen(o.g),pts:o.p,r:o.r}));out.sort((a,b)=>a.r-b.r)}
-  else OPEN_R.forEach(o=>out.push({...gen(o.g),pts:o.p}));
+  else OPEN_R.forEach((o,i)=>{const h=hard?hardPool(EXAM_R_IDS[i]):[];out.push({...gen(h.length?(i===4||i===10?[...o.g,...h]:h):o.g),pts:o.p})});
   return out}
 globalThis.__T.CLOSED=CLOSED;globalThis.__T.buildExam=buildExam;globalThis.__T.make=make;globalThis.__T.shuffle=shuffle;globalThis.__T.mulberry=mulberry;
 
@@ -1854,11 +1966,11 @@ const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const now=new Date(),p2=n=>String(n).padStart(2,'0'),dstr=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,day=dstr(now),recentCut=dstr(new Date(now.getTime()-3*864e5));
 const hist=(h=>h&&typeof h==='object'?h:{})(store.get('mm_hist',{}));
-let offB=new Set(store.get('mm_basic_off',[])),done=new Set(store.get('mm_ext',DEF)),cnt=store.get('mm_cnt',{b:5,r:3}),st=store.get('mm_day',{}),mode=store.get('mm_mode','d');
+let offB=new Set(store.get('mm_basic_off',[])),done=new Set(store.get('mm_ext',DEF)),cnt=store.get('mm_cnt',{b:5,r:3}),st=store.get('mm_day',{}),mode=store.get('mm_mode','d'),hard=store.get('mm_hard',true);
 const EX={p:store.get('mm_exam_p',{}),r:store.get('mm_exam_r',{})};
 if(st.day!==day)st={day,roll:0,done:[]};
 let tasks=[];
-const save=()=>{store.set('mm_basic_off',[...offB]);store.set('mm_ext',[...done]);store.set('mm_cnt',cnt);store.set('mm_day',st);store.set('mm_mode',mode);store.set('mm_exam_p',EX.p);store.set('mm_exam_r',EX.r)};
+const save=()=>{store.set('mm_hard',hard);store.set('mm_basic_off',[...offB]);store.set('mm_ext',[...done]);store.set('mm_cnt',cnt);store.set('mm_day',st);store.set('mm_mode',mode);store.set('mm_exam_p',EX.p);store.set('mm_exam_r',EX.r)};
 $('#date').textContent=now.toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 /* motyw */
 const TH={auto:'automatyczny',light:'jasny',dark:'ciemny'};let theme=store.get('mm_theme','auto');
@@ -1866,19 +1978,20 @@ const applyTheme=()=>{if(theme==='auto')delete document.documentElement.dataset.
 if(theme!=='auto')applyTheme();else $('#theme').textContent='Motyw: '+TH[theme];
 
 function build(){
-  rnd=mulberry(hashStr([day,st.roll,cnt.b,cnt.r,[...done].sort().join('.')].join('|')+(offB.size?'|b:'+[...offB].sort().join('.'):'')));
+  rnd=mulberry(hashStr([day,st.roll,cnt.b,cnt.r,[...done].sort().join('.')].join('|')+(hard?'|H':'')+(offB.size?'|b:'+[...offB].sort().join('.'):'')));
   const out=[],bt=shuffle(BASIC.filter(t=>!offB.has(t.name))),et=shuffle(EXT.filter(t=>done.has(t.id)));
   /* historia z poprzednich dni (bez dzisiejszego), więc zestaw na dziś jest stały przez cały dzień */
   const av={q:new Set(),g:new Set()};Object.entries(hist).forEach(([d,h])=>{if(d===day)return;(h.q||[]).forEach(x=>av.q.add(x));if(d>=recentCut)(h.g||[]).forEach(x=>av.g.add(x))});
   const add=o=>{out.push(o);if(o.qk)av.q.add(o.qk);if(o.gk)av.g.add(o.gk)};
   if(bt.length)for(let i=0;i<cnt.b;i++)add(make(bt[i%bt.length],'Podstawa',av));
-  if(et.length)for(let i=0;i<cnt.r;i++)add(make(et[i%et.length],'Rozszerzenie',av));
+  if(et.length)for(let i=0;i<cnt.r;i++){const t=et[i%et.length],hp=hard?hardPool(t.id):[];add(make(hp.length?{...t,g:hp,name:t.name+' · trudne'}:t,'Rozszerzenie',av))}
   hist[day]={q:out.map(o=>o.qk).filter(Boolean),g:out.map(o=>o.gk).filter(Boolean)};
   Object.keys(hist).sort().slice(0,-30).forEach(d=>delete hist[d]);store.set('mm_hist',hist);
   return out}
 function progress(){if(mode!=='d')return;const n=tasks.length,d=st.done.filter(i=>i<n).length;$('#pn').textContent=`${d} / ${n}`;$('#pl').textContent='zrobione';$('#pb').style.width=n?d/n*100+'%':'0'}
 function renderDaily(){
   tasks=build();$('#nb').textContent=cnt.b;$('#nr').textContent=cnt.r;
+  $('#hard').checked=hard;
   $('#topics').innerHTML=EXT.map(t=>`<label><input type="checkbox" value="${t.id}" ${done.has(t.id)?'checked':''}>${t.name}</label>`).join('');
   $('#tc').textContent=`(${done.size} z ${EXT.length})`;
   $('#topicsb').innerHTML=BASIC.map((t,i)=>`<label><input type="checkbox" value="${i}" ${offB.has(t.name)?'':'checked'}>${t.name}</label>`).join('');
@@ -1902,7 +2015,7 @@ function score(){const e=EX[mode];let s=0,g=0,max=0;tasks.forEach((t,i)=>{max+=t
   $('#escore').innerHTML=e.done?`<b>Wynik: ${s} / ${max} pkt (${Math.round(s/max*100)}%)</b>${g<tasks.length?` · oceń jeszcze ${tasks.length-g} ${tasks.length-g===1?'zadanie':'zadań'} otwartych, porównując rozwiązanie z odpowiedzią`:''}`:''}
 function renderExam(){const e=EX[mode];if(!e.seed){Object.assign(e,{seed:Math.floor(Math.random()*1e9),acc:0,running:false,done:false,pts:{},sel:{}});save()}
   /* arkusz zapisujemy, żeby aktualizacja generatorów nie zmieniła rozpoczętego arkusza */
-  if(!Array.isArray(e.tasks)){e.tasks=buildExam(mode,e.seed);save()}
+  if(!Array.isArray(e.tasks)){e.tasks=buildExam(mode,e.seed,hard);save()}
   tasks=e.tasks;const max=tasks.reduce((a,t)=>a+t.pts,0),nc=tasks.filter(t=>t.closed).length;
   $('#einfo').innerHTML=`<b>${EXAMS[mode].name}</b> · 180 minut · ${max} punktów · ${tasks.length} zadań${nc?` (${nc} zamkniętych za 1 pkt, ${tasks.length-nc} otwartych)`:', wszystkie otwarte'}. Rozwiązuj na kartce; odpowiedzi zobaczysz po kliknięciu „Zakończ i sprawdź”.`;
   $('#list').innerHTML=tasks.map((t,i)=>`<article class="task" data-i="${i}"><div class="meta"><span class="lvl ${mode==='p'?'b':'r'}">${t.closed?'Zamknięte':'Otwarte'}</span></div>
@@ -1939,7 +2052,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
   else if(b.dataset.act==='sol'){const a=b.closest('.task').querySelector('.sol'),o=a.hidden;a.hidden=!o;b.textContent=o?'Ukryj rozwiązanie':'Pokaż rozwiązanie';b.setAttribute('aria-expanded',o)}
   else if(b.dataset.act==='done'){const art=b.closest('.task'),i=+art.dataset.i,on=!st.done.includes(i);
     st.done=on?[...st.done,i]:st.done.filter(x=>x!==i);art.classList.toggle('is-done',on);b.setAttribute('aria-pressed',on);b.textContent=on?'✓ Zrobione':'Oznacz jako zrobione';save();progress()}});
-document.addEventListener('change',e=>{if(e.target.matches('#topicsb input')){const n=BASIC[+e.target.value].name;e.target.checked?offB.delete(n):offB.add(n);reset();$('#detb').open=true}
+document.addEventListener('change',e=>{if(e.target.id==='hard'){hard=e.target.checked;reset();$('#det').open=true;return}
+  if(e.target.matches('#topicsb input')){const n=BASIC[+e.target.value].name;e.target.checked?offB.delete(n):offB.add(n);reset();$('#detb').open=true}
   if(e.target.matches('#topics input')){e.target.checked?done.add(e.target.value):done.delete(e.target.value);reset();$('#det').open=true}
   if(e.target.matches('select[data-pts]')){EX[mode].pts[e.target.dataset.pts]=e.target.value;save();score()}});
 setInterval(tick,1000);
