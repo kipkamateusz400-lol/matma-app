@@ -59,6 +59,7 @@ details[open] summary::before{transform:rotate(90deg)}
 .chk[aria-pressed=true]{background:var(--ok);color:var(--card);border-color:transparent}
 .ans{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--soft);line-height:2.05}
 .ans b{color:var(--blue)}
+.scheme{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:8px 12px}.scheme summary{cursor:pointer;font-weight:600}.scheme .note{font-weight:400;font-size:13px}.lv{margin:8px 0;padding-left:20px;line-height:1.8}.lv li{margin:4px 0}
 .chkbox{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--card)}.chkbox summary{cursor:pointer;font-weight:600}.chsc{font-weight:400;opacity:.8;margin-left:6px}
 .mynote{width:100%;box-sizing:border-box;margin-top:10px;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:16px;resize:vertical}
 .crow{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer;line-height:1.6}.crow input{margin-top:5px;width:20px;height:20px;flex:none}.csum{margin:8px 0;font-size:17px}.cmt{margin-top:8px;padding:8px 12px;border-radius:8px;background:var(--soft);font-size:15px}.cmt ul{margin:6px 0 0;padding-left:20px}
@@ -1437,7 +1438,7 @@ function criteria(t,pts){const q=t.q,s=t.s||[],P=pts||(isProof(q)?3:Math.min(4,M
       root:['Obliczenie wartości na końcach przedziału.','Stwierdzenie, że mają przeciwne znaki.','Powołanie się na ciągłość i własność Darboux + wniosek.'],
       alg:[`Poprawne przekształcenia prowadzące do kluczowej zależności: ${h}`,'Uzasadnienie każdego kroku.','Wniosek.']}[k];
     const c=P>=L.length?[...L]:[...L.slice(0,P-1),L.slice(P-1).join(' ')];while(c.length<P)c.push('Pełne, poprawne zakończenie dowodu.');return c}
-  const st=s.map(x=>plainT(x).replace(/<ol[\s\S]*?<\/ol>/g,'')).filter(x=>x.replace(/<[^>]+>/g,'').trim());if(!st.length)return['Poprawna metoda rozwiązania.','Poprawny wynik: '+plainT(t.a)].slice(0,P);
+  const st=s.map(x=>plainT(x).replace(/<ol[\s\S]*?<\/ol>/g,'')).filter(x=>x.replace(/<[^>]+>/g,'').trim());if(!st.length){const h=hintTxt(t.a),res=plainT(t.a).replace(/<br>\s*<b>Wskazówka[\s\S]*$/,'');if(P===1)return['Poprawny wynik: '+res];return[...Array(P-1)].map((_,i)=>i===0?'Poprawny wybór metody i zapisanie potrzebnych zależności (wzór, równanie, rysunek z oznaczeniami)'+(h?': '+h:'.'):'Poprawne obliczenia pośrednie prowadzące do wyniku (etap '+(i+1)+').').concat(['Poprawny wynik końcowy: '+res])}
   const fin='Poprawny wynik końcowy: '+plainT(t.a).replace(/<br>\s*<b>Wskazówka[\s\S]*$/,'');if(P===1)return[fin];
   const groups=Array.from({length:P-1},()=>[]);st.forEach((x,i)=>groups[Math.min(P-2,Math.floor(i*(P-1)/st.length))].push(x));
   return[...groups.map(g=>g.length?g.join(' '):'Poprawna kontynuacja metody (obliczenia pośrednie bez błędu).'),fin]}
@@ -1452,8 +1453,20 @@ function comments(t){const q=plainT(t.q).replace(/<[^>]+>/g,' '),s=(t.s||[]).joi
   if(/prawdopodob/.test(q))c.push('Zapisz model: Ω, |Ω| i zdarzenie sprzyjające — sam wynik bez opisu zwykle daje 0–1 pkt.');
   if(!isProof(t.q))c.push('Błąd rachunkowy przy poprawnej metodzie zwykle kosztuje tylko ostatni punkt — warto pisać czytelnie każde przekształcenie.');
   return[...new Set(c)]}
-const needCheck=(t,pts)=>!t.closed&&!!t.s&&(isProof(t.q)||t.lvl==='Rozszerzenie'||(pts||0)>=3||(!pts&&t.s.length>=3));
-function checkBox(key,t,pts,saved){const cr=criteria(t,pts),sv=saved||{},ch=sv.c||[],sc=ch.filter(Boolean).length;
+const isClosedQ=t=>t.closed||/class="(mc|pf)"/.test(t.q||'');
+const needCheck=(t,pts)=>!isClosedQ(t);
+const defPts=t=>{const n=(t.s||[]).length,parts=(plainT(t.q).match(/(^|>|\s)[a-e]\)/g)||[]).length;if(parts>=2)return Math.min(6,parts);if(isProof(t.q))return t.lvl==='Podstawa'?2:3;return t.lvl==='Rozszerzenie'?Math.min(6,Math.max(3,n-1)):Math.min(4,Math.max(2,n-1))};
+function schemeBox(t,pts){const P=pts||defPts(t),cr=criteria(t,P),q=plainT(t.q).replace(/<[^>]+>/g,' '),all=q+' '+(t.s||[]).join(' '),pr=isProof(t.q),U=[];
+  if(pr){U.push(`Dowód niepełny — brak uzasadnienia kluczowego kroku albo brak wniosku — najwyżej ${P-1} pkt.`,'Sprawdzenie tezy na przykładach albo samo przepisanie tezy — 0 pkt.')}
+  else{U.push('Sam wynik bez obliczeń/uzasadnienia — 0 pkt (w zadaniu otwartym oceniane jest rozumowanie).',`Poprawna metoda doprowadzona do końca, ale z błędem rachunkowym — zwykle ${P-1} pkt${P>2?' (o ile błąd nie uprościł zadania)':''}.`)}
+  if(/[Dd]ziedzin|≠|założe/.test(all))U.push(`Pominięcie dziedziny/założeń, przez co nie odrzucono złego rozwiązania — najwyżej ${P-1} pkt.`);
+  if(/parametr/.test(q))U.push('Każdy warunek (np. Δ > 0, warunek z wzorów Viète\'a, wykluczenie wartości) jest oceniany osobno; brak części wspólnej warunków — najwyżej '+(P-1)+' pkt.');
+  if(/największ|najmniejsz|optymal/.test(q))U.push('Brak uzasadnienia, że to maksimum/minimum (znak pochodnej, wierzchołek paraboli) albo brak dziedziny funkcji — najwyżej '+(P-1)+' pkt.');
+  if(/Ułóż/.test(q))U.push('Poprawne ułożenie równania/układu (z opisem niewiadomych) to zwykle pierwszy punkt — nawet gdy dalej pojawi się błąd.');
+  if(/sin|cos|tg/.test(q)&&/Rozwiąż/.test(q))U.push('Zgubienie części rozwiązań (np. przez dzielenie przez sin x) albo podanie rozwiązań spoza przedziału — najwyżej '+(P-1)+' pkt.');
+  const lv=[`<li><b>0 pkt</b> — brak rozwiązania lub rozwiązanie, w którym nie ma pierwszego z poniższych kroków.</li>`,...cr.map((c,i)=>`<li><b>${i+1} pkt</b> — ${i===cr.length-1?'<b>pełne rozwiązanie</b>: ':''}${i?'wszystko powyżej oraz: ':''}${c}</li>`)];
+  return`<details class="scheme"><summary>📋 Schemat punktowania — max ${P} pkt${pts?'':' <span class="note">(orientacyjnie, jak w podobnych zadaniach CKE)</span>'}</summary><ul class="lv">${lv.join('')}</ul><div class="cmt"><b>Kiedy mniej punktów:</b><ul>${U.map(x=>`<li>${x}</li>`).join('')}</ul></div></details>`}
+function checkBox(key,t,pts,saved){const cr=criteria(t,pts||defPts(t)),sv=saved||{},ch=sv.c||[],sc=ch.filter(Boolean).length;
   return`<details class="chkbox" data-key="${key}" data-pts="${cr.length}"><summary>✍️ ${isProof(t.q)?'Mój dowód':'Moje rozwiązanie'} — sprawdź się <span class="chsc">${sv.open?`${sc} / ${cr.length} pkt`:''}</span></summary>
   <textarea class="mynote" rows="5" placeholder="Zapisz tu swój ${isProof(t.q)?'dowód':'tok rozwiązania'} (zapisuje się automatycznie)…">${(sv.t||'').replace(/</g,'&lt;')}</textarea>
   <div class="acts"><button data-act="check">${sv.open?'Ukryj kryteria':'Sprawdź według kryteriów CKE'}</button></div>
@@ -2147,7 +2160,7 @@ function renderDaily(){
     <div class="meta"><span class="lvl ${t.lvl==='Podstawa'?'b':'r'}">${t.lvl}</span><span>${t.topic}</span></div>
     <h3>Zadanie ${i+1}</h3><div class="q">${t.q}</div>
     <div class="acts"><button data-act="ans" aria-expanded="false">Pokaż odpowiedź</button>${t.s?'<button data-act="sol" aria-expanded="false">Pokaż rozwiązanie</button>':''}<button class="chk" data-act="done" aria-pressed="${d}">${d?'✓ Zrobione':'Oznacz jako zrobione'}</button></div>
-    <div class="ans" hidden>${t.a}</div>${t.s?`<ol class="sol" hidden>${t.s.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}${needCheck(t)?checkBox('d'+(t.qk||qKey(t.q)),t,0,notes['d'+(t.qk||qKey(t.q))]):''}</article>`}).join('');
+    <div class="ans" hidden>${t.a}</div>${t.s?`<ol class="sol" hidden>${t.s.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}${needCheck(t)?schemeBox(t,0)+checkBox('d'+(t.qk||qKey(t.q)),t,0,notes['d'+(t.qk||qKey(t.q))]):''}</article>`}).join('');
   if(cnt.b>0&&BASIC.every(t=>offB.has(t.name)))html+='<div class="empty">Zaznacz działy z podstawy, a pojawią się tu zadania z podstawy.</div>';
   if(cnt.r>0&&!done.size)html+='<div class="empty">Zaznacz przerobione działy z rozszerzenia, a pojawią się tu zadania z rozszerzenia.</div>';
   if(!tasks.length&&!cnt.b&&!cnt.r)html='<div class="empty">Ustaw liczbę zadań przyciskiem +.</div>';
@@ -2167,7 +2180,7 @@ function renderExam(){const e=EX[mode];if(!e.seed){Object.assign(e,{seed:Math.fl
   $('#einfo').innerHTML=`<b>${EXAMS[mode].name}</b> · 180 minut · ${max} punktów · ${tasks.length} zadań${nc?` (${nc} zamkniętych za 1 pkt, ${tasks.length-nc} otwartych)`:', wszystkie otwarte'}. Rozwiązuj na kartce; odpowiedzi zobaczysz po kliknięciu „Zakończ i sprawdź”.`;
   $('#list').innerHTML=tasks.map((t,i)=>`<article class="task" data-i="${i}"><div class="meta"><span class="lvl ${mode==='p'?'b':'r'}">${t.closed?'Zamknięte':'Otwarte'}</span></div>
     <h3>Zadanie ${i+1}. <span class="pts">(0–${t.pts})</span></h3><div class="q">${t.q}</div>
-    ${e.done?`<div class="ans">${t.a}</div>${t.s?`<details class="soldet"><summary>Rozwiązanie krok po kroku</summary><ol class="sol">${t.s.map(x=>`<li>${x}</li>`).join('')}</ol></details>`:''}<label class="score">Punkty: <select data-pts="${i}"><option value="">–</option>${Array.from({length:t.pts+1},(_,k)=>`<option ${String(e.pts[i])===String(k)?'selected':''}>${k}</option>`).join('')}</select> / ${t.pts}</label>${needCheck(t,t.pts)?checkBox('e'+mode+e.seed+'_'+i,t,t.pts,notes['e'+mode+e.seed+'_'+i]):''}`:''}</article>`).join('');
+    ${e.done?`<div class="ans">${t.a}</div>${t.s?`<details class="soldet"><summary>Rozwiązanie krok po kroku</summary><ol class="sol">${t.s.map(x=>`<li>${x}</li>`).join('')}</ol></details>`:''}<label class="score">Punkty: <select data-pts="${i}"><option value="">–</option>${Array.from({length:t.pts+1},(_,k)=>`<option ${String(e.pts[i])===String(k)?'selected':''}>${k}</option>`).join('')}</select> / ${t.pts}</label>${needCheck(t,t.pts)?schemeBox(t,t.pts)+checkBox('e'+mode+e.seed+'_'+i,t,t.pts,notes['e'+mode+e.seed+'_'+i]):''}`:''}</article>`).join('');
   document.querySelectorAll('#list .task').forEach(a=>{const i=+a.dataset.i;a.querySelectorAll('.mc,.pf').forEach((g,gi)=>{const k=e.sel[`${i}-${gi}`];if(e.done){g.dataset.done=1;const c=g.querySelector(`[data-k="${g.dataset.ok}"]`);c.classList.add('good');if(k&&k!==g.dataset.ok)g.querySelector(`[data-k="${k}"]`).classList.add('bad')}else if(k)g.querySelector(`[data-k="${k}"]`).classList.add('sel')})});
   $('#efinish').disabled=!!e.done;score();tick()}
 function finish(){const e=EX[mode];if(e.running){e.acc=elapsed(e);e.running=false}
